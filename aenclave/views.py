@@ -628,8 +628,8 @@ def upload_http(request):
     audio = request.FILES.get('audio', None)
     if audio is None:
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
-    elif (audio['content-type'] != 'audio/mpeg' or not
-          audio['filename'].endswith('.mp3')):
+    elif (audio['content-type'] != 'audio/mpeg' or
+          not audio['filename'].endswith('.mp3')):
         return html_error(request, 'You may only upload MP3 files.',
                           'HTTP Upload')
     # Save the song into the database -- we'll fix the tags in a moment.
@@ -649,8 +649,8 @@ def upload_http(request):
     song.save()
     # Let the user know what's going on.
     return render_to_response('upload_http.html',
-                              {'song_list':[song],
-                               'sketchy_upload':audio.info.sketchy},
+                              {'song_list': [song],
+                               'sketchy_upload': audio.info.sketchy},
                               context_instance=RequestContext(request))
 
 def upload_sftp(request):

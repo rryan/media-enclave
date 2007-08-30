@@ -5,7 +5,7 @@
 {% block header %}Upload Songs{% endblock %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/upload.css"/>{% endblock %}
+ <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/upload.css">{% endblock %}
 
 {% block scripts %}{{block.super}}
  <script type="text/javascript" src="/media/aenclave/scripts/upload.js"></script>{% endblock %}
@@ -14,15 +14,15 @@
  <!-- HTTP upload -->
  <div class=upload>
   <div>HTTP Upload</div>
-  <form action="http/" method=post enctype="multipart/form-data" onsubmit="upload.disable_form(this);">
+  <form action="{% url aenclave-http-upload %}" method="post" enctype="multipart/form-data" onsubmit="upload.disable_form(this);">
   <table>
    <tr>
     <th>Choose an MP3 file to upload:</th>
-    <td><input type=file name=audio/></td>
+    <td><input type="file" name="audio"></td>
    </tr>
    <tr>
     <th>Then click here to upload it:</th>
-    <td><input type=submit value="Upload song via HTTP"/></td>
+    <td><input type="submit" value="Upload song via HTTP"></td>
    </tr>
   </table>
   </form>
@@ -31,13 +31,13 @@
  <!-- SFTP upload -->
  <div class=upload>
   <div>SFTP Upload</div>
-  <form action="sftp/" method=post onsubmit="upload.disable_form(this);">
+  <form action="{% url aenclave-sftp-upload %}" method=post onsubmit="upload.disable_form(this);">
   <table>
    <tr><th>Upload MP3 files via SFTP:</th>
        <td><tt>sftp upload@nice-rack.mit.edu</tt></td></tr>
    <tr>
     <th>Then click here to add them:</th>
-    <td><input type=submit value="Add songs uploaded via SFTP"/></td>
+    <td><input type="submit" value="Add songs uploaded via SFTP"></td>
    </tr>
   </table>
   </form>

@@ -123,11 +123,13 @@ urlpatterns = patterns(
         {'template':'upload.html'},
         name='aenclave-upload-home'),
 
-    (r'^upload/http/$',
-     'menclave.aenclave.views.upload_http'),
+    url(r'^upload/http/$',
+        'menclave.aenclave.views.upload_http',
+        name='aenclave-http-upload'),
 
-    (r'^upload/sftp/$',
-     'menclave.aenclave.views.upload_sftp'),
+    url(r'^upload/sftp/$',
+        'menclave.aenclave.views.upload_sftp',
+        name='aenclave-sftp-upload'),
 
     url(r'^upload/sftp-info/$',
         'django.views.generic.simple.direct_to_template',

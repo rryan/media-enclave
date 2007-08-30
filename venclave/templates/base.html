@@ -2,21 +2,21 @@
 <html>
 
 <head>
- <title>{% block title %}&AElig;ncl&auml;ve{% endblock %}</title>
+ <title>{% block title %}VEncl&auml;ve{% endblock %}</title>
  <meta name="authors" content="Media Enclave Team"/>
  <meta name="copyright" content="&copy; 1999&ndash;2007 by Putz Inc."/>
  <meta name="robots" content="NONE"/>
 {% block styles %}
- <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/base.css">{% endblock %}
+ <link rel="stylesheet" type="text/css" href="/media/venclave/styles/base.css">{% endblock %}
 {% block scripts %}
  <script type="text/javascript" src="http://www.prototypejs.org/assets/2007/6/20/prototype.js"></script>{% endblock %}
 </head>
 
 <body>
  <div id=login>{% if user.is_authenticated %}
-  <tt>{{user.username}}</tt> [<a href="{% url aenclave-logout %}">logout</a>]
+  <tt>{{user.username}}</tt> [<a href="#">logout</a>]
 {% else %}
-  [<a href="{% url aenclave-login %}">login</a>]
+  [<a href="#">login</a>]
 {% endif %} </div>
 {% block body %}{% endblock %}
  <div id=copyright>&copy; 1999&ndash;2007 by Putz Inc.</div>

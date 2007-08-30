@@ -151,7 +151,6 @@ var songlist = {
       add_subaction_textbox("playlistname", "Rockin' Out");
       add_subaction_button("ok", "songlist.okcreate();", "Create playlist");
       add_subaction_cancel_button();
-      add_subaction_button("ok", "songlist.reverse_rows();", "Rev"); // DEBUG
     }
   },
 

@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group, User
 #================================= UTILITIES =================================#
 
 def datetime_string(dt):
-    date,today = dt.date(), datetime.date.today()
+    date, today = dt.date(), datetime.date.today()
     if date == today: return dt.strftime('Today %H:%M:%S')
     elif date == today - datetime.timedelta(1):
         return dt.strftime('Yesterday %H:%M:%S')
@@ -23,18 +23,31 @@ class VisibleManager(models.Manager):
     def get_query_set(self):
         return super(VisibleManager, self).get_query_set().filter(visible=True)
 
+
 class Song(models.Model):
     def __str__(self): return self.title.encode('ascii', 'replace')
 
+    #--------------------------------- Title ---------------------------------#
+
     title = models.CharField(maxlength=255)
+
+    #--------------------------------- Album ---------------------------------#
+
     album = models.CharField(maxlength=255)
+
+    #-------------------------------- Artist ---------------------------------#
+
     artist = models.CharField(maxlength=255)
+
+    #--------------------------------- Track ---------------------------------#
 
     track = models.PositiveSmallIntegerField()
     def track_string(self):
         if self.track == 0: return ''
         else: return str(self.track)
     track_string.short_description = 'track'
+
+    #--------------------------------- Time ----------------------------------#
 
     time = models.PositiveIntegerField(help_text="The duration of the song,"
                                        " in seconds.")
@@ -45,19 +58,29 @@ class Song(models.Model):
         else: return string
     time_string.short_description = 'time'
 
+    #------------------------------ Date Added -------------------------------#
+
     date_added = models.DateTimeField(auto_now_add=True, editable=False)
     def date_added_string(self): return datetime_string(self.date_added)
     date_added_string.short_description = 'date added'
+
+    #------------------------------ Last Queued ------------------------------#
 
     last_queued = models.DateTimeField(default=None, blank=True, null=True,
                                        editable=False)
     def last_queued_string(self): return datetime_string(self.last_queued)
     last_queued_string.short_description = 'last queued'
 
+    #------------------------------ Audio Path -------------------------------#
+
     audio = models.FileField(upload_to='aenclave/songs/%Y/%m/%d/')
+
+    #------------------------------- Album Art -------------------------------#
 
     #album_art = ImageField(upload_to='album_art',
     #                       blank=True, null=True)
+
+    #--------------------------------- Score ---------------------------------#
 
     score = models.PositiveIntegerField(default=0, editable=False)
     def adjusted_score(self):
@@ -68,20 +91,24 @@ class Song(models.Model):
         return int(self.score * exp(-0.05 * days))
     adjusted_score.short_description = 'score'
 
+    #-------------------------------- Visible --------------------------------#
+
     visible = models.BooleanField(default=True, help_text="Non-visible songs"
                                   " do not appear in search results.")
 
+    #------------------------------ Other Stuff ------------------------------#
+
     class Admin:
         date_hierarchy = 'date_added'
-        list_display = ('track','title','time_string','album','artist',
-                        'date_added','adjusted_score','visible')
+        list_display = ('track','title', 'time_string', 'album', 'artist',
+                        'date_added', 'adjusted_score', 'visible')
         list_display_links = ('title',)
-        list_filter = ('visible','date_added')
-        search_fields = ('title','album','artist')
+        list_filter = ('visible', 'date_added')
+        search_fields = ('title', 'album', 'artist')
 
     class Meta:
         get_latest_by = 'date_added'
-        ordering = ('artist','album','track')
+        ordering = ('artist', 'album', 'track')
 
     @models.permalink
     def get_absolute_url(self):
@@ -102,8 +129,12 @@ class Song(models.Model):
 class Playlist(models.Model):
     def __str__(self): return self.name.encode('ascii', 'replace')
 
+    #-------------------------------- Fields ---------------------------------#
+
     name = models.CharField(maxlength=255)
+
     owner = models.ForeignKey(User)
+
     group = models.ForeignKey(Group, blank=True, null=True)
 
     songs = models.ManyToManyField(Song, blank=True,
@@ -116,6 +147,8 @@ class Playlist(models.Model):
     date_created = models.DateTimeField(auto_now_add=True, editable=False)
     def date_created_string(self): return datetime_string(self.date_created)
     date_created_string.short_description = 'Date created'
+
+    #------------------------------ Other Stuff ------------------------------#
 
     class Admin:
         date_hierarchy = 'date_created'
@@ -147,6 +180,8 @@ class Playlist(models.Model):
 class Channel(models.Model):
     def __str__(self): return self.name.encode('ascii', 'replace')
 
+    #-------------------------------- Fields ---------------------------------#
+
     # For channels, we want the id to be editable, because the channel with
     # id=1 is the default channel.
     id = models.PositiveSmallIntegerField('ID', primary_key=True, help_text=
@@ -162,6 +197,8 @@ class Channel(models.Model):
     last_touched = models.DateTimeField(auto_now=True, editable=False)
     def last_touched_timestamp(self):
         return timegm(self.last_touched.timetuple())
+
+    #------------------------------ Other Stuff ------------------------------#
 
     class Admin:
         list_display = ('id', 'name', 'pipe', 'last_touched')
@@ -182,6 +219,7 @@ class Channel(models.Model):
         self.save()  # `self.last_touched` will auto-update.
 
     def controller(self): return Controller(self)
+
 
 # This import goes at the end to avoid circularity.
 from control import Controller

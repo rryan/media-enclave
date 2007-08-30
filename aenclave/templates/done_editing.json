@@ -1,0 +1,8 @@
+{% load aenclave %}[{"text":"{{song.track_string}}"},
+ {"text":"{{song.title|json_escape}}"{% if not no_queuing %},
+  "href":"/audio/queue/?ids={{song.id}}",
+  "klass":"{% if song.last_queued|is_recent:1 %}recent{% else %}queue{% endif %}"{% endif %}},
+ {"text":"{{song.album|json_escape}}",
+  "href":"/audio/albums/{{song.album|json_escape}}/"},
+ {"text":"{{song.artist|json_escape}}",
+  "href":"/audio/artists/{{song.artists|json_escape}}/"}]

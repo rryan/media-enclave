@@ -1,0 +1,32 @@
+DIV#plisthead {
+  font-size: 12pt;
+  margin: 15px 0px 0px;
+  text-align: right;
+}
+
+DIV#plisthead SPAN {
+  font-size: 18pt;
+  font-weight: bold;
+  vertical-align: -10%;
+}
+
+DIV#plisthead A.edit {
+  background: #eef url(/media/aenclave/images/edit.png) 4px center no-repeat;
+  border: 1px #cce outset;
+  color: #779;
+  font-size: 10pt;
+  height: 12px;
+  margin-left: 7px;
+  padding: 2px 5px 2px 19px;
+  text-decoration: none;
+  /*vertical-align: -10%;*/
+}
+DIV#plisthead A.edit:hover {
+  background-color: #edf;
+  color: #557;
+}
+DIV#plisthead A.edit:active {
+  background-color: #bbf;
+  border: 1px #cce inset;
+  color: #335;
+}

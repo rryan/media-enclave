@@ -1,0 +1,93 @@
+BODY {
+  background-color: #fff;
+  color: #000;
+  font-family: "Times New Roman", "Times", serif;
+  font-size: 14px;
+  margin: 11px 27px 0px;
+}
+
+P { text-align: center; }
+
+P.warning {
+  margin: 40px auto 20px;
+  text-align: center;
+}
+
+P.warning SPAN {
+  background-color: #fcc;
+  border: 1px #bbb solid;
+  padding: 3px 10px;
+}
+
+TT {
+  font-family: "Andale Mono", monospace;
+  font-size: 0.9em;
+}
+
+DIV.title {
+  font-family: "Georgia", "Times New Roman", "Times", serif;
+  font-size: 28px;
+  text-align: center;
+}           
+
+DIV.title A {
+  color: #000;
+  text-decoration: none;
+}
+DIV.title A:active { color: #900; }
+
+DIV#header {
+  position: absolute;
+    left: 20px;
+    top: 20px;
+  width: 200px;
+}
+
+DIV.subtitle {
+  font-size: 20px;
+  margin: 10px 0px;
+  text-align: center;
+}
+
+DIV#searchbar {
+  position: absolute;
+    left: 240px;
+    top: 32px;
+}
+
+DIV.links {
+  border: 1px #bdc solid;
+  margin: 0px auto 6px;
+  padding: 2px 0px 1px;
+  text-align: center;
+  width: 370px;
+}
+
+DIV.links A {
+  color: #9ba;
+  padding: 0px 6px;
+  text-decoration: none;
+}
+
+DIV.links A:hover {
+  color: #9ad;
+  text-decoration: underline;
+}
+
+DIV.links A:active { color: #d99; }
+
+DIV#headgap { height: 90px; }
+
+DIV#login {
+  font-size: 12px;
+  position: absolute;
+    right: 20px;
+    top: 11px;
+  text-align: right;
+}
+
+DIV#copyright {
+  font-size: 12px;
+  margin: 10px;
+  text-align: center;
+}

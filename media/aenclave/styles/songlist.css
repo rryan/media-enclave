@@ -1,0 +1,335 @@
+/******************************** SONG TABLE *********************************/
+
+TABLE.data {
+  border: 1px #ddd solid;
+  border-collapse: collapse;
+  margin: 20px 0px;
+  width: 100%;
+}
+
+TABLE.data THEAD TH {
+  background-color: #aaa;
+  border: 1px #ccc solid;
+  color: #fefede;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 2px 7px;
+  text-align: left;
+}
+
+TABLE.data THEAD TH.sort {
+  cursor: pointer;
+}
+
+TABLE.data THEAD TH.sorta {
+  background-color: #808080;
+  background-image: url(/media/aenclave/images/sorta.png);
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+TABLE.data THEAD TH.sortd {
+  background-color: #808080;
+  background-image: url(/media/aenclave/images/sortd.png);
+  background-position: left top;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+TABLE.data THEAD TH.edit {
+  background-image: url(/media/aenclave/images/edit.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  width: 12px;
+}
+
+TABLE.data TBODY TR.a {}
+TABLE.data TBODY TR.b { background-color: #f2f2ff; }
+TABLE.data TBODY TR.c {
+  border-bottom: 3px #ccf double;
+}
+
+TABLE.data TBODY TD {
+  text-align: left;
+  padding: 3px 7px 4px;
+  border-right: 1px #ddd solid;
+}
+
+TABLE.data TBODY TD.r { text-align: right; }
+TABLE.data TBODY TD.c { text-align: center; }
+
+TABLE.data TBODY TD.new A {
+  background-image: url(/media/aenclave/images/new.png);
+  background-position: left center;
+  background-repeat: no-repeat;
+  padding-left: 30px;
+}
+
+TABLE.data TBODY TD.edit {
+  background-image: url(/media/aenclave/images/edit.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  width: 12px;
+}
+
+TABLE.data TBODY TD.done {
+  background-image: url(/media/aenclave/images/ok.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  width: 12px;
+}
+
+TABLE.data TBODY TD.error {
+  background-image: url(/media/aenclave/images/cancel.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  width: 12px;
+}
+
+TABLE.data TBODY TD A {
+  color: #000;
+  text-decoration: none;
+}
+TABLE.data TBODY TD A:hover {
+  color: #00f;
+  text-decoration: underline;
+}
+TABLE.data TBODY TD A:active { color: #f00; }
+
+TABLE.data TBODY TD A.queue { color: #00c; }
+TABLE.data TBODY TD A.queue:hover { color: #33f; }
+TABLE.data TBODY TD A.queue:active { color: #f00; }
+
+TABLE.data TBODY TD A.recent { color: #858; }
+TABLE.data TBODY TD A.recent:hover { color: #639; }
+TABLE.data TBODY TD A.recent:active { color: #f00; }
+
+TABLE.data TBODY TD IMG {
+  vertical-align: middle;
+}
+
+TABLE.data TBODY TD INPUT.text {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+}
+
+/******************************** ACTIONS BAR ********************************/
+
+DIV#actions {
+  background-color: #ddd;
+  border-top: 1px #aaa solid;
+  font-size: 12px;
+  padding: 5px 0 0 20px;
+  position: fixed;
+    left: 0;
+    bottom: 0;
+  text-align: left;
+  width: 100%;
+  height: 30px;
+  z-index: 2;
+}
+
+DIV#actions A {
+  background-color: #eef;
+  border: 1px #cce outset;
+  color: #779;
+  cursor: pointer;
+  font-size: 10pt;
+  height: 12px;
+  margin: 0px 5px;
+  padding: 2px 5px 2px 19px;
+  position: relative;
+    top: 4px;
+  text-decoration: none;
+  vertical-align: middle;
+}
+DIV#actions A:hover {
+  background-color: #edf;
+  color: #557;
+}
+DIV#actions A:active {
+  background-color: #bbf;
+  border: 1px #cce inset;
+  color: #335;
+}
+
+DIV#actions A.queue {
+  background: #eef url(/media/aenclave/images/speaker.png)
+              4px center no-repeat;
+}
+DIV#actions A.create {
+  background: #eef url(/media/aenclave/images/create.png) 4px center no-repeat;
+}
+DIV#actions A.delete {
+  background: #eef url(/media/aenclave/images/delete.png) 4px center no-repeat;
+}
+DIV#actions A.add {
+  background: #eef url(/media/aenclave/images/add.png) 4px center no-repeat;
+}
+DIV#actions A.remove {
+  background: #eef url(/media/aenclave/images/remove.png) 4px center no-repeat;
+}
+DIV#actions A.email {
+  background: #eef url(/media/aenclave/images/email.png) 4px center no-repeat;
+}
+DIV#actions A.history {
+  background: #eef url(/media/aenclave/images/history.png)
+              4px center no-repeat;
+}
+
+DIV#actionsgap { height: 30px; }
+
+/****************************** SUB-ACTIONS BAR ******************************/
+
+DIV#subactions {
+  background-color: #ccc;
+  border-top: 1px #888 solid;
+  font-size: 12px;
+  padding: 5px 0 0 20px;
+  position: fixed;
+    left: 0;
+    bottom: 0;
+  text-align: left;
+  width: 100%;
+  height: 30px;
+  z-index: 1;
+}
+
+DIV#subactions A {
+  border: 1px #cce outset;
+  color: #779;
+  cursor: pointer;
+  font-size: 10pt;
+  height: 12px;
+  margin: 0px 5px;
+  padding: 2px 5px 2px 19px;
+  position: relative;
+    top: 3px;
+  text-decoration: none;
+  vertical-align: middle;
+}
+DIV#subactions A:hover {
+  background-color: #edf;
+  color: #557;
+}
+DIV#subactions A:active {
+  background-color: #bbf;
+  border: 1px #cce inset;
+  color: #335;
+}
+
+DIV#subactions .ok {
+  background: #eef url(/media/aenclave/images/ok.png) 4px center no-repeat;
+}
+DIV#subactions .cancel {
+  background: #eef url(/media/aenclave/images/cancel.png) 4px center no-repeat;
+}
+
+DIV#subactions INPUT {
+  position: relative;
+    bottom: 3px;
+  vertical-align: middle;
+}
+DIV#subactions SELECT {
+  position: relative;
+    bottom: 3px;
+  vertical-align: middle;
+}
+
+DIV#subactions SPAN {
+  font-size: 10pt;
+  height: 12px;
+  margin: 0px 10px 0px 0px;
+  padding: 2px 1px;
+  position: relative;
+    top: 3px;
+  vertical-align: middle;
+}
+
+/******************************** CONTROL BOX ********************************/
+
+DIV#controls {
+  background-color: #ddd;
+  border-top: 1px #aaa solid;
+  border-left: 1px #aaa solid;
+  height: 60px;
+  position: fixed;
+    right: 0;
+    bottom: 0;
+  text-align: right;
+  width: 180px;
+  z-index: 3;
+}
+
+DIV#controls A {
+  background-color: #eee;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border: 1px #cce outset;
+  cursor: pointer;
+  display: block;
+  font-size: 1px;
+  height: 26px;
+  position: absolute;
+    top: 7px;
+  text-decoration: none;
+  width: 50px;
+}
+
+DIV#controls A:hover {
+  background-color: #ddf;
+}
+
+DIV#controls A:active {
+  background-color: #eaf;
+  border: 1px #cce inset;
+}
+
+DIV#controls A#play {
+  background-image: url(/media/aenclave/images/play.png);
+  left: 10px;
+}
+DIV#controls A#pause {
+  background-image: url(/media/aenclave/images/pause.png);
+  left: 10px;
+}
+DIV#controls A#skip {
+  background-image: url(/media/aenclave/images/skip.png);
+  left: 65px;
+}
+DIV#controls A#shuffle {
+  background-image: url(/media/aenclave/images/shuffle.png);
+  left: 120px;
+}
+
+DIV#controls DIV {
+  background-color: #dfd;
+  border: 1px #555 inset;
+  padding: 0px;
+  position: absolute;
+    left: 10px;
+    top: 42px;
+  width: 160px;
+  height: 8px;
+}
+
+DIV#controls DIV DIV {
+  background-color: #8b8;
+  border: none;
+  height: 8px;
+  margin: 0px;
+  position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+DIV#controls DIV DIV.dq {
+  background-color: #b88;
+  width: 160px;
+}
+
+/*****************************************************************************/

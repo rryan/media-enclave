@@ -1,0 +1,3 @@
+{% load aenclave %}{% comment %}
+This template is used for sending error responses for JSON requests.
+{% endcomment %}{"error":"{{error_message|json_escape}}"}

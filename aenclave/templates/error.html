@@ -1,0 +1,9 @@
+{% extends "header_base.html" %}
+
+{% block title %}{{block.super}} {{error_title|default:"Error"}}{% endblock %}
+
+{% block header %}{{error_title|default:"Error"}}{% endblock %}
+
+{% block content %}
+ <p>{{error_message|escape|default:"Oops!&nbsp; You bwoke it."}}</p>
+{% endblock %}

@@ -1,0 +1,17 @@
+Actions:
+* Email link to song
++ Playlist renaming and ceding
+- Song deletion requests
+- Play history
+
+Features:
+* SFTP Upload
+* DL
+* Certs
+- Smart playlists
+- Paged search results?
+
+Extra:
++ Make auto-update work in Firefox
+- Make control buttons be As (w/ background images) instead of IMGs
+- Make everything reload-safe

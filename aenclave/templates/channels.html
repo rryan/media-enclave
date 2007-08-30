@@ -1,0 +1,49 @@
+{% extends "songlist_base.html" %}
+{% load humanize %}
+
+{% block title %}{{block.super}} Channels{% endblock %}
+
+{% block header %}Channels{% endblock %}
+
+{% block scripts %}{{block.super}}
+ <script type="text/javascript" src="/media/aenclave/scripts/channels.js"></script>
+ <script type="text/javascript">
+  window.onload = function() {
+    channels.init_time_bar({
+     playing: {{playing|yesno:"true,false"}},
+     skipping: {{skipping|yesno:"true,false"}},{% if skipping %}
+     elapsed_time: 0,
+     total_time: 1,{% else %}
+     elapsed_time: {{elapsed_time}},
+     total_time: {% if current_song %}{{current_song.time}}{% else %}1{% endif %},{% endif %}
+     timestamp: {{channel.last_touched_timestamp}}
+    });
+  }
+ </script>{% endblock %}
+
+{% block presonglist %}
+ <div id=debugz></div>
+{% if song_list %}
+ <p>There {{song_list|length|pluralize:"is,are"}} {{song_list|length|apnumber|intcomma}} song{{song_list|length|pluralize}} in the queue.</p>
+{% else %}
+ <p>No songs are in the queue.</p>
+{% endif %}
+{% endblock %}
+
+{% block actions %}{% if song_list %}
+  <a href="javascript:channels.dequeue();" class=remove>Dequeue selected songs</a>{% endif %}{{block.super}}{% if current_song and not skipping %}
+  <a href="javascript:channels.askemail();" class=email>Email link to song&hellip;</a>{% endif %}
+  <a href="javascript:channels.recent();" class=history>Recently played</a>{% endblock %}
+
+{% block postcopyright %}{{block.super}}{% if song_list %}
+ <form name=dequeueform action="{% url aenclave-dequeue-songs %}" method=POST>
+  <input type=hidden name=indices>
+ </form>{% endif %}{% if current_song or skipping %}
+ <div id=controls>{% if playing %}
+  <a id="pause" href="javascript:channels.pause();">&nbsp;</a>{% else %}
+  <a id="play" href="javascript:channels.play();">&nbsp;</a>{% endif %}
+  <a id="skip" href="javascript:channels.skip();">&nbsp;</a>
+  <a id="shuffle" href="javascript:channels.shuffle();">&nbsp;</a>
+  <div><div id=timebar {% if skipping %}class=dq{% else %}style="width:{% widthratio elapsed_time current_song.time 160 %}px;"{% endif %}></div></div>
+ </div>{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "header_base.html" %}
+{% load aenclave %}
+{% load humanize %}
+
+{% block title %}{{block.super}} Artists ({{letter}}){% endblock %}
+
+{% block header %}Artists ({{letter}}){% endblock %}
+
+{% block styles %}{{block.super}}
+ <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/browse.css"/>{% endblock %}
+
+{% block content %}{% if artists %}
+ <p>The database contains {{artists|length|apnumber|intcomma}} artist{{artists|length|pluralize}} starting with {% ifequal letter "#" %}a non-letter{% else %}the letter &ldquo;{{letter}}&rdquo;{% endifequal %}:</p>
+ <table class=matches><tbody>{% for group in artists|groups_of:3 %}
+  <tr>{% for artist in group %}
+   <td>{% if artist %}<a href="{% url aenclave-artist artist|urlencode %}">{{artist|escape}}</a>{% endif %}</td>{% endfor %}
+  </tr>{% endfor %}
+ </tbody></table>{% else %}
+ <p>The database contains no artists starting with {% ifequal letter "#" %}a non-letter{% else %}the letter &ldquo;{{letter}}&rdquo;{% endifequal %}.</p>{% endif %}
+{% endblock %}

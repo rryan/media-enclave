@@ -1,0 +1,4 @@
+{% load aenclave %}[{% for playlist in playlist_list %}{% if not forloop.first %},
+ {% endif %}{"pid":{{playlist.id}},
+  "owner":"{{playlist.owner.username|json_escape}}",
+  "name":"{{playlist.name|json_escape}}"}{% endfor %}]

@@ -97,6 +97,8 @@ INSTALLED_APPS = (
     'django.contrib.humanize',  # lets us use a few extra template filters
     'django.contrib.sessions',  # handles user logins
     'menclave.aenclave',  # Audio Enclave
+    'menclave.genclave',  # Gaming Enclave
+    #'menclave.penclave',  # Pyrotechnics Enclave
     'menclave.venclave',  # Video Enclave
 )
 

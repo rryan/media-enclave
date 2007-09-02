@@ -25,7 +25,7 @@ class VisibleManager(models.Manager):
 
 
 class Song(models.Model):
-    def __str__(self): return self.title.encode('ascii', 'replace')
+    def __unicode__(self): return self.title
 
     #--------------------------------- Title ---------------------------------#
 
@@ -77,8 +77,8 @@ class Song(models.Model):
 
     #------------------------------- Album Art -------------------------------#
 
-    #album_art = ImageField(upload_to='album_art',
-    #                       blank=True, null=True)
+    album_art = models.ImageField(upload_to='aenclave/songs/%Y/%m/%d/',
+                                  blank=True, null=True)
 
     #--------------------------------- Score ---------------------------------#
 
@@ -112,9 +112,7 @@ class Song(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('django.views.generic.list_detail.object_detail',
-                (str(self.id),), {'queryset': Song.objects,
-                                  'template_name': 'song_detail.html'})
+        return ('aenclave-song', (str(self.id),))
 
     def queue_touch(self):
         self.last_queued = datetime.datetime.now()
@@ -127,7 +125,7 @@ class Song(models.Model):
 #-----------------------------------------------------------------------------#
 
 class Playlist(models.Model):
-    def __str__(self): return self.name.encode('ascii', 'replace')
+    def __unicode__(self): return self.name
 
     #-------------------------------- Fields ---------------------------------#
 
@@ -164,7 +162,7 @@ class Playlist(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('menclave.aenclave.views.playlist_detail', (str(self.id),))
+        return ('aenclave-playlist', (str(self.id),))
 
     def can_cede(self, user):
         return (user == self.owner)
@@ -178,7 +176,7 @@ class Playlist(models.Model):
 #-----------------------------------------------------------------------------#
 
 class Channel(models.Model):
-    def __str__(self): return self.name.encode('ascii', 'replace')
+    def __unicode__(self): return self.name
 
     #-------------------------------- Fields ---------------------------------#
 
@@ -210,7 +208,7 @@ class Channel(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('menclave.aenclave.views.channel_detail', (str(self.id),))
+        return ('aenclave-channel', (str(self.id),))
 
     @classmethod
     def default(cls): return cls.objects.get(pk=1)

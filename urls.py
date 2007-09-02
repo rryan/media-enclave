@@ -4,6 +4,7 @@ from django.conf import settings
 urlpatterns = patterns(
     '',
     (r'^audio/', include('menclave.aenclave.urls')),
+    (r'^games/', include('menclave.genclave.urls')),
     (r'^video/', include('menclave.venclave.urls')),
     (r'^admin/', include('django.contrib.admin.urls')),
 )

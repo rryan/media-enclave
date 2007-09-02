@@ -62,9 +62,10 @@ urlpatterns = patterns(
     (r'^browse/artists/(?P<letter>[a-zA-Z~#@])/$',
      'menclave.aenclave.views.browse_artists'),
 
-    (r'^songs/(?P<object_id>\d+)/$',
-     'django.views.generic.list_detail.object_detail',
-     {'queryset': Song.objects, 'template_name': 'song_detail.html'}),
+    url(r'^songs/(?P<object_id>\d+)/$',
+        'django.views.generic.list_detail.object_detail',
+        {'queryset': Song.objects, 'template_name': 'song_detail.html'},
+        name='aenclave-song'),
 
     url(r'^albums/(?P<album_name>.+)/$',
         'menclave.aenclave.views.view_album',
@@ -98,8 +99,9 @@ urlpatterns = patterns(
         'menclave.aenclave.views.all_playlists',
         name='aenclave-playlists-home'),
 
-    (r'^playlists/normal/(?P<playlist_id>\d+)/$',
-     'menclave.aenclave.views.playlist_detail'),
+    url(r'^playlists/normal/(?P<playlist_id>\d+)/$',
+        'menclave.aenclave.views.playlist_detail',
+        name='aenclave-playlist'),
 
     (r'^playlists/user/(?P<username>.+)/$',
      'menclave.aenclave.views.user_playlists'),

@@ -1,4 +1,11 @@
-# Django settings for menclave project.
+## Template file for the Django settings for menclave project.
+##
+## Copy this file to settings.py, then customize it to fit your local
+## installation. Comments beginning with "CUSTOMIZE ME" are mandatory
+## customizations.
+##
+## DON'T RE-ADD SETTINGS.PY TO THE REPOSITORY!
+## Not everybody has the same settings.
 
 #================================= DEBUGGING =================================#
 
@@ -16,7 +23,9 @@ MANAGERS = ADMINS
 # Subject prefix for emails sent out to ADMINS or MANAGERS.
 EMAIL_SUBJECT_PREFIX = '[NR3] '
 
-HOST_NAME = "reverend.mit.edu:8000"
+### CUSTOMIZE ME: the hostname of the server running your media
+### enclave install.
+HOST_NAME = "www.example.com:port"
 
 #================================= SESSIONS ==================================#
 
@@ -27,7 +36,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Don't leave cookies lying around.
 #================================= DATABASE ==================================#
 
 DATABASE_ENGINE = 'sqlite3'  # 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = '/var/media-enclave/database'
+## CUSTOMIZE ME
+DATABASE_NAME = '/path/to/database'
   # Or path to database file if using sqlite3.
 DATABASE_USER = ''      # Not used with sqlite3.
 DATABASE_PASSWORD = ''  # Not used with sqlite3.
@@ -51,9 +61,10 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = False
 
+## CUSTOMIZE ME
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/var/media-enclave/media/'
+MEDIA_ROOT = '/path/to/media'
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"

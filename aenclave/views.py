@@ -5,10 +5,12 @@ import itertools
 from math import ceil as ceiling
 import re
 import urllib
+import os
+
 
 from django.conf import settings
 from django.contrib import auth
-from django.core.mail import send_mail
+from django.core.mail import send_mail, mail_admins
 from django.core.urlresolvers import reverse
 from django.db.models.query import Q, QNot
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -667,6 +669,30 @@ def delete_playlist(request):
 
 #---------------------------------- Upload -----------------------------------#
 
+def process_upload_song(filename):
+    # Save the song into the database -- we'll fix the tags in a moment.
+    song = Song(track=0, time=0)
+
+    # read the song and push the data
+    fhandle = open(filename,'r')
+    content = fhandle.read()
+    song.save_audio_file(filename, content)
+    fhandle.close()
+    
+    # Now, open up the MP3 file and save the tag data into the database.
+    audio = MP3(song.get_audio_filename(), ID3=EasyID3)
+    try: song.title = audio['title'][0]
+    except (KeyError, IndexError): song.title = 'Unnamed Song'
+    try: song.album = audio['album'][0]
+    except (KeyError, IndexError): song.album = ''
+    try: song.artist = audio['artist'][0]
+    except (KeyError, IndexError): song.artist = ''
+    try: song.track = int(audio['tracknumber'][0].split('/')[0])
+    except (KeyError, IndexError, ValueError): song.track = 0
+    song.time = int(ceiling(audio.info.length))
+    song.save()
+    return [song, audio]
+
 def upload_http(request):
     # If the user is not logged in, redirect to the main upload page (which
     # will then tell the user to log in).
@@ -677,7 +703,7 @@ def upload_http(request):
     if audio is None:
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
     elif (audio['content-type'] != 'audio/mpeg' or
-          not audio['filename'].endswith('.mp3')):
+          not audio['filename'].lower().endswith('.mp3')):
         return html_error(request, 'You may only upload MP3 files.',
                           'HTTP Upload')
     # Save the song into the database -- we'll fix the tags in a moment.
@@ -696,17 +722,43 @@ def upload_http(request):
     song.time = int(ceiling(audio.info.length))
     song.save()
     # Let the user know what's going on.
+
+    #[song,audio] = process_upload_song(audio['filename'], audio['content']
+    
     return render_to_response('upload_http.html',
                               {'song_list': [song],
                                'sketchy_upload': audio.info.sketchy},
                               context_instance=RequestContext(request))
+
+SFTP_UPLOAD_DIR = '/var/nicerack/sftp-upload'
 
 def upload_sftp(request):
     # If the user is not logged in, redirect to the main upload page (which
     # will then tell the user to log in).
     if not request.user.is_authenticated():
         return HttpResponseRedirect('/audio/upload/')
-    raise Http404  # TODO write this
+
+    song_list = []
+    sketchy = False
+    
+    # Figure out available MP3's in SFTP upload DIR
+    for root, dirs, files in os.walk(SFTP_UPLOAD_DIR):
+        for filename in files:
+            if filename.lower().endswith('.mp3'):
+                full_path = root + '/' + filename
+                [song,audio] = process_upload_song(full_path)
+                song_list.append(song)
+
+                if audio.info.sketchy:
+                    sketchy = True
+
+                #remove the file from the sftp-upload directory
+                os.unlink(full_path)
+            
+    return render_to_response('upload_sftp.html',
+                              {'song_list': song_list,
+                               'sketchy_upload': sketchy},
+                              context_instance=RequestContext(request))
 
 #--------------------------------- Roulette ----------------------------------#
 
@@ -715,6 +767,34 @@ def roulette(request):
     queryset = Song.visibles.order_by('?')[:6]
     return render_to_response('roulette.html', {'song_list':queryset},
                               context_instance=RequestContext(request))
+
+#------------------------------- Delete Requests -----------------------------#
+
+
+def submit_delete_requests(request):
+    form = request.POST
+    # Add the songs and redirect to the detail page for this playlist.
+
+    message = 'The following delete request(s) were filed'
+    if request.user.is_authenticated():
+        subject = 'Delete Request from ' + request.user.username
+        message += ' by ' + request.user.username + ':\n'
+    else:
+        subjetc = 'Delete Request from Anonymous'
+        message += ' by an unregistered user:\n'
+
+    song_list = []
+
+    for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
+        song_string = ' * %(id) - %(artist) - %(album) - %(title)\n' % {'id': song.id, 'artist': song.artist, 'album': song.album, 'title': song.title}
+        message += song_string
+                   
+        song_list.append(song)
+
+    mail_admins(subject,message)
+
+    return render_to_response('delete_requested.html', {'song_list': song_list})
+
 
 #--------------------------------- XML Hooks ---------------------------------#
 

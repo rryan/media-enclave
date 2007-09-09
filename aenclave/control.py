@@ -17,7 +17,7 @@ __all__ = ('ControlError', 'Controller', 'DEQUEUE_NOISES_DIR')
 
 #=============================================================================#
 
-DEQUEUE_NOISES_DIR = '/home/mdsteele/dequeue/'
+DEQUEUE_NOISES_DIR = '/var/nicerack/dequeue'
 
 class ControlError(Exception):
     """The exception class for music control-related errors."""

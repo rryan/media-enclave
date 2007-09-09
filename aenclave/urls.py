@@ -144,6 +144,12 @@ urlpatterns = patterns(
         'menclave.aenclave.views.roulette',
         name='aenclave-roulette'),
 
+    # Delete Requests
+
+    url(r'^delete-songs/$',
+        'menclave.aenclave.views.submit_delete_requests',
+        name='aenclave-delete-songs'),
+
     # XML hooks
 
     (r'^xml/queue/$',

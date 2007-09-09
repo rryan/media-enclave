@@ -163,6 +163,22 @@ var songlist = {
     document.createform.submit();
   },
 
+  askdelete: function() {
+    with (songlist) {
+      start_subaction();
+      add_subaction_label("Submit a delete request for the selected songs?");
+      add_subaction_button("ok", "songlist.okdelete();", "Yes");
+      add_subaction_cancel_button();
+    }
+  },
+
+  okdelete: function() {
+    // WTF deleteform is the name of a hidden delete form on the page
+    document.deleteform.ids.value = songlist.gather_ids(false);
+    songlist.end_subaction();
+    document.deleteform.submit();
+  },
+
   askadd: function() {
     // We need to figure out which playlists the user is allowed to add to so
     // that we can list those in a dropdown menu.  Let's ask the server.

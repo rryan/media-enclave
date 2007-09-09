@@ -103,32 +103,80 @@ def Qu(field, op, value): return Q(**{field + '__' + op: value})
 
 #------------------------------- Login/Logout --------------------------------#
 
+SSL_AUTH_PASSWORD = 'password' # push to a settings file, encourage end user to change it
+
 def user_debug(request):
     return render_to_response('user_debug.html',
                               context_instance=RequestContext(request))
 
+def login_with_ssl(request):
+    ssl_email = request.META.get('HTTP_SSL_CLIENT_S_DN_EMAIL', '')
+
+    matcher = re.compile('(.+)@MIT.EDU')
+
+    m = matcher.match(ssl_email)
+    if m is None:
+        return None
+    
+    kerberos = m.group(1)
+
+    if kerberos is None:
+        return None
+        
+    user = auth.authenticate(username=kerberos,password=SSL_AUTH_PASSWORD)
+
+    # user doesn't exist, so we need to create a new user
+    if user is None:
+        new_user = auth.models.User.objects.create_user(kerberos, ssl_email, SSL_AUTH_PASSWORD)
+        new_user.save()
+
+        # we have to do this instead of returning new_user because it hasn't been validated
+        # as authenticated yet, it's just the raw user object from the database
+        user = auth.authenticate(username=kerberos, password=SSL_AUTH_PASSWORD)
+        
+    return user
+
 def login(request):
     form = request.POST
-    # If the user isn't trying to log in, then just display the login page.
-    if not form.get('login', False):
-        return render_to_response('login.html',
-                                  {'redirect_to':request.GET.get('goto',None)},
-                                  context_instance=RequestContext(request))
-    # Check if the username and password are correct.
-    user = auth.authenticate(username=form.get('username',''),
-                             password=form.get('password',''))
-    # If the username/password are invalid, tell the user to try again.
-    if user is None: return render_to_response(
-        'login.html',
-        {'error_message':'Invalid username/password.',
-         'redirect_to':form.get('goto', None)},
-        context_instance=RequestContext(request))
+
+    ssl_verify = request.META.get('HTTP_SSL_CLIENT_VERIFY', False)
+    if ssl_verify == 'SUCCESS':
+        ssl_verify = True
+    else:
+        ssl_verify = False
+        
+    # If the user authenticated with SSL, then try to log them in with their credentials
+    if ssl_verify:
+        user = login_with_ssl(request)        
+    # Otherwise, treat this like a text login and show the login page if necessary
+    else:
+        # If the user isn't trying to log in, then just display the login page.
+        if not form.get('login', False):
+            return render_to_response('login.html',
+                                      {'redirect_to':request.GET.get('goto',None)},
+                                      context_instance=RequestContext(request))
+        # Check if the username and password are correct.
+        user = auth.authenticate(username=form.get('username',''),
+                                 password=form.get('password',''))
+
+    # If the username/password are invalid or SSL authentication failed tell the user to try again.
+    if user is None:
+        error_message = 'Invalid username/password.'
+        if ssl_verify:
+            error_message = 'SSL authentication failed. Use text-based authentication, or contact an administrator.'
+    
+        return render_to_response(
+            'login.html',
+            {'error_message': error_message,
+             'redirect_to':form.get('goto', None)},
+            context_instance=RequestContext(request))
     # If the user account is disabled, then no dice.
     elif not user.is_active: return render_to_response(
         'login.html',
         {'error_message':'The user account for <tt>%s</tt> has been disabled.'%
          user.username, 'redirect_to':form.get('goto', None)},
         context_instance=RequestContext(request))
+
     # Otherwise, we're good to go, so log the user in.
     auth.login(request, user)
     return HttpResponseRedirect(request.POST.get('goto','/audio/'))    

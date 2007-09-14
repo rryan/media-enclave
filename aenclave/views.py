@@ -786,12 +786,15 @@ def submit_delete_requests(request):
     song_list = []
 
     for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
-        song_string = ' * %(id) - %(artist) - %(album) - %(title)\n' % {'id': song.id, 'artist': song.artist, 'album': song.album, 'title': song.title}
+        song_string = ' * id:' + str(song.id) + ' - ' + song.artist + ' - ' + song.album + ' - ' + song.title + '\n'
+        #%(id) - %(artist) - %(album) - %(title)\n' \
+        #% {'id': str(song.id), 'artist': song.artist, 'album': song.album, 'title': song.title}
         message += song_string
-                   
         song_list.append(song)
 
-    mail_admins(subject,message)
+    # WTF mail_admins doesn't seem to work
+    #mail_admins(subject,message,False)
+    send_mail(subject,message,'nr@nice-rack.mit.edu',['nice-write@mit.edu', 'rryan@mit.edu'], False)
 
     return render_to_response('delete_requested.html', {'song_list': song_list})
 

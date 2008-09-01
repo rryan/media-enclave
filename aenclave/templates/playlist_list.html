@@ -5,11 +5,12 @@
 {% block header %}Playlists{% endblock %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/songlist.css">
+ <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/songlist.css"/>
 {% endblock %}
 
 {% block scripts %}{{block.super}}
- <script type="text/javascript" src="/media/aenclave/scripts/songlist.js"/>{% endblock %}
+<script type="text/javascript" src="/media/aenclave/scripts/songlist.js"></script>
+{% endblock %}
 
 {% block content %}
  {% if playlist_list %}

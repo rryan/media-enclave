@@ -87,7 +87,7 @@ class Controller(object):
             #     zero if called right after starting playback, but this
             #     back-up code seems to work in that situation.
             if current == 0:
-                plist = self.client.playlist_list()
+                plist = self.client.playlist_list_entries()
                 current = plist[self.client.playlist_current_pos()]
             # Get the primary database key of the corresponding song object.
             info = self.client.medialib_get_info(current)
@@ -106,7 +106,7 @@ class Controller(object):
         if self.is_stopped(): return []
         try:
             # Get the list of songs in the playlist.
-            plist = self.client.playlist_list()
+            plist = self.client.playlist_list_entries()
             # If the list is empty, return the empty list.
             if len(plist) == 0: return []
             # Otherwise, chop off everything up through the current song.
@@ -127,7 +127,7 @@ class Controller(object):
         if self.is_stopped(): return 0
         try:
             # Get the length of the playlist.
-            length = len(self.client.playlist_list())
+            length = len(self.client.playlist_list_entries())
             # If the playlist is empty, return zero.
             if length == 0: return 0
             # Otherwise, return the length not counting the current song.
@@ -147,7 +147,7 @@ class Controller(object):
             if self.is_stopped(): return 0
             # Figure out which songs haven't finished playing yet, including
             # the song that is currently playing.
-            plist = self.client.playlist_list()
+            plist = self.client.playlist_list_entries()
             if len(plist) == 0: return 0
             plist = plist[self.client.playlist_current_pos():]
         except XMMSError:
@@ -217,7 +217,7 @@ class Controller(object):
             # the end of the playlist, we have to use playlist_add() instead of
             # playlist_insert().
             nextpos = self.client.playlist_current_pos() + 1
-            if nextpos >= len(self.client.playlist_list()):
+            if nextpos >= len(self.client.playlist_list_entries()):
                 self.client.playlist_add_id(ID)
             else: self.client.playlist_insert_id(nextpos, ID)
         except (OSError, XMMSError):
@@ -242,7 +242,7 @@ class Controller(object):
         if self.is_stopped(): return
         try:
             # Get the list of songs in the playlist.
-            plist = self.client.playlist_list()
+            plist = self.client.playlist_list_entries()
             # If the list is empty, do nothing.
             if len(plist) == 0: return
             # Get the current position.
@@ -317,7 +317,7 @@ class Controller(object):
         # index is valid.
         try:
             base = self.client.playlist_current_pos() + 1
-            length = len(self.client.playlist_list())
+            length = len(self.client.playlist_list_entries())
         except XMMSError:
             _catch()
             raise ControlError("The contents of the queue could not be read.")
@@ -351,7 +351,7 @@ class Controller(object):
         # index is valid.
         try:
             base = self.client.playlist_current_pos() + 1
-            length = len(self.client.playlist_list())
+            length = len(self.client.playlist_list_entries())
         except XMMSError:
             _catch()
             raise ControlError("The contents of the queue could not be read.")

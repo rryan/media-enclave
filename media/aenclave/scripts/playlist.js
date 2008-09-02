@@ -3,14 +3,14 @@
 var playlist = {
 
   edit: function() {
-    
+
   },
 
   remove: function() {
     var ids = songlist.gather_ids(true); // true -> remove nothing if nothing
     if (ids.length > 0) {                //         is selected
-      document.removeform.ids.value = ids;
-      document.removeform.submit();
+      document.forms.removeform.ids.value = ids;
+      document.forms.removeform.submit();
     }
   },
 
@@ -25,7 +25,7 @@ var playlist = {
 
   okdel: function() {
     songlist.end_subaction();
-    document.deleteform.submit();
+    document.forms.playlistdeleteform.submit();
   }
 
 };

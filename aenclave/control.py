@@ -207,30 +207,39 @@ class Controller(object):
             # Pick a random dequeue noise and get its path.
             deq = random.choice(os.listdir(DEQUEUE_NOISES_DIR))
             deq = 'file://' + os.path.join(DEQUEUE_NOISES_DIR, deq)
-            # Have XMMS2 import the dequeue noise data.
-            self.client.medialib_add_entry(deq)
-            # Have XMMS2 remember that this is a dequeue noise.
-            ID = self.client.medialib_get_id(deq)
-            self.client.medialib_property_set(ID, 'pk', 'DQ', 'aenclave')
-            # Insert the dequeue noise just after the current song.  We can't
-            # insert a song beyond the length of the playlist, so if we're at
-            # the end of the playlist, we have to use playlist_add() instead of
-            # playlist_insert().
-            nextpos = self.client.playlist_current_pos() + 1
-            if nextpos >= len(self.client.playlist_list_entries()):
-                self.client.playlist_add_id(ID)
-            else: self.client.playlist_insert_id(nextpos, ID)
-        except (OSError, XMMSError):
-            # If any of this fails, just don't play a dequeue noise; there's no
-            # need to raise an error.
+        except OSError:
+            # We can't find the files for some reason.
             _catch()
+        else:
+            try:
+                # Have XMMS2 import the dequeue noise data.
+                self.client.medialib_add_entry(deq)
+                # Have XMMS2 remember that this is a dequeue noise.
+                ID = self.client.medialib_get_id(deq)
+                self.client.medialib_property_set(ID, 'pk', 'DQ', 'aenclave')
+                # Insert the dequeue noise just after the current song.  We
+                # can't insert a song beyond the length of the playlist, so if
+                # we're at the end of the playlist, we have to use
+                # playlist_add() instead of playlist_insert().
+                nextpos = self.client.playlist_current_pos() + 1
+                if nextpos >= len(self.client.playlist_list_entries()):
+                    self.client.playlist_add_id(ID)
+                else: self.client.playlist_insert_id(nextpos, ID)
+            except XMMSError:
+                # XMMS2 couldn't queue the song for some reason, just let it
+                # slide.
+                _catch()
         # Now skip the current song, thus going on to play the dequeue noise.
         # This is done by telling the playlist to prepare to move one song
         # forward relative to the current song, and then "tickling" the
         # playback.
         try:
-            self.client.playlist_set_next_rel(1)
-            self.client.playback_tickle()
+            nextpos = self.client.playlist_current_pos() + 1
+            if nextpos >= len(self.client.playlist_list_entries()):
+                self.client.playback_stop()
+            else:
+                self.client.playlist_set_next_rel(1)
+                self.client.playback_tickle()
         except XMMSError:
             _catch()
             raise ControlError("The song could not be dequeued.")
@@ -249,7 +258,7 @@ class Controller(object):
             pos = self.client.playlist_current_pos()
             # Dequeue all upcoming songs.
             for index in xrange(len(plist)-1, pos, -1):
-                self.client.playlist_remove(index)
+                self.client.playlist_remove_entry(index)
             # Chop off everything up through the current song.
             plist = plist[pos+1:]
             # Shuffle it up!
@@ -306,8 +315,9 @@ class Controller(object):
                 raise ControlError("The queue could not be started.")
         # Remember that this channel has been touched.
         self.channel.touch()
-        
+
     def remove_song(self, index):
+        print index
         self.remove_songs([index])
 
     def remove_songs(self, indices):
@@ -334,8 +344,8 @@ class Controller(object):
                           (index, length))
                 return
             # Remove the song from the playlist.
-            try: self.client.playlist_remove(index)
-            except XMMSError:
+            try: self.client.playlist_remove_entry(index)
+            except XMMSError, e:
                 _catch()
                 raise ControlError("The song could not be dequeued.")
         # Remember that this channel has been touched.

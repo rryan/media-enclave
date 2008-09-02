@@ -9,8 +9,8 @@ var channels = {
   dequeue: function() {
     var indices = songlist.gather_indices();
     if (indices.length > 0) {
-      document.dequeueform.indices.value = indices;
-      document.dequeueform.submit();
+      document.forms.dequeueform.indices.value = indices;
+      document.forms.dequeueform.submit();
     }
   },
 
@@ -33,13 +33,13 @@ var channels = {
                       },
                       onSuccess: function(transport, json) {
                         if ("error" in json) {
-			  songlist.error_message(json.error);
+                          songlist.error_message(json.error);
                         } else if ("success" in json) {
-			  songlist.success_message(json.success);
-			} else {
-			  songlist.error_message(
-			    "Unintelligible server response.");
-			}
+                          songlist.success_message(json.success);
+                        } else {
+                          songlist.error_message(
+                            "Unintelligible server response.");
+                        }
                       }});
   },
 
@@ -67,20 +67,20 @@ var channels = {
 
   _control_action: function(action) {
     new Ajax.Request("/audio/json/control/",
-		     {method:"post", parameters:{action:action},
-		      onFailure: function() {
-			error_message("Got no reponse from server.");
-		      },
-		      onSuccess: function(transport, json) {
-			if ("error" in json) {
-			  songlist.error_message(json.error);
-			} else if ("success" in json) {
-			  window.location.reload();
-			} else {
-			  songlist.error_message(
-			    "Unintelligible server response.");
-			}
-		      }});
+                     {method:"post", parameters:{action:action},
+                      onFailure: function() {
+                        error_message("Got no reponse from server.");
+                      },
+                      onSuccess: function(transport, json) {
+                        if ("error" in json) {
+                          songlist.error_message(json.error);
+                        } else if ("success" in json) {
+                          window.location.reload();
+                        } else {
+                          songlist.error_message(
+                            "Unintelligible server response.");
+                        }
+                      }});
   },
 
   /******************************* AUTO-UPDATE *******************************/
@@ -89,6 +89,7 @@ var channels = {
 
   init_time_bar: function(params) {
     var tbar = $('timebar');
+    if (!tbar) return;
     tbar.playing = params.playing;
     tbar.skipping = params.skipping;
     tbar.elapsed_time = params.elapsed_time;
@@ -97,16 +98,16 @@ var channels = {
     if (tbar.playing && !tbar.skipping) {
       // Increment the bar once per second.
       tbar.pe = new PeriodicalExecuter(function(pe) {
-	channels.update_elapsed_time(1 + $('timebar').elapsed_time);
+        channels.update_elapsed_time(1 + $('timebar').elapsed_time);
       }, 1);
     }
     // Sync with the server every few seconds.
     var delay = (tbar.skippping ? 5 : 10);
     setTimeout(function() {
       new Ajax.PeriodicalUpdater($('debugz'), 'update/',
-				 {method: 'post', evalScripts: true,
-				  frequency: delay,
-				  parameters: {timestamp: tbar.timestamp}});
+                                 {method: 'post', evalScripts: true,
+                                  frequency: delay,
+                                  parameters: {timestamp: tbar.timestamp}});
     }, delay * 1000);
   },
 
@@ -114,7 +115,7 @@ var channels = {
     var tbar = $('timebar');
     tbar.elapsed_time = time;
     var width = Math.min(channels.TIME_BAR_WIDTH, channels.TIME_BAR_WIDTH *
-			 tbar.elapsed_time / tbar.total_time);
+                         tbar.elapsed_time / tbar.total_time);
     tbar.style.width = width + "px";
   }
 

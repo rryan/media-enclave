@@ -30,6 +30,6 @@
   <input type=hidden name=pid value={{playlist.id}}>
   <input type=hidden name=ids>
  </form>{% endif %}{% if allow_cede %}
- <form name=deleteform action="/audio/playlists/delete/" method=POST>
+ <form name=playlistdeleteform action="/audio/playlists/delete/" method=POST>
   <input type=hidden name=pid value={{playlist.id}}>
  </form>{% endif %}{% endblock %}

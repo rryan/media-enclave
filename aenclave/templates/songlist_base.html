@@ -61,7 +61,7 @@
   <a href="javascript:songlist.askcreate();" class=create>Save as playlist&hellip;</a>
   <a href="javascript:songlist.askadd();" class=add>Add to playlist&hellip;</a>
   <a href="javascript:songlist.askdelete();" class=delete>Request for deletion</a>{% endif %}{% endblock %}
-  
+
 </div>
  <div id=subactions></div>{% if not no_queuing %}
  <form name=queueform action="{% url aenclave-queue-songs %}" method=POST>

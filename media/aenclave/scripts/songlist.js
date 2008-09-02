@@ -34,7 +34,7 @@ var songlist = {
   add_subaction_span: function(item) {
     var span = document.createElement("span");
     span.appendChild(item);
-    songlist.add_subaction_item(span);    
+    songlist.add_subaction_item(span);
   },
 
   // Add a text label to the subaction tray.
@@ -139,8 +139,8 @@ var songlist = {
   queue: function() {
     var ids = songlist.gather_ids(true); // true -> queue nothing if nothing
     if (ids.length > 0) {                //         is selected
-      document.queueform.ids.value = ids;
-      document.queueform.submit();
+      document.forms.queueform.ids.value = ids;
+      document.forms.queueform.submit();
     }
   },
 
@@ -157,10 +157,10 @@ var songlist = {
   okcreate: function() {
     var name = document.getElementById("playlistname").value;
     // WTF createform is the name of a form, not something that creates forms.
-    document.createform.name.value = name;
-    document.createform.ids.value = songlist.gather_ids(false);
+    document.forms.createform.name.value = name;
+    document.forms.createform.ids.value = songlist.gather_ids(false);
     songlist.end_subaction();
-    document.createform.submit();
+    document.forms.createform.submit();
   },
 
   askdelete: function() {
@@ -174,9 +174,9 @@ var songlist = {
 
   okdelete: function() {
     // WTF deleteform is the name of a hidden delete form on the page
-    document.deleteform.ids.value = songlist.gather_ids(false);
+    document.forms.deleteform.ids.value = songlist.gather_ids(false);
     songlist.end_subaction();
-    document.deleteform.submit();
+    document.forms.deleteform.submit();
   },
 
   askadd: function() {
@@ -189,7 +189,7 @@ var songlist = {
                       },
                       onSuccess: function(transport, json) {
                         if ("error" in json) {
-			  songlist.error_message(json.error);
+                          songlist.error_message(json.error);
                         } else songlist._make_askadd_tray(json);
                       }});
   },
@@ -221,10 +221,11 @@ var songlist = {
 
   okadd: function() {
     var select = document.getElementById("playlistid");
-    document.addform.pid.value = select.value;
-    document.addform.ids.value = songlist.gather_ids(false);
+    var addform = document.forms.addform;
+    addform.pid.value = select.value;
+    addform.ids.value = songlist.gather_ids(false);
     songlist.end_subaction();
-    document.addform.submit();
+    addform.submit();
   },
 
   /******************************* TAG EDITING *******************************/
@@ -275,7 +276,7 @@ var songlist = {
                       },
                       onSuccess: function(transport, json) {
                         if ("error" in json) {
-			  songlist.error_message(json.error);
+                          songlist.error_message(json.error);
                         } else songlist._update_edited_song(target, json);
                       }});
   },
@@ -349,11 +350,11 @@ var songlist = {
     for (var i = 0; i < cell.childNodes.length; i++) {
       var child = cell.childNodes[i];
       if (child.nodeType == Node.TEXT_NODE) {
-	text = child.nodeValue.strip();
+        text = child.nodeValue.strip();
       } else if (child.nodeType == Node.ELEMENT_NODE) {
-	if (child.tagName == "INPUT") {
-	  return String(child.value).strip();
-	} else return songlist.get_cell_text(child);
+        if (child.tagName == "INPUT") {
+          return String(child.value).strip();
+        } else return songlist.get_cell_text(child);
       }
     }
     return text;
@@ -364,44 +365,44 @@ var songlist = {
     var key;
     if (type == "int") {
       key = function(text) {
-	var value = parseInt(text, 10);
-	if (isNaN(value)) return "";
-	else return value;
+        var value = parseInt(text, 10);
+        if (isNaN(value)) return "";
+        else return value;
       };
     } else if (type == "date") {
       key = function(text) {
-	var date = new Date();
-	var dateparts = text.split(" ");
-	var timeparts;
-	if (dateparts.length == 2) {
-	  timeparts = dateparts[1].split(":");
-	  date.setHours(parseInt(timeparts[0], 10));
-	  date.setMinutes(parseInt(timeparts[1], 10));
-	  date.setSeconds(parseInt(timeparts[2], 10));
-	  if (dateparts[0] == "Today");
-	  else if (dateparts[0] == "Yesterday") {
-	    date = new Date(date - 24 * 60 * 60 * 1000);
-	  }
-	} else {
-	  date.setDate(parseInt(dateparts[0], 10));
-	  date.setMonth({Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6,
-			 Aug:7, Sep:8, Oct:9, Nov:10, Dec:11}[dateparts[1]]);
-	  date.setYear(parseInt(dateparts[2], 10));
-	  timeparts = dateparts[3].split(":");
-	}
-	date.setHours(parseInt(timeparts[0], 10));
-	date.setMinutes(parseInt(timeparts[1], 10));
-	date.setSeconds(parseInt(timeparts[2], 10));
-	return date;
+        var date = new Date();
+        var dateparts = text.split(" ");
+        var timeparts;
+        if (dateparts.length == 2) {
+          timeparts = dateparts[1].split(":");
+          date.setHours(parseInt(timeparts[0], 10));
+          date.setMinutes(parseInt(timeparts[1], 10));
+          date.setSeconds(parseInt(timeparts[2], 10));
+          if (dateparts[0] == "Today");
+          else if (dateparts[0] == "Yesterday") {
+            date = new Date(date - 24 * 60 * 60 * 1000);
+          }
+        } else {
+          date.setDate(parseInt(dateparts[0], 10));
+          date.setMonth({Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6,
+                         Aug:7, Sep:8, Oct:9, Nov:10, Dec:11}[dateparts[1]]);
+          date.setYear(parseInt(dateparts[2], 10));
+          timeparts = dateparts[3].split(":");
+        }
+        date.setHours(parseInt(timeparts[0], 10));
+        date.setMinutes(parseInt(timeparts[1], 10));
+        date.setSeconds(parseInt(timeparts[2], 10));
+        return date;
       };
     } else if (type == "time") {
       key = function(text) {
-	var parts = text.split(":");
-	var total = 0;
-	for (var i = 0; i < parts.length; i++) {
-	  total = 60 * total + parseInt(parts[i], 10);
-	}
-	return total;
+        var parts = text.split(":");
+        var total = 0;
+        for (var i = 0; i < parts.length; i++) {
+          total = 60 * total + parseInt(parts[i], 10);
+        }
+        return total;
       };
     } else {
       key = function(text) { return text; };
@@ -420,19 +421,19 @@ var songlist = {
     // Step 3: Sort the rows.
     if (reversed) {
       rows.sort(function(a, b) {
-	if (a[0] == "") return 1;
-	else if (b[0] == "") return -1;
-	else if (a[0] < b[0]) return 1;
-	else if (a[0] > b[0]) return -1;
-	else return a[1] - b[1];
+        if (a[0] == "") return 1;
+        else if (b[0] == "") return -1;
+        else if (a[0] < b[0]) return 1;
+        else if (a[0] > b[0]) return -1;
+        else return a[1] - b[1];
       });
     } else {
       rows.sort(function(a, b) {
-	if (a[0] == "") return 1;
-	else if (b[0] == "") return -1;
-	else if (a[0] < b[0]) return -1;
-	else if (a[0] > b[0]) return 1;
-	else return a[1] - b[1];
+        if (a[0] == "") return 1;
+        else if (b[0] == "") return -1;
+        else if (a[0] < b[0]) return -1;
+        else if (a[0] > b[0]) return 1;
+        else return a[1] - b[1];
       });
     }
     // Step 4: Put the rows back into the table body and recolor the rows.
@@ -447,12 +448,12 @@ var songlist = {
     for (var i = 0; i < headers.length; i++) {
       var child = headers[i];
       if (child == cell) {
-	col = i;
-	child.setAttribute("onclick", "songlist.sortd(this);");
-	child.className = "sorta";
+        col = i;
+        child.setAttribute("onclick", "songlist.sortd(this);");
+        child.className = "sorta";
       } else if (child.className == "sorta" || child.className == "sortd") {
-	child.setAttribute("onclick", "songlist.sorta(this);");
-	child.className = "sort";
+        child.setAttribute("onclick", "songlist.sorta(this);");
+        child.className = "sort";
       }
     }
     songlist.sort_rows_by(col, type, false);
@@ -465,12 +466,12 @@ var songlist = {
     for (var i = 0; i < headers.length; i++) {
       var child = headers[i];
       if (child == cell) {
-	col = i;
-	child.setAttribute("onclick", "songlist.sorta(this);");
-	child.className = "sortd";
+        col = i;
+        child.setAttribute("onclick", "songlist.sorta(this);");
+        child.className = "sortd";
       } else if (child.className == "sorta" || child.className == "sortd") {
-	child.setAttribute("onclick", "songlist.sorta(this);");
-	child.className = "sort";
+        child.setAttribute("onclick", "songlist.sorta(this);");
+        child.className = "sort";
       }
     }
     songlist.sort_rows_by(col, type, true);

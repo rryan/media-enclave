@@ -4,17 +4,15 @@ import datetime
 import itertools
 from math import ceil as ceiling
 import re
-import urllib
 import os
 
 
 from django.conf import settings
 from django.contrib import auth
 from django.core.mail import send_mail, mail_admins
-from django.core.urlresolvers import reverse
 from django.db.models.query import Q, QNot
 from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 
 from mutagen.easyid3 import EasyID3
@@ -629,7 +627,7 @@ def add_to_playlist(request):
 def remove_from_playlist(request):
     # Make sure the user is logged in.
     if not request.user.is_authenticated():
-        return hrml_error(request, 'You must <a href="/audio/login/">log '
+        return html_error(request, 'You must <a href="/audio/login/">log '
                           'in</a> to remove songs from a playlist.',
                           'Remove Songs')
     # Get the playlist to be removed from.
@@ -678,7 +676,7 @@ def process_upload_song(filename):
     content = fhandle.read()
     song.save_audio_file(filename, content)
     fhandle.close()
-    
+
     # Now, open up the MP3 file and save the tag data into the database.
     audio = MP3(song.get_audio_filename(), ID3=EasyID3)
     try: song.title = audio['title'][0]
@@ -740,7 +738,7 @@ def upload_sftp(request):
 
     song_list = []
     sketchy = False
-    
+
     # Figure out available MP3's in SFTP upload DIR
     for root, dirs, files in os.walk(SFTP_UPLOAD_DIR):
         for filename in files:
@@ -754,7 +752,7 @@ def upload_sftp(request):
 
                 #remove the file from the sftp-upload directory
                 os.unlink(full_path)
-            
+
     return render_to_response('upload_sftp.html',
                               {'song_list': song_list,
                                'sketchy_upload': sketchy},
@@ -786,15 +784,19 @@ def submit_delete_requests(request):
     song_list = []
 
     for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
-        song_string = ' * id:' + str(song.id) + ' - ' + song.artist + ' - ' + song.album + ' - ' + song.title + '\n'
-        #%(id) - %(artist) - %(album) - %(title)\n' \
-        #% {'id': str(song.id), 'artist': song.artist, 'album': song.album, 'title': song.title}
+        song_string = (' * %(id)s - %(artist)s - %(album)s - %(title)s\n' %
+                       {'id': str(song.id),
+                        'artist': song.artist,
+                        'album': song.album,
+                        'title': song.title})
         message += song_string
         song_list.append(song)
 
     # WTF mail_admins doesn't seem to work
     #mail_admins(subject,message,False)
-    send_mail(subject,message,'nr@nice-rack.mit.edu',['nice-write@mit.edu', 'rryan@mit.edu'], False)
+    send_mail(subject, message, 'nr@nice-rack.mit.edu',
+              ['nice-write@mit.edu', 'rryan@mit.edu'],
+              False)
 
     return render_to_response('delete_requested.html', {'song_list': song_list})
 

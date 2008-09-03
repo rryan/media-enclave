@@ -99,13 +99,15 @@ def parse_time(string):
         mult *= 60
     return total
 
-def Qu(field, op, value): return Q(**{(str(field) + '__' + str(op)): str(value)})
+def Qu(field, op, value):
+    return Q(**{(str(field) + '__' + str(op)): str(value)})
 
 #=================================== VIEWS ===================================#
 
 #------------------------------- Login/Logout --------------------------------#
 
-SSL_AUTH_PASSWORD = 'password' # push to a settings file, encourage end user to change it
+# push to a settings file, encourage end user to change it
+SSL_AUTH_PASSWORD = 'password'
 
 def user_debug(request):
     return render_to_response('user_debug.html',
@@ -129,11 +131,13 @@ def login_with_ssl(request):
 
     # user doesn't exist, so we need to create a new user
     if user is None:
-        new_user = auth.models.User.objects.create_user(kerberos, ssl_email, SSL_AUTH_PASSWORD)
+        new_user = auth.models.User.objects.create_user(kerberos, ssl_email,
+                                                        SSL_AUTH_PASSWORD)
         new_user.save()
 
-        # we have to do this instead of returning new_user because it hasn't been validated
-        # as authenticated yet, it's just the raw user object from the database
+        # we have to do this instead of returning new_user because it hasn't
+        # been validated as authenticated yet, it's just the raw user object
+        # from the database
         user = auth.authenticate(username=kerberos, password=SSL_AUTH_PASSWORD)
 
     return user
@@ -147,25 +151,29 @@ def login(request):
     else:
         ssl_verify = False
 
-    # If the user authenticated with SSL, then try to log them in with their credentials
+    # If the user authenticated with SSL, then try to log them in with their
+    # credentials
     if ssl_verify:
         user = login_with_ssl(request)
-    # Otherwise, treat this like a text login and show the login page if necessary
+    # Otherwise, treat this like a text login and show the login page if
+    # necessary.
     else:
         # If the user isn't trying to log in, then just display the login page.
         if not form.get('login', False):
-            return render_to_response('login.html',
-                                      {'redirect_to':request.GET.get('goto',None)},
+            goto = request.GET.get('goto', None)
+            return render_to_response('login.html', {'redirect_to': goto},
                                       context_instance=RequestContext(request))
         # Check if the username and password are correct.
         user = auth.authenticate(username=form.get('username',''),
                                  password=form.get('password',''))
 
-    # If the username/password are invalid or SSL authentication failed tell the user to try again.
+    # If the username/password are invalid or SSL authentication failed tell
+    # the user to try again.
     if user is None:
         error_message = 'Invalid username/password.'
         if ssl_verify:
-            error_message = 'SSL authentication failed. Use text-based authentication, or contact an administrator.'
+            error_message = ('SSL authentication failed. Use text-based'
+                             ' authentication, or contact an administrator.')
 
         return render_to_response(
             'login.html',
@@ -319,7 +327,7 @@ def _build_filter_tree(form, prefix):
                 except ValueError, err: errors.append(str(err))
                 if rule in ('inside','outside'):
                     try: f1 = parse_date(form[prefix+'_f1'])
-                    except ValueError, err: erros.append(str(err))
+                    except ValueError, err: errors.append(str(err))
                 # Validate the rule.
                 if errors: return (), 1, errors
                 elif rule in ('before','after'):
@@ -373,81 +381,6 @@ def _build_filter_query(tree):
             elif rule == 'inside': return Qu(kind, 'range', data)
             elif rule == 'outside':
                 return Qu(kind, 'lt', data[0]) | Qu(kind, 'gt', data[1])
-
-# def _build_filter_query(form, prefix):
-#     """raises KeyError on bad input"""
-#     try: kind = form[prefix]
-#     except KeyError: return None,0,None
-#     if kind in ('or','and','nor','nand'):
-#         or_kind = kind.endswith('or')
-#         prefix += '_'
-#         query,total,errors,i = Q(),0,[],0
-#         for i in itertools.count():
-#             subprefix = prefix + str(i)
-#             subquery,subtotal,suberr = _build_filter_query(form, subprefix)
-#             if subquery is None: break
-#             elif subtotal == 0: continue
-#             if or_kind: query |= subquery
-#             else: query &= subquery
-#             total += subtotal
-#             errors.extend(suberr)
-#         if kind.startswith('n'): query = ~Q(query)
-#         return query,total,errors
-#     else:
-#         rule = form[prefix+'_r']
-#         if kind in ('title','album','artist'):
-#             string = form[prefix+'_f0']
-#             # If the kind is blank, then ignore the criterion.
-#             if not string: return Q(),0,[]
-#             # Return the constraint specified by the rule.
-#             negate = rule.startswith('not')
-#             if negate: rule = rule[3:]
-#             if rule == 'in': q = Qu(kind,'icontains',string)
-#             elif rule == 'start': q = Qu(kind,'istartswith',string)
-#             elif rule == 'end': q = Qu(kind,'iendswith',string)
-#             elif rule == 'is': q = Qu(kind,'iexact',string)
-#             else: raise KeyError('bad string rule: %r'%rule)
-#             if negate: q = ~Q(q)
-#         elif kind in ('time','track'):
-#             # Get f0 and, if needed, f1.
-#             f0 = form[prefix+'_f0']
-#             if kind == 'time': f0 = parse_time(f0)
-#             if rule in ('inside','outside'):
-#                 f1 = form[prefix+'_f1']
-#                 if kind == 'time': f1 = parse_time(f1)
-#             # Create the proper query.
-#             if rule in ('lte','gte'): q = Qu(kind,rule,f0)
-#             elif rule == 'is': q = Qu(kind,'exact',f0)
-#             elif rule == 'notis': q = ~Q(Qu(kind,'exact',f0))
-#             elif rule == 'inside': q = Qu(kind,'range',(f0,f1))
-#             elif rule == 'outside': q = Qu(kind,'lt',f0) | Qu(kind,'gt',f1)
-#             else: raise KeyError('bad int rule: %r'%rule)
-#         elif kind in ('date_added','last_queued'):
-#             if rule in ('last','nolast'):
-#                 number,unit = int(form[prefix+'_f0']),form[prefix+'_f1']
-#                 if unit == 'hour': delta = datetime.timedelta(0,3600)
-#                 elif unit == 'day': delta = datetime.timedelta(1)
-#                 elif unit == 'week': delta = datetime.timedelta(7)
-#                 elif unit == 'month': delta = datetime.timedelta(30.43685)
-#                 elif unit == 'year': delta = datetime.timedelta(365.24220)
-#                 else: raise KeyError('bad date unit: %r'%unit)
-#                 date = datetime.datetime.now() - number*delta
-#                 if rule == 'last': q = Qu(kind,'gte',date)
-#                 else: q = Qu(kind,'lt',date)
-#             else:
-#                 # Get f0 and, if needed, f1.
-#                 f0 = parse_date(form[prefix+'_f0'])
-#                 if rule in ('inside','outside'):
-#                     f1 = parse_date(form[prefix+'_f1'])
-#                 # Create the proper query.
-#                 if rule == 'before': q = Qu(kind,'lt',f0)
-#                 elif rule == 'after': q = Qu(kind,'gt',f0)
-#                 elif rule == 'inside': q = Qu(kind,'range',(f0,f1))
-#                 elif rule == 'outside':
-#                     q = Qu(kind,'lt',f0) | Qu(kind,'gt',f1)
-#                 else: raise KeyError('bad date rule: %r'%rule)
-#         else: raise KeyError('bad kind: %r'%kind)
-#         return q,1,()
 
 def filter_search(request):
     try: tree,total,errors = _build_filter_tree(request.GET, 'k')
@@ -796,7 +729,13 @@ def dl(request):
 
 class StreamingHttpResponse(HttpResponse):
 
-    """This class exists to bypass middleware that uses .content."""
+    """This class exists to bypass middleware that uses .content.
+
+    See Django bug #6027: http://code.djangoproject.com/ticket/6027
+
+    We override content to be a no-op, so that GzipMiddleware doesn't exhaust
+    the FileWrapper generator, which reads the file incrementally.
+    """
 
     def _get_content(self):
         return ""
@@ -843,6 +782,11 @@ def render_zip(archive_name, filenames):
 
     This creates a temporary zip archive on disk which is cleaned up after its
     references are garbage collected.
+
+    TODO(rnk): What would be really hot (lapnap does this) would be to find a
+               way to write the zip archive to the HTTP stream instead of a
+               temp file.  This would prevent us from having a usable download
+               progress bar, but the download would start right away.
     """
     # Make a temporary zip archive.
     tmp_file = tempfile.TemporaryFile(mode='w+b')

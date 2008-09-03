@@ -20,9 +20,9 @@ def datetime_string(dt):
 class Emulator(models.Model):
     def __unicode__(self): return self.name
 
-    name = models.CharField(maxlength=50, unique=True)
+    name = models.CharField(max_length=50, unique=True)
 
-    system = models.CharField(maxlength=50)
+    system = models.CharField(max_length=50)
 
     executable = models.FilePathField(path='/tmp', match="xmms.*",
                                       recursive=True,
@@ -45,7 +45,7 @@ class Emulator(models.Model):
 class Tag(models.Model):
     def __unicode__(self): return self.name
 
-    name = models.CharField(maxlength=50, primary_key=True)
+    name = models.CharField(max_length=50, primary_key=True)
 
     class Admin:
         list_display = ('name',)
@@ -68,7 +68,7 @@ class Game(models.Model):
 
     #--------------------------------- Title ---------------------------------#
 
-    title = models.CharField(maxlength=255)
+    title = models.CharField(max_length=255)
 
     #-------------------------------- Emulator -------------------------------#
 
@@ -97,8 +97,7 @@ class Game(models.Model):
 
     #--------------------------------- Tags ----------------------------------#
 
-    tags = models.ManyToManyField(Tag, blank=True,
-                                  filter_interface=models.HORIZONTAL)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     #-------------------------------- Visible --------------------------------#
 
@@ -145,7 +144,7 @@ class Freeze(models.Model):
 
     user = models.ForeignKey(User)
 
-    name = models.CharField(maxlength=255)
+    name = models.CharField(max_length=255)
 
     data = models.FileField(upload_to='genclave/freezes/%Y/%m/%d/')
 
@@ -156,7 +155,7 @@ class Freeze(models.Model):
         search_fields = ('name', 'game')
 
     class Meta:
-        ordering = ('user.username', 'game.name', 'name',)
+        #ordering = ('user.username', 'game.name', 'name',)
         unique_together = (('user', 'game', 'name'),)
 
 #=============================================================================#

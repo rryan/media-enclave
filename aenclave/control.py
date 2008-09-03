@@ -5,6 +5,7 @@
 import os
 import random
 import traceback
+import log
 
 from xmmsclient import XMMSError, XMMSSync
 from xmmsclient import PLAYBACK_STATUS_PLAY as PLAY
@@ -292,7 +293,7 @@ class Controller(object):
         for song in songs:
             # The XMMS2 client expects URLs rather than paths, so we must
             # prepend "file://" to the path.
-            url = 'file://' + song.get_audio_filename()
+            url = 'file://' + song.audio.path
             try:
                 # Have XMMS2 import the song data.
                 self.client.medialib_add_entry(url)
@@ -340,7 +341,8 @@ class Controller(object):
             index += base
             # If the index is not valid, log an error and punt.
             if not 0 <= index < length:
-                log.error("can't remove song index %i from list of length %i" %
+                
+                log.error('ERROR', "can't remove song index %i from list of length %i" %
                           (index, length))
                 return
             # Remove the song from the playlist.
@@ -375,7 +377,7 @@ class Controller(object):
             frm += base
             # If the index is not valid, log an error and punt.
             if not 0 <= frm < length:
-                log.error("can't move song index %i in list of length %i" %
+                log.error('ERROR', "can't move song index %i in list of length %i" %
                           (frm, length))
                 return
             # Move the song.

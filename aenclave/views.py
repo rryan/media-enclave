@@ -5,12 +5,13 @@ import itertools
 from math import ceil as ceiling
 import re
 import os
+from time import strftime
 
 
 from django.conf import settings
 from django.contrib import auth
 from django.core.mail import send_mail, mail_admins
-from django.db.models.query import Q, QNot
+from django.db.models.query import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
@@ -97,7 +98,7 @@ def parse_time(string):
         mult *= 60
     return total
 
-def Qu(field, op, value): return Q(**{field + '__' + op: value})
+def Qu(field, op, value): return Q(**{(str(field) + '__' + str(op)): str(value)})
 
 #=================================== VIEWS ===================================#
 
@@ -229,6 +230,8 @@ def normal_search(request):
         queryset = Song.visibles.filter(full_query)
     # If we're feeling lucky, queue a random result.
     if form.get('lucky', False):
+        if queryset is ():
+            queryset = Song.visibles
         song = queryset.order_by('?')[0]
         Controller().add_song(song)
         # Redirect to the channels page.
@@ -332,7 +335,7 @@ def _build_filter_query(tree):
             subquery = _build_filter_query(subtree)
             if is_or: query |= subquery
             else: query &= subquery
-        if rule in ('nor','nand'): query = QNot(query)
+        if rule in ('nor','nand'): query = ~Q(query)
         return query
     elif kind in ('title','album','artist'):
         negate = rule.startswith('not')
@@ -341,12 +344,12 @@ def _build_filter_query(tree):
         elif rule == 'start': query = Qu(kind, 'istartswith', data)
         elif rule == 'end': query = Qu(kind, 'iendswith', data)
         elif rule == 'is': query = Qu(kind, 'iexact', data)
-        if negate: return QNot(query)
+        if negate: return ~Q(query)
         else: return query
     elif kind in ('time','track'):
         if rule in ('lte','gte'): return Qu(kind, rule, data)
         elif rule == 'is': return Qu(kind, 'exact', data)
-        elif rule == 'notis': return QNot(Qu(kind, 'exact', data))
+        elif rule == 'notis': return ~Q(Qu(kind, 'exact', data))
         elif rule == 'inside': return Qu(kind, 'range', data)
         elif rule == 'outside':
             return Qu(kind, 'lt', data[0]) | Qu(kind, 'gt', data[1])
@@ -385,7 +388,7 @@ def _build_filter_query(tree):
 #             else: query &= subquery
 #             total += subtotal
 #             errors.extend(suberr)
-#         if kind.startswith('n'): query = QNot(query)
+#         if kind.startswith('n'): query = ~Q(query)
 #         return query,total,errors
 #     else:
 #         rule = form[prefix+'_r']
@@ -401,7 +404,7 @@ def _build_filter_query(tree):
 #             elif rule == 'end': q = Qu(kind,'iendswith',string)
 #             elif rule == 'is': q = Qu(kind,'iexact',string)
 #             else: raise KeyError('bad string rule: %r'%rule)
-#             if negate: q = QNot(q)
+#             if negate: q = ~Q(q)
 #         elif kind in ('time','track'):
 #             # Get f0 and, if needed, f1.
 #             f0 = form[prefix+'_f0']
@@ -412,7 +415,7 @@ def _build_filter_query(tree):
 #             # Create the proper query.
 #             if rule in ('lte','gte'): q = Qu(kind,rule,f0)
 #             elif rule == 'is': q = Qu(kind,'exact',f0)
-#             elif rule == 'notis': q = QNot(Qu(kind,'exact',f0))
+#             elif rule == 'notis': q = ~Q(Qu(kind,'exact',f0))
 #             elif rule == 'inside': q = Qu(kind,'range',(f0,f1))
 #             elif rule == 'outside': q = Qu(kind,'lt',f0) | Qu(kind,'gt',f1)
 #             else: raise KeyError('bad int rule: %r'%rule)
@@ -674,11 +677,11 @@ def process_upload_song(filename):
     # read the song and push the data
     fhandle = open(filename,'r')
     content = fhandle.read()
-    song.save_audio_file(filename, content)
+    #song.audio.save( song.save_audio_file(filename, content))
     fhandle.close()
 
     # Now, open up the MP3 file and save the tag data into the database.
-    audio = MP3(song.get_audio_filename(), ID3=EasyID3)
+    audio = MP3(song.audio.path, ID3=EasyID3)
     try: song.title = audio['title'][0]
     except (KeyError, IndexError): song.title = 'Unnamed Song'
     try: song.album = audio['album'][0]
@@ -700,15 +703,17 @@ def upload_http(request):
     audio = request.FILES.get('audio', None)
     if audio is None:
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
-    elif (audio['content-type'] != 'audio/mpeg' or
-          not audio['filename'].lower().endswith('.mp3')):
+    elif (audio.content_type != 'audio/mpeg' or
+          not audio.name.lower().endswith('.mp3')):
         return html_error(request, 'You may only upload MP3 files.',
                           'HTTP Upload')
     # Save the song into the database -- we'll fix the tags in a moment.
     song = Song(track=0, time=0)
-    song.save_audio_file(audio['filename'], audio['content'])
+
+    song.audio.save(audio.name, audio)
+
     # Now, open up the MP3 file and save the tag data into the database.
-    audio = MP3(song.get_audio_filename(), ID3=EasyID3)
+    audio = MP3(song.audio.path, ID3=EasyID3)
     try: song.title = audio['title'][0]
     except (KeyError, IndexError): song.title = 'Unnamed Song'
     try: song.album = audio['album'][0]
@@ -778,7 +783,7 @@ def submit_delete_requests(request):
         subject = 'Delete Request from ' + request.user.username
         message += ' by ' + request.user.username + ':\n'
     else:
-        subjetc = 'Delete Request from Anonymous'
+        subject = 'Delete Request from Anonymous'
         message += ' by an unregistered user:\n'
 
     song_list = []
@@ -792,11 +797,7 @@ def submit_delete_requests(request):
         message += song_string
         song_list.append(song)
 
-    # WTF mail_admins doesn't seem to work
-    #mail_admins(subject,message,False)
-    send_mail(subject, message, 'nr@nice-rack.mit.edu',
-              ['nice-write@mit.edu', 'rryan@mit.edu'],
-              False)
+    mail_admins(subject,message,False)
 
     return render_to_response('delete_requested.html', {'song_list': song_list})
 
@@ -862,7 +863,7 @@ def xml_edit(request):
     try: song = Song.objects.get(pk=int(form.get('id','')))
     except (ValueError, TypeError, Song.DoesNotExist), err:
         return xml_error(str(err))
-    audio = MP3(song.get_audio_filename(), ID3=EasyID3)
+    audio = MP3(song.audio.path, ID3=EasyID3)
     # Update title.
     title = get_unicode(form, 'title')
     if title:  # Disallow empty titles.
@@ -918,7 +919,7 @@ def json_edit(request):
     try: song = Song.objects.get(pk=int(form.get('id','')))
     except (ValueError, TypeError, Song.DoesNotExist), err:
         return json_error(str(err))
-    audio = MP3(song.get_audio_filename(), ID3=EasyID3)
+    audio = MP3(song.audio.path, ID3=EasyID3)
     # Update title.
     title = get_unicode(form, 'title')
     if title:  # Disallow empty titles.

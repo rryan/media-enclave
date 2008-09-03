@@ -19,7 +19,7 @@ def datetime_string(dt):
 class Tag(models.Model):
     def __unicode__(self): return self.name
 
-    name = models.CharField(maxlength=50, primary_key=True)
+    name = models.CharField(max_length=50, primary_key=True)
 
     class Admin:
         list_display = ('name',)
@@ -42,7 +42,7 @@ class Video(models.Model):
 
     #--------------------------------- Title ---------------------------------#
 
-    title = models.CharField(maxlength=255)
+    title = models.CharField(max_length=255)
 
     #--------------------------------- Time ----------------------------------#
 
@@ -63,7 +63,7 @@ class Video(models.Model):
                     ('tr', 'trailer'),
                     ('rc', 'random clip'))
 
-    kind = models.CharField(maxlength=2, choices=KIND_CHOICES)
+    kind = models.CharField(max_length=2, choices=KIND_CHOICES)
 
     #------------------------------ Date Added -------------------------------#
 
@@ -89,8 +89,7 @@ class Video(models.Model):
 
     #--------------------------------- Tags ----------------------------------#
 
-    tags = models.ManyToManyField(Tag, blank=True,
-                                  filter_interface=models.HORIZONTAL)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     #-------------------------------- Visible --------------------------------#
 
@@ -133,12 +132,11 @@ class Video(models.Model):
 class Chapter(models.Model):
     def __unicode__(self): return self.name
 
-    video = models.ForeignKey(Video, related_name='chapters',
-                              edit_inline=models.STACKED)
+    video = models.ForeignKey(Video, related_name='chapters')
 
-    name = models.CharField(maxlength=50, core=True)
+    name = models.CharField(max_length=50)
 
-    time = models.PositiveIntegerField(core=True, help_text="The time from the"
+    time = models.PositiveIntegerField(help_text="The time from the"
                                        " start of the video at which the"
                                        " chapter starts, in seconds.")
 
@@ -159,7 +157,7 @@ class Channel(models.Model):
                                           "The channel with ID=1 will be the"
                                           " default channel.")
 
-    name = models.CharField(maxlength=32, unique=True)
+    name = models.CharField(max_length=32, unique=True)
 
     pipe = models.FilePathField(path='/tmp', match="xmms.*", recursive=True,
                                 help_text="The path to the XMMS2 control pipe"

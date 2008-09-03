@@ -61,6 +61,6 @@ def error(priority, string):
     # description of what this is: a warning about something that isn't
     # supposed to happen.
     try: raise UserWarning(string)
-    except UserWarning: catch(priority)
+    except UserWarning: catch()
 
 #=============================================================================#

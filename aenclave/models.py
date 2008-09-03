@@ -4,8 +4,10 @@ from calendar import timegm
 import datetime
 from math import exp
 
+
 from django.db import models
 from django.contrib.auth.models import Group, User
+from django.contrib import admin
 
 #================================= UTILITIES =================================#
 
@@ -29,15 +31,15 @@ class Song(models.Model):
 
     #--------------------------------- Title ---------------------------------#
 
-    title = models.CharField(maxlength=255)
+    title = models.CharField(max_length=255)
 
     #--------------------------------- Album ---------------------------------#
 
-    album = models.CharField(maxlength=255)
+    album = models.CharField(max_length=255)
 
     #-------------------------------- Artist ---------------------------------#
 
-    artist = models.CharField(maxlength=255)
+    artist = models.CharField(max_length=255)
 
     #--------------------------------- Track ---------------------------------#
 
@@ -98,14 +100,6 @@ class Song(models.Model):
 
     #------------------------------ Other Stuff ------------------------------#
 
-    class Admin:
-        date_hierarchy = 'date_added'
-        list_display = ('track','title', 'time_string', 'album', 'artist',
-                        'date_added', 'adjusted_score', 'visible')
-        list_display_links = ('title',)
-        list_filter = ('visible', 'date_added')
-        search_fields = ('title', 'album', 'artist')
-
     class Meta:
         get_latest_by = 'date_added'
         ordering = ('artist', 'album', 'track')
@@ -122,6 +116,19 @@ class Song(models.Model):
     objects = models.Manager()
     visibles = VisibleManager()
 
+
+class SongAdmin(admin.ModelAdmin):
+    date_hierarchy = 'date_added'
+    list_display = ('track','title', 'time_string', 'album', 'artist',
+                    'date_added', 'adjusted_score', 'visible')
+    list_display_links = ('title','track')
+    list_filter = ('visible', 'date_added')
+    search_fields = ('title', 'album', 'artist')
+
+
+admin.site.register(Song,SongAdmin)
+
+
 #-----------------------------------------------------------------------------#
 
 class Playlist(models.Model):
@@ -129,14 +136,13 @@ class Playlist(models.Model):
 
     #-------------------------------- Fields ---------------------------------#
 
-    name = models.CharField(maxlength=255)
+    name = models.CharField(max_length=255)
 
     owner = models.ForeignKey(User)
 
     group = models.ForeignKey(Group, blank=True, null=True)
 
-    songs = models.ManyToManyField(Song, blank=True,
-                                   filter_interface=models.HORIZONTAL)
+    songs = models.ManyToManyField(Song, blank=True)
 
     last_modified = models.DateTimeField(auto_now=True, editable=False)
     def last_modified_string(self): return datetime_string(self.last_modified)
@@ -147,13 +153,6 @@ class Playlist(models.Model):
     date_created_string.short_description = 'Date created'
 
     #------------------------------ Other Stuff ------------------------------#
-
-    class Admin:
-        date_hierarchy = 'date_created'
-        list_display = ('name', 'owner', 'group', 'last_modified',
-                        'date_created')
-        list_filter = ('owner', 'last_modified', 'date_created')
-        search_fields = ('name',)
 
     class Meta:
         get_latest_by = 'last_modified'
@@ -173,6 +172,15 @@ class Playlist(models.Model):
         except User.DoesNotExist: return (user == self.owner)
         else: return True
 
+class PlaylistAdmin(admin.ModelAdmin):
+    date_hierarchy = 'date_created'
+    list_display = ('name', 'owner', 'group', 'last_modified',
+                    'date_created')
+    list_filter = ('owner', 'last_modified', 'date_created')
+    search_fields = ('name',)
+
+admin.site.register(Playlist,PlaylistAdmin)
+
 #-----------------------------------------------------------------------------#
 
 class Channel(models.Model):
@@ -186,7 +194,7 @@ class Channel(models.Model):
                                           "The channel with ID=1 will be the"
                                           " default channel.")
 
-    name = models.CharField(maxlength=32, unique=True)
+    name = models.CharField(max_length=32, unique=True)
 
     pipe = models.FilePathField(path='/tmp', match="xmms.*", recursive=True,
                                 help_text="The path to the XMMS2 control pipe"
@@ -197,10 +205,6 @@ class Channel(models.Model):
         return timegm(self.last_touched.timetuple())
 
     #------------------------------ Other Stuff ------------------------------#
-
-    class Admin:
-        list_display = ('id', 'name', 'pipe', 'last_touched')
-        list_display_links = ('name',)
 
     class Meta:
         get_latest_by = 'last_touched'
@@ -217,6 +221,13 @@ class Channel(models.Model):
         self.save()  # `self.last_touched` will auto-update.
 
     def controller(self): return Controller(self)
+
+class ChannelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'pipe', 'last_touched')
+    list_display_links = ('name',)
+
+admin.site.register(Channel,ChannelAdmin)
+
 
 
 # This import goes at the end to avoid circularity.

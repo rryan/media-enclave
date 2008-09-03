@@ -158,8 +158,10 @@ DIV#actions A:active {
 }
 
 DIV#actions A.queue {
-  background: #eef url(/media/aenclave/images/speaker.png)
-              4px center no-repeat;
+  background: #eef url(/media/aenclave/images/speaker.png) 4px center no-repeat;
+}
+DIV#actions A.dl {
+  background: #eef url(/media/aenclave/images/dl.png) 4px center no-repeat;
 }
 DIV#actions A.create {
   background: #eef url(/media/aenclave/images/create.png) 4px center no-repeat;
@@ -330,6 +332,12 @@ DIV#controls DIV DIV {
 DIV#controls DIV DIV.dq {
   background-color: #b88;
   width: 160px;
+}
+
+TABLE.data TBODY TD A.dl-link {
+    float: left;
+    color: blue;
+    text-decoration: underline;
 }
 
 /*****************************************************************************/

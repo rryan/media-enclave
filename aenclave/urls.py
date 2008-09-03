@@ -138,6 +138,11 @@ urlpatterns = patterns(
         {'template':'sftp_info.html'},
         name='aenclave-sftp-info'),
 
+    # DL
+
+    (r'^dl/$',
+     'menclave.aenclave.views.dl'),
+
     # Roulette
 
     url(r'^roulette/$',

@@ -5,8 +5,8 @@ import itertools
 from math import ceil as ceiling
 import re
 import os
-from time import strftime
-
+import tempfile
+import zipfile
 
 from django.conf import settings
 from django.contrib import auth
@@ -15,6 +15,7 @@ from django.db.models.query import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
+from django.core.servers.basehttp import FileWrapper
 
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
@@ -118,12 +119,12 @@ def login_with_ssl(request):
     m = matcher.match(ssl_email)
     if m is None:
         return None
-    
+
     kerberos = m.group(1)
 
     if kerberos is None:
         return None
-        
+
     user = auth.authenticate(username=kerberos,password=SSL_AUTH_PASSWORD)
 
     # user doesn't exist, so we need to create a new user
@@ -134,7 +135,7 @@ def login_with_ssl(request):
         # we have to do this instead of returning new_user because it hasn't been validated
         # as authenticated yet, it's just the raw user object from the database
         user = auth.authenticate(username=kerberos, password=SSL_AUTH_PASSWORD)
-        
+
     return user
 
 def login(request):
@@ -145,10 +146,10 @@ def login(request):
         ssl_verify = True
     else:
         ssl_verify = False
-        
+
     # If the user authenticated with SSL, then try to log them in with their credentials
     if ssl_verify:
-        user = login_with_ssl(request)        
+        user = login_with_ssl(request)
     # Otherwise, treat this like a text login and show the login page if necessary
     else:
         # If the user isn't trying to log in, then just display the login page.
@@ -165,7 +166,7 @@ def login(request):
         error_message = 'Invalid username/password.'
         if ssl_verify:
             error_message = 'SSL authentication failed. Use text-based authentication, or contact an administrator.'
-    
+
         return render_to_response(
             'login.html',
             {'error_message': error_message,
@@ -180,7 +181,7 @@ def login(request):
 
     # Otherwise, we're good to go, so log the user in.
     auth.login(request, user)
-    return HttpResponseRedirect(request.POST.get('goto','/audio/'))    
+    return HttpResponseRedirect(request.POST.get('goto','/audio/'))
 
 def logout(request):
     auth.logout(request)
@@ -239,6 +240,8 @@ def normal_search(request):
     # Otherwise, display the search results.
     return render_to_response('search_results.html',
                               {'song_list':queryset,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'search_query':query_string},
                               context_instance=RequestContext(request))
 
@@ -453,7 +456,10 @@ def filter_search(request):
     if total == 0: queryset = ()
     else: queryset = Song.visibles.filter(_build_filter_query(tree))
     return render_to_response('filter_results.html',
-                              {'song_list':queryset, 'criterion_count':total},
+                              {'song_list':queryset,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
+                               'criterion_count':total},
                               context_instance=RequestContext(request))
 
 #--------------------------------- Browsing ----------------------------------#
@@ -499,6 +505,8 @@ def view_album(request, album_name):
     album_songs = Song.visibles.filter(album__iexact=album_name)
     return render_to_response('album_detail.html',
                               {'album_name': album_name,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'song_list': album_songs},
                               context_instance=RequestContext(request))
 
@@ -506,6 +514,8 @@ def view_artist(request, artist_name):
     artist_songs = Song.visibles.filter(artist__iexact=artist_name)
     return render_to_response('artist_detail.html',
                               {'artist_name': artist_name,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'song_list': artist_songs},
                               context_instance=RequestContext(request))
 
@@ -520,6 +530,8 @@ def channel_detail(request, channel_id=1):
                               {'channel': channel,
                                'current_song': current_song,
                                'song_list': ctrl.get_queue_songs(),
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'force_actions_bar': True,
                                'elapsed_time': ctrl.get_elapsed_time(),
                                'skipping': (current_song == 'DQ'),
@@ -573,6 +585,8 @@ def playlist_detail(request, playlist_id):
     return render_to_response('playlist_detail.html',
                               {'playlist': playlist,
                                'song_list': playlist.songs.all(),
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'force_actions_bar': can_cede,
                                'allow_cede': can_cede,
                                'allow_edit': playlist.can_edit(request.user)},
@@ -727,9 +741,11 @@ def upload_http(request):
     # Let the user know what's going on.
 
     #[song,audio] = process_upload_song(audio['filename'], audio['content']
-    
+
     return render_to_response('upload_http.html',
                               {'song_list': [song],
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'sketchy_upload': audio.info.sketchy},
                               context_instance=RequestContext(request))
 
@@ -760,15 +776,103 @@ def upload_sftp(request):
 
     return render_to_response('upload_sftp.html',
                               {'song_list': song_list,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST),
                                'sketchy_upload': sketchy},
                               context_instance=RequestContext(request))
+
+#-------------------------------- DL Requests --------------------------------#
+
+def dl(request):
+    """Serve songs to the user, either as a zip archive or a single file."""
+    # Get song ids.  Use REQUEST to allow DL links and checkbox selections.
+    ids = get_int_list(request.REQUEST, 'ids')
+    if not ids:
+        raise Exception("No ids were provided to dl.")
+    elif len(ids) == 1:
+        return send_song(ids[0])
+    else:
+        return send_songs(ids)
+
+class StreamingHttpResponse(HttpResponse):
+
+    """This class exists to bypass middleware that uses .content."""
+
+    def _get_content(self):
+        return ""
+
+    def _set_content(self, value):
+        pass
+
+    content = property(_get_content, _set_content)
+
+def send_song(id):
+    """Return an HttpResponse that will serve an MP3 from disk.
+
+    This happens without reading the whole MP3 in as a string.
+    """
+    song = Song.objects.get(id=id)
+    fd = file(song.audio.path)
+    wrapper = FileWrapper(fd)
+    response = StreamingHttpResponse(wrapper, content_type='audio/mpeg')
+    # BTW nice_filename is guaranteed not to have any backslashes or quotes in
+    #     it, so we don't need to escape anything.
+    response['Content-Disposition'] = ('attachment; filename="%s"' %
+                                       song.nice_filename())
+    response['Content-Length'] = os.path.getsize(song.audio.path)
+    return response
+
+def send_songs(ids):
+    """Serve a zip archive of the chosen songs."""
+    songs = Song.objects.in_bulk(ids).values()
+    # Make an archive name with a timestamp of the form YYYY-MM-DD_HH-MM-SS.
+    timestamp = '%i-%i-%i_%i-%i-%i' % datetime.datetime.today().timetuple()[:6]
+    archive_name = 'nr_dl_%s.zip' % timestamp
+    filenames = []
+    for song in songs:
+        # WTF Use str() here because the filename apparently *cannot* be a
+        #     unicode string, or zipfile flips out.
+        filenames.append((song.audio.path, str(song.nice_filename())))
+    return render_zip(archive_name, filenames)
+
+def render_zip(archive_name, filenames):
+    """Serve a zip archive containing all of the named files.
+
+    archive_name -- The name to give the zip archive when it is served.
+    filenames -- A list of tuples of the form (path, newname).
+
+    This creates a temporary zip archive on disk which is cleaned up after its
+    references are garbage collected.
+    """
+    # Make a temporary zip archive.
+    tmp_file = tempfile.TemporaryFile(mode='w+b')
+    # Use ZIP_STORED to disable compression because mp3s are already well
+    # compressed.
+    archive = zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_STORED)
+    # Write songs to zip archive.
+    for (path, newname) in filenames:
+        archive.write(path, newname)
+    archive.close()
+    filesize = tmp_file.tell()
+    # Serve zip archive.
+    wrapper = FileWrapper(tmp_file)
+    # Using StreamingHttpResponse tries to avoid gzip middleware from fucking
+    # everything up.
+    response = StreamingHttpResponse(wrapper, content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename=%s' % archive_name
+    response['Content-Length'] = filesize
+    tmp_file.seek(0)
+    return response
 
 #--------------------------------- Roulette ----------------------------------#
 
 def roulette(request):
     # Choose six songs randomly.
     queryset = Song.visibles.order_by('?')[:6]
-    return render_to_response('roulette.html', {'song_list':queryset},
+    return render_to_response('roulette.html',
+                              {'song_list':queryset,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST)},
                               context_instance=RequestContext(request))
 
 #------------------------------- Delete Requests -----------------------------#
@@ -799,7 +903,10 @@ def submit_delete_requests(request):
 
     mail_admins(subject,message,False)
 
-    return render_to_response('delete_requested.html', {'song_list': song_list})
+    return render_to_response('delete_requested.html',
+                              {'song_list': song_list,
+                               # TODO(rnk): Kill this duplication.
+                               'dl': ('dl' in request.REQUEST)})
 
 
 #--------------------------------- XML Hooks ---------------------------------#

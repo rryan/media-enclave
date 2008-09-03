@@ -3,7 +3,7 @@
 from calendar import timegm
 import datetime
 from math import exp
-
+import re
 
 from django.db import models
 from django.contrib.auth.models import Group, User
@@ -76,6 +76,13 @@ class Song(models.Model):
     #------------------------------ Audio Path -------------------------------#
 
     audio = models.FileField(upload_to='aenclave/songs/%Y/%m/%d/')
+
+    def nice_filename(self):
+        """Make a filename of the form 'artist - album - track - title.mp3'."""
+        components = (self.artist, self.album, '%02d' % self.track, self.title)
+        nice_filename = ' - '.join(components) + '.mp3'
+        nice_filename = re.sub(r'[^a-zA-Z0-9_.,\- ]', '', nice_filename)
+        return nice_filename
 
     #------------------------------- Album Art -------------------------------#
 

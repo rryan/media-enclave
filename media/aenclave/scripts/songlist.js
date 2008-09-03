@@ -141,6 +141,19 @@ var songlist = {
     if (ids.length > 0) {                //         is selected
       document.forms.queueform.ids.value = ids;
       document.forms.queueform.submit();
+    } else {
+      // TODO(rnk): Some feedback that no songs are selected.
+    }
+  },
+
+  // DLs all selected songs.
+  dl: function() {
+    var ids = songlist.gather_ids(true);
+    if (ids.length > 0) {
+      document.forms.dlform.ids.value = ids;
+      document.forms.dlform.submit();
+    } else {
+      // TODO(rnk): Some feedback that no songs are selected.
     }
   },
 

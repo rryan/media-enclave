@@ -237,6 +237,8 @@ class Controller(object):
         try:
             nextpos = self.client.playlist_current_pos() + 1
             if nextpos >= len(self.client.playlist_list_entries()):
+                # If there's no next track, we can't go to the next song, we
+                # have to stop playback.
                 self.client.playback_stop()
             else:
                 self.client.playlist_set_next_rel(1)

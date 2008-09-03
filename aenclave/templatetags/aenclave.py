@@ -1,5 +1,6 @@
 import datetime
 from django import template
+from django.utils import html
 
 register = template.Library()
 

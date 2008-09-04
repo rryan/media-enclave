@@ -543,8 +543,10 @@ def create_playlist(request):
     # Make sure that we can create the playlist.
     # WTF In fact, we can't use playlist.songs until playlist has been saved.
     playlist = Playlist(name=name, owner=request.user)
-    try: playlist.save()  # BTW This will fail if (name,owner) is not unique.
-    except: raise  # FIXME
+    try:
+        playlist.save()  # BTW This will fail if (name,owner) is not unique.
+    except:
+        return html_error(request, 'A playlist of that name already exists.')
     #    return error(request,'Nonunique name/owner.')  # TODO better feedback
     # Add the specified songs to the playlist.
     ids = get_int_list(form, 'ids')

@@ -48,13 +48,21 @@ var songlist = {
   // Add a textbox to the subaction tray.
   //   ID: the ID of the textbox element, (e.g. "email")
   //   value: the initial contents of the textbox (e.g. "username@example.com")
-  add_subaction_textbox: function(ID, value) {
+  //   opt_callback: called with no args when the user hits enter.
+  add_subaction_textbox: function(ID, value, opt_callback) {
     var box = document.createElement("input");
     box.type = "text";
     box.size = 30;
     box.id = ID;
     box.value = value;
     songlist.add_subaction_span(box);
+    if (opt_callback) {
+      Event.observe(box, 'keyup', function(evt) {
+        if (evt.keyCode == Event.KEY_RETURN) {
+          opt_callback();
+        }
+      });
+    }
   },
 
   // Add a button to the subaction tray.
@@ -135,6 +143,37 @@ var songlist = {
 
   /********************************* ACTIONS *********************************/
 
+  // Queues a single song with an XHR.
+  queue_click: function(link) {
+    // Add a span after the link giving the status of the request.
+    var span = document.createElement('span');
+    link.parentNode.appendChild(span);
+    span.innerHTML = 'queueing...';
+    // Set the cursor over the link to wait.
+    link.style.cursor = 'wait';
+    span.style.cursor = 'wait';
+    var options = {
+      method: "get",
+      onFailure: function(transport) {
+        span.innerHTML = 'failed to queue.';
+      },
+      onSuccess: function(transport) {
+        span.innerHTML = 'queued successfully.';
+      },
+      onComplete: function(transport) {
+        // Undo the waiting cursor.
+        link.style.cursor = '';
+        span.style.cursor = '';
+        // Remove the span after five seconds.
+        window.setTimeout(function() {
+          link.parentNode.removeChild(span);
+        }, 5000);
+      }
+    };
+    new Ajax.Request(link.href, options);
+    return false;
+  },
+
   // Queues all selected songs.
   queue: function() {
     var ids = songlist.gather_ids(true); // true -> queue nothing if nothing
@@ -142,7 +181,7 @@ var songlist = {
       document.forms.queueform.ids.value = ids;
       document.forms.queueform.submit();
     } else {
-      // TODO(rnk): Some feedback that no songs are selected.
+      songlist.error_message("You haven't selected any songs.");
     }
   },
 
@@ -153,7 +192,7 @@ var songlist = {
       document.forms.dlform.ids.value = ids;
       document.forms.dlform.submit();
     } else {
-      // TODO(rnk): Some feedback that no songs are selected.
+      songlist.error_message("You haven't selected any songs.");
     }
   },
 
@@ -161,7 +200,7 @@ var songlist = {
     with (songlist) {
       start_subaction();
       add_subaction_label("Put songs into a playlist called:");
-      add_subaction_textbox("playlistname", "Rockin' Out");
+      add_subaction_textbox("playlistname", "Rockin' Out", songlist.okcreate);
       add_subaction_button("ok", "songlist.okcreate();", "Create playlist");
       add_subaction_cancel_button();
     }

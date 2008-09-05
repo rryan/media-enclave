@@ -2,10 +2,11 @@
 
 """menclave.aenclave.control -- music player control functions"""
 
+import log
 import os
 import random
 import traceback
-import log
+import urllib
 
 from xmmsclient import XMMSError, XMMSSync
 from xmmsclient import PLAYBACK_STATUS_PLAY as PLAY
@@ -295,7 +296,7 @@ class Controller(object):
         for song in songs:
             # The XMMS2 client expects URLs rather than paths, so we must
             # prepend "file://" to the path.
-            url = 'file://' + song.audio.path
+            url = urllib.pathname2url(song.audio.path)
             try:
                 # Have XMMS2 import the song data.
                 self.client.medialib_add_entry(url)

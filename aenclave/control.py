@@ -295,8 +295,8 @@ class Controller(object):
         # Add the songs to the end of the queue.
         for song in songs:
             # The XMMS2 client expects URLs rather than paths, so we must
-            # prepend "file://" to the path.
-            url = urllib.pathname2url(song.audio.path)
+            # prepend "file://" to the path and encode the URL.
+            url = 'file://' + urllib.pathname2url(song.audio.path)
             try:
                 # Have XMMS2 import the song data.
                 self.client.medialib_add_entry(url)

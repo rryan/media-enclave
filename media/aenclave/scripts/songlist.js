@@ -145,32 +145,38 @@ var songlist = {
 
   // Queues a single song with an XHR.
   queue_click: function(link) {
-    // Add a span after the link giving the status of the request.
-    var span = document.createElement('span');
-    link.parentNode.appendChild(span);
-    span.innerHTML = 'queueing...';
+    // Add a paragraph after the link giving the status of the request.
+    var para = document.createElement('p');
+    var control_div = $('controls');
+    control_div.appendChild(para);
+    para.innerHTML = 'queueing...';
     // Set the cursor over the link to wait.
     link.style.cursor = 'wait';
-    span.style.cursor = 'wait';
+    para.style.cursor = 'wait';
     var options = {
-      method: "get",
+      method: 'get',
       onFailure: function(transport) {
-        span.innerHTML = 'failed to queue.';
+        para.innerHTML = 'failed to queue.';
       },
-      onSuccess: function(transport) {
-        span.innerHTML = 'queued successfully.';
+      onSuccess: function(transport, response_json) {
+        if (response_json.error) {
+          para.innerHTML = 'failed to queue.';
+        } else {
+          para.innerHTML = 'queued successfully.';
+          controls.update_playlist_info(response_json);
+        }
       },
       onComplete: function(transport) {
         // Undo the waiting cursor.
         link.style.cursor = '';
-        span.style.cursor = '';
-        // Remove the span after five seconds.
+        para.style.cursor = '';
+        // Remove the paragraph after five seconds.
         window.setTimeout(function() {
-          link.parentNode.removeChild(span);
-        }, 5000);
+          control_div.removeChild(para);
+        }, 3000);
       }
     };
-    new Ajax.Request(link.href, options);
+    new Ajax.Request(link.href + '&getupdate=1', options);
     return false;
   },
 

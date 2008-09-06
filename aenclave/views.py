@@ -242,12 +242,17 @@ def logout(request):
 #---------------------------------- Queuing ----------------------------------#
 
 def queue_songs(request):
+    form = request.REQUEST
     # Get the selected songs.
-    songs = get_song_list(request.REQUEST)
+    songs = get_song_list(form)
     # Queue the songs.
     Controller().add_songs(songs)
-    # Redirect to the channels page.
-    return HttpResponseRedirect('/audio/channels/')
+    if 'getupdate' in form:
+        # Send back an updated playlist status.
+        return json_control_update(request)
+    else:
+        # Redirect to the channels page.
+        return HttpResponseRedirect('/audio/channels/')
 
 def dequeue_songs(request):
     form = request.POST

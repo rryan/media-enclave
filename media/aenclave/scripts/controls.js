@@ -29,6 +29,10 @@ var MyPeriodicalExecuter = Class.create(PeriodicalExecuter, {
   start: function() {
     if (!this.timer) {
       this.registerCallback();
+      // Do a callback now, since setInterval waits.
+      // WTF Yes, wait one millisecond so we don't block.
+      // TODO(rnk): Properly bind the 'this' value for the callback.
+      window.setTimeout(this.callback, 1);
     }
   },
 
@@ -62,11 +66,16 @@ var controls = {
                                                 controls.DELAY);
     controls.timestepper = new MyPeriodicalExecuter(function() {
       if (controls.playlist_info) {
+        // TODO(rnk): Use the browser's clock to avoid drift better.
         controls.update_elapsed_time(1 + controls.playlist_info.elapsed_time);
       }
     }, 1);
     controls.update_playlist_info(playlist_info);
-    controls.updater.start();
+    if (Boolean(cookies.read('controls_minimized'))) {
+      controls.minimize();
+    } else {
+      controls.updater.start();
+    }
   },
 
   // Fires an xhr that will get new info from the server.
@@ -164,12 +173,14 @@ var controls = {
     $('controls').hide();
     $('controls-restore').show();
     controls.updater.stop();
+    cookies.save('controls_minimized', '1', 365);
   },
 
   restore: function() {
     $('controls-restore').hide();
     $('controls').show();
     controls.updater.start();
+    cookies.delete_('controls_minimized');
   },
 
   play: function() {

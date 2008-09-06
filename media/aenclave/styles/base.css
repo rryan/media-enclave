@@ -168,20 +168,6 @@ DIV#controls A#shuffle {
     left: 110px;
 }
 
-A#controls-restore {
-    display: block;
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    z-index: 4;
-    background-image: url(/media/aenclave/images/maximize.png);
-    background-position: center center;
-    background-repeat: no-repeat;
-    width: 16px;
-    height: 16px;
-    text-decoration: none;
-}
-
 DIV#controls A#controls-minimize {
     position: relative;
     top: 0px;
@@ -191,7 +177,25 @@ DIV#controls A#controls-minimize {
     height: 16px;
     margin: 3px;
     padding: 0px;
+    background-color: white;
     background-image: url(/media/aenclave/images/minimize.png);
+    border: thin solid black;
+}
+
+A#controls-restore {
+    display: block;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    background-color: white;
+    background-image: url(/media/aenclave/images/maximize.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    width: 16px;
+    height: 16px;
+    text-decoration: none;
+    border: thin solid black;
 }
 
 DIV#controls DIV#progress-bar {

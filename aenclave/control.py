@@ -46,6 +46,9 @@ class Controller(object):
         self.client = client
         self.channel = channel
 
+    def _xmms2_url(self, path):
+        return 'file://' + urllib.quote_plus(path, safe='/')
+
     #---------------------------- STATUS METHODS -----------------------------#
 
     def get_status(self):
@@ -208,7 +211,8 @@ class Controller(object):
         try:
             # Pick a random dequeue noise and get its path.
             deq = random.choice(os.listdir(DEQUEUE_NOISES_DIR))
-            deq = 'file://' + os.path.join(DEQUEUE_NOISES_DIR, deq)
+            #deq = 'file://' + os.path.join(DEQUEUE_NOISES_DIR, deq)
+            deq = self._xmms2_url(os.path.join(DEQUEUE_NOISES_DIR, deq))
         except OSError:
             # We can't find the files for some reason.
             _catch()
@@ -296,7 +300,7 @@ class Controller(object):
         for song in songs:
             # The XMMS2 client expects URLs rather than paths, so we must
             # prepend "file://" to the path and encode the URL.
-            url = 'file://' + urllib.pathname2url(song.audio.path)
+            url = self._xmms2_url(song.audio.path)
             try:
                 # Have XMMS2 import the song data.
                 self.client.medialib_add_entry(url)
@@ -321,7 +325,6 @@ class Controller(object):
         self.channel.touch()
 
     def remove_song(self, index):
-        print index
         self.remove_songs([index])
 
     def remove_songs(self, indices):
@@ -344,9 +347,8 @@ class Controller(object):
             index += base
             # If the index is not valid, log an error and punt.
             if not 0 <= index < length:
-                
-                log.error('ERROR', "can't remove song index %i from list of length %i" %
-                          (index, length))
+                log.error('ERROR', "can't remove song index %i from list of"
+                          " length %i" % (index, length))
                 return
             # Remove the song from the playlist.
             try: self.client.playlist_remove_entry(index)

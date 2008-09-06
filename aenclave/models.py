@@ -62,8 +62,10 @@ class Song(models.Model):
 
     #------------------------------ Date Added -------------------------------#
 
-    #date_added = models.DateTimeField(auto_now_add=True, editable=False)
-    date_added = models.DateTimeField(auto_now_add=False, editable=False)
+    # Switch the following commented lines to run the migration script so that
+    # we can backdate the dates added.
+    date_added = models.DateTimeField(auto_now_add=True, editable=False)
+    #date_added = models.DateTimeField(auto_now_add=False, editable=False)
     def date_added_string(self): return datetime_string(self.date_added)
     date_added_string.short_description = 'date added'
 
@@ -76,7 +78,7 @@ class Song(models.Model):
 
     #------------------------------ Play Count -------------------------------#
 
-    play_count = models.PositiveIntegerField(default=0, editable=False) 
+    play_count = models.PositiveIntegerField(default=0, editable=False)
 
     #------------------------------ Audio Path -------------------------------#
 

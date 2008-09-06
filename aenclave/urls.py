@@ -8,9 +8,9 @@ urlpatterns = patterns(
     '',
 
     url(r'^$',
-        'django.views.generic.simple.direct_to_template',
-        {'template':'index.html',
-         'extra_context':{'total_song_count':Song.visibles.count}},
+        'menclave.aenclave.views.direct_to_template',
+        {'template': 'index.html',
+         'extra_context': {'total_song_count': Song.visibles.count}},
         name='aenclave-home'),
 
     # Login/logout
@@ -43,7 +43,7 @@ urlpatterns = patterns(
         name='aenclave-normal-search'),
 
     url(r'^filter/$',
-        'django.views.generic.simple.direct_to_template',
+        'menclave.aenclave.views.direct_to_template',
         {'template': 'filter.html'},
         name='aenclave-filter-home'),
 
@@ -85,14 +85,6 @@ urlpatterns = patterns(
         'menclave.aenclave.views.channel_detail',
         name='aenclave-channel'),
 
-    url(r'^channels/update/$',
-        'menclave.aenclave.views.channel_update',
-        name='aenclave-default-channel-update'),
-
-    url(r'^channels/(?P<channel_id>\d+)/update/$',
-        'menclave.aenclave.views.channel_update',
-        name='aenclave-channel-update'),
-
     # Playlists
 
     url(r'^playlists/$',
@@ -121,8 +113,8 @@ urlpatterns = patterns(
     # Uploading
 
     url(r'^upload/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template':'upload.html'},
+        'menclave.aenclave.views.direct_to_template',
+        {'template': 'upload.html'},
         name='aenclave-upload-home'),
 
     url(r'^upload/http/$',
@@ -134,8 +126,8 @@ urlpatterns = patterns(
         name='aenclave-sftp-upload'),
 
     url(r'^upload/sftp-info/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template':'sftp_info.html'},
+        'menclave.aenclave.views.direct_to_template',
+        {'template': 'sftp_info.html'},
         name='aenclave-sftp-info'),
 
     # DL
@@ -188,5 +180,11 @@ urlpatterns = patterns(
 
     (r'^json/email/$',
      'menclave.aenclave.views.json_email_song_link'),
+
+    (r'^json/controls_update/$',
+     'menclave.aenclave.views.json_control_update'),
+
+    (r'^json/controls_update/(?P<channel_id>\d+)/$',
+     'menclave.aenclave.views.json_control_update'),
 
 )

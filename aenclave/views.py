@@ -3,19 +3,22 @@
 import datetime
 import itertools
 from math import ceil as ceiling
-import re
 import os
+import re
 import tempfile
 import zipfile
 
 from django.conf import settings
 from django.contrib import auth
+from django.core.files import File
 from django.core.mail import send_mail, mail_admins
+from django.core.servers.basehttp import FileWrapper
 from django.db.models.query import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
-from django.core.servers.basehttp import FileWrapper
+
+import cjson
 
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
@@ -25,18 +28,50 @@ from menclave.aenclave.control import Controller, ControlError
 
 #================================= UTILITIES =================================#
 
-def render_json_to_response(*args, **kwargs):
+def direct_to_template(request, template, extra_context=None, mimetype=None,
+                       **kwargs):
+    """Render a given template with extra template variables."""
+    if extra_context is None: extra_context = {}
+    dictionary = {'params': kwargs}
+    dictionary.update(global_template_vars(request))
+    for key, value in extra_context.items():
+        if callable(value):
+            dictionary[key] = value()
+        else:
+            dictionary[key] = value
+    c = RequestContext(request, dictionary)
+    t = loader.get_template(template)
+    return HttpResponse(t.render(c), mimetype=mimetype)
+
+def render_html_template(template, request, options=None, *args, **kwargs):
+    """Render a template response with some extra parameters."""
+    # {} is an unsafe default value, so use use None instead.
+    if options is None:
+        options = {}
+    options.update(global_template_vars(request))
+    return render_to_response(template, options, *args, **kwargs)
+
+def global_template_vars(request):
+    return {'dl': ('dl' in request.REQUEST),
+            'playlist_info': playlist_info_json()}
+
+def render_json_template(*args, **kwargs):
+    """Renders a JSON template, and then calls render_json_response()."""
     data = loader.render_to_string(*args, **kwargs)
+    return render_json_response(data)
+
+def render_json_response(data):
+    """Sends an HttpResponse with the X-JSON header and the right mimetype."""
     resp = HttpResponse(data, mimetype=("application/json; charset=" +
                                         settings.DEFAULT_CHARSET))
     resp['X-JSON'] = data
     return resp
 
 def json_success(message=""):
-    return render_json_to_response('success.json', {'success_message':message})
+    return render_json_template('success.json', {'success_message':message})
 
 def json_error(message):
-    return render_json_to_response('error.json', {'error_message':message})
+    return render_json_template('error.json', {'error_message':message})
 
 def render_xml_to_response(*args, **kwargs):
     return HttpResponse(loader.render_to_string(*args, **kwargs),
@@ -53,9 +88,9 @@ def xml_error(message):
     return render_xml_to_response('error.xml', {'error_message':message})
 
 def html_error(request, message=None, title=None):
-    return render_to_response('error.html',
-                              {'error_message':message, 'error_title':title},
-                              context_instance=RequestContext(request))
+    return render_html_template('error.html', request,
+                                {'error_message':message, 'error_title':title},
+                                context_instance=RequestContext(request))
 
 def get_unicode(form, key, default=None):
     value = form.get(key, None)
@@ -110,8 +145,8 @@ def Qu(field, op, value):
 SSL_AUTH_PASSWORD = 'password'
 
 def user_debug(request):
-    return render_to_response('user_debug.html',
-                              context_instance=RequestContext(request))
+    return render_html_template('user_debug.html', request,
+                                context_instance=RequestContext(request))
 
 def login_with_ssl(request):
     ssl_email = request.META.get('HTTP_SSL_CLIENT_S_DN_EMAIL', '')
@@ -161,31 +196,31 @@ def login(request):
         # If the user isn't trying to log in, then just display the login page.
         if not form.get('login', False):
             goto = request.GET.get('goto', None)
-            return render_to_response('login.html', {'redirect_to': goto},
-                                      context_instance=RequestContext(request))
+            context = RequestContext(request)
+            return render_html_template('login.html', request,
+                                        {'redirect_to': goto},
+                                        context_instance=context)
         # Check if the username and password are correct.
-        user = auth.authenticate(username=form.get('username',''),
-                                 password=form.get('password',''))
+        user = auth.authenticate(username=form.get('username', ''),
+                                 password=form.get('password', ''))
 
     # If the username/password are invalid or SSL authentication failed tell
     # the user to try again.
+    error_message = ''
     if user is None:
         error_message = 'Invalid username/password.'
         if ssl_verify:
             error_message = ('SSL authentication failed. Use text-based'
                              ' authentication, or contact an administrator.')
-
-        return render_to_response(
-            'login.html',
-            {'error_message': error_message,
-             'redirect_to':form.get('goto', None)},
-            context_instance=RequestContext(request))
     # If the user account is disabled, then no dice.
-    elif not user.is_active: return render_to_response(
-        'login.html',
-        {'error_message':'The user account for <tt>%s</tt> has been disabled.'%
-         user.username, 'redirect_to':form.get('goto', None)},
-        context_instance=RequestContext(request))
+    elif not user.is_active:
+        error_message = ('The user account for <tt>%s</tt> has been disabled.' %
+                         user.username)
+    if error_message:
+        return render_html_template('login.html', request,
+                                    {'error_message': error_message,
+                                     'redirect_to': form.get('goto', None)},
+                                    context_instance=RequestContext(request))
 
     # Otherwise, we're good to go, so log the user in.
     auth.login(request, user)
@@ -246,12 +281,10 @@ def normal_search(request):
         # Redirect to the channels page.
         return HttpResponseRedirect('/audio/channels/')
     # Otherwise, display the search results.
-    return render_to_response('search_results.html',
-                              {'song_list':queryset,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'search_query':query_string},
-                              context_instance=RequestContext(request))
+    return render_html_template('search_results.html', request,
+                                {'song_list':queryset,
+                                 'search_query':query_string},
+                                context_instance=RequestContext(request))
 
 #------------------------------- Filter Search -------------------------------#
 
@@ -388,11 +421,9 @@ def filter_search(request):
     if errors: raise Http404  # TODO error (human's fault)
     if total == 0: queryset = ()
     else: queryset = Song.visibles.filter(_build_filter_query(tree))
-    return render_to_response('filter_results.html',
-                              {'song_list':queryset,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'criterion_count':total},
+    return render_html_template('filter_results.html', request,
+                                {'song_list':queryset,
+                                 'criterion_count':total},
                               context_instance=RequestContext(request))
 
 #--------------------------------- Browsing ----------------------------------#
@@ -405,10 +436,10 @@ def browse_index(request):
     #     memory efficient).
     total_albums = len(Song.visibles.values('album').distinct())
     total_artists = len(Song.visibles.values('artist').distinct())
-    return render_to_response('browse_index.html',
-                              {'total_albums': total_albums,
-                               'total_artists': total_artists},
-                              context_instance=RequestContext(request))
+    return render_html_template('browse_index.html', request,
+                                {'total_albums': total_albums,
+                                 'total_artists': total_artists},
+                                context_instance=RequestContext(request))
 
 def browse_albums(request, letter):
     if not letter.isalpha():
@@ -418,9 +449,9 @@ def browse_albums(request, letter):
         letter = letter.upper()
         matches = Song.visibles.filter(album__istartswith=letter)
     albums = [item['album'] for item in matches.values('album').distinct()]
-    return render_to_response('browse_albums.html',
-                              {'letter': letter, 'albums': albums},
-                              context_instance=RequestContext(request))
+    return render_html_template('browse_albums.html', request,
+                                {'letter': letter, 'albums': albums},
+                                context_instance=RequestContext(request))
 
 def browse_artists(request, letter):
     if not letter.isalpha():
@@ -430,27 +461,23 @@ def browse_artists(request, letter):
         letter = letter.upper()
         matches = Song.visibles.filter(artist__istartswith=letter)
     artists = [item['artist'] for item in matches.values('artist').distinct()]
-    return render_to_response('browse_artists.html',
-                              {'letter': letter, 'artists': artists},
-                              context_instance=RequestContext(request))
+    return render_html_template('browse_artists.html', request,
+                                {'letter': letter, 'artists': artists},
+                                context_instance=RequestContext(request))
 
 def view_album(request, album_name):
     album_songs = Song.visibles.filter(album__iexact=album_name)
-    return render_to_response('album_detail.html',
-                              {'album_name': album_name,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'song_list': album_songs},
-                              context_instance=RequestContext(request))
+    return render_html_template('album_detail.html', request,
+                                {'album_name': album_name,
+                                 'song_list': album_songs},
+                                context_instance=RequestContext(request))
 
 def view_artist(request, artist_name):
     artist_songs = Song.visibles.filter(artist__iexact=artist_name)
-    return render_to_response('artist_detail.html',
-                              {'artist_name': artist_name,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'song_list': artist_songs},
-                              context_instance=RequestContext(request))
+    return render_html_template('artist_detail.html', request,
+                                {'artist_name': artist_name,
+                                 'song_list': artist_songs},
+                                context_instance=RequestContext(request))
 
 #--------------------------------- Channels ----------------------------------#
 
@@ -459,76 +486,41 @@ def channel_detail(request, channel_id=1):
     except Channel.DoesNotExist: raise Http404
     ctrl = channel.controller()
     current_song = ctrl.get_current_song()
-    return render_to_response('channels.html',
-                              {'channel': channel,
-                               'current_song': current_song,
-                               'song_list': ctrl.get_queue_songs(),
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'force_actions_bar': True,
-                               'elapsed_time': ctrl.get_elapsed_time(),
-                               'skipping': (current_song == 'DQ'),
-                               'playing': ctrl.is_playing(),
-                               'no_queuing': True},
-                              context_instance=RequestContext(request))
-
-def channel_update(request, channel_id=1):
-    form = request.POST
-    try: channel = Channel.objects.get(pk=channel_id)
-    except Channel.DoesNotExist: raise Http404
-    timestamp = get_integer(form, 'timestamp', None)
-    reload_page = update_tbar = False
-    error_message = elapsed_time = total_time = None
-    if timestamp is not None and timestamp >= channel.last_touched_timestamp():
-        # up-to-date timestamp
-        try:
-            ctrl = channel.controller()
-            song = ctrl.get_current_song()
-            if song == 'DQ':
-                pass
-            elif song is None:
-                # Nothing playing; trick the page into reloading.
-                elapsed_time = 0
-                total_time = 1
-                update_tbar = True
-            else:
-                elapsed_time = ctrl.get_elapsed_time()
-                total_time = song.time
-                update_tbar = True
-        except ControlError, err: error_message = str(err)
-    else: reload_page = True  # old timestamp
-    return render_to_response('channel_update.html',
-                              {'reload': reload_page,
-                               'error': error_message,
-                               'update': update_tbar,
-                               'elapsed_time': elapsed_time,
-                               'total_time': total_time})
+    return render_html_template('channels.html', request,
+                                {'channel': channel,
+                                 'current_song': current_song,
+                                 'song_list': ctrl.get_queue_songs(),
+                                 'force_actions_bar': True,
+                                 'elapsed_time': ctrl.get_elapsed_time(),
+                                 'skipping': (current_song == 'DQ'),
+                                 'playing': ctrl.is_playing(),
+                                 'no_queuing': True},
+                                context_instance=RequestContext(request))
 
 #----------------------------- Playlist Viewing ------------------------------#
 
 def all_playlists(request):
-    return render_to_response('playlist_list.html',
-                              {'playlist_list': Playlist.objects.all()},
-                              context_instance=RequestContext(request))
+    return render_html_template('playlist_list.html', request,
+                                {'playlist_list': Playlist.objects.all()},
+                                context_instance=RequestContext(request))
 
 def playlist_detail(request, playlist_id):
     try: playlist = Playlist.objects.get(pk=playlist_id)
     except Playlist.DoesNotExist: raise Http404
     can_cede = playlist.can_cede(request.user)
-    return render_to_response('playlist_detail.html',
-                              {'playlist': playlist,
-                               'song_list': playlist.songs.all(),
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'force_actions_bar': can_cede,
-                               'allow_cede': can_cede,
-                               'allow_edit': playlist.can_edit(request.user)},
-                              context_instance=RequestContext(request))
+    return render_html_template('playlist_detail.html', request,
+                                {'playlist': playlist,
+                                 'song_list': playlist.songs.all(),
+                                 'force_actions_bar': can_cede,
+                                 'allow_cede': can_cede,
+                                 'allow_edit': playlist.can_edit(request.user)},
+                                context_instance=RequestContext(request))
 
 def user_playlists(request, username):
     plists = Playlist.objects.filter(owner__username=username)
-    return render_to_response('playlist_list.html', {'playlist_list': plists},
-                              context_instance=RequestContext(request))
+    return render_html_template('playlist_list.html', request,
+                                {'playlist_list': plists},
+                                context_instance=RequestContext(request))
 
 #----------------------------- Playlist Editing ------------------------------#
 
@@ -572,6 +564,7 @@ def add_to_playlist(request):
         return html_error(request, 'You lack permission to edit this'
                           ' playlist.', 'Add Songs')
     # Add the songs and redirect to the detail page for this playlist.
+    # XXX(rnk): What about order?
     for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
         playlist.songs.add(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
@@ -624,10 +617,8 @@ def process_upload_song(filename):
     song = Song(track=0, time=0)
 
     # read the song and push the data
-    fhandle = open(filename,'r')
-    content = fhandle.read()
-    #song.audio.save( song.save_audio_file(filename, content))
-    fhandle.close()
+    content = File(open(filename, 'r'))
+    song.audio.save(filename, content)
 
     # Now, open up the MP3 file and save the tag data into the database.
     audio = MP3(song.audio.path, ID3=EasyID3)
@@ -677,12 +668,10 @@ def upload_http(request):
 
     #[song,audio] = process_upload_song(audio['filename'], audio['content']
 
-    return render_to_response('upload_http.html',
-                              {'song_list': [song],
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'sketchy_upload': audio.info.sketchy},
-                              context_instance=RequestContext(request))
+    return render_html_template('upload_http.html', request,
+                                {'song_list': [song],
+                                 'sketchy_upload': audio.info.sketchy},
+                                context_instance=RequestContext(request))
 
 SFTP_UPLOAD_DIR = '/var/nicerack/sftp-upload'
 
@@ -709,12 +698,10 @@ def upload_sftp(request):
                 #remove the file from the sftp-upload directory
                 os.unlink(full_path)
 
-    return render_to_response('upload_sftp.html',
-                              {'song_list': song_list,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST),
-                               'sketchy_upload': sketchy},
-                              context_instance=RequestContext(request))
+    return render_html_template('upload_sftp.html', request,
+                                {'song_list': song_list,
+                                 'sketchy_upload': sketchy},
+                                context_instance=RequestContext(request))
 
 #-------------------------------- DL Requests --------------------------------#
 
@@ -747,7 +734,7 @@ class StreamingHttpResponse(HttpResponse):
 
     content = property(_get_content, _set_content)
 
-def send_song(id):
+def send_song(pk):
     """Return an HttpResponse that will serve an MP3 from disk.
 
     This happens without reading the whole MP3 in as a string.
@@ -815,11 +802,9 @@ def render_zip(archive_name, filenames):
 def roulette(request):
     # Choose six songs randomly.
     queryset = Song.visibles.order_by('?')[:6]
-    return render_to_response('roulette.html',
-                              {'song_list':queryset,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST)},
-                              context_instance=RequestContext(request))
+    return render_html_template('roulette.html', request,
+                                {'song_list': queryset},
+                                context_instance=RequestContext(request))
 
 #------------------------------- Delete Requests -----------------------------#
 
@@ -849,10 +834,8 @@ def submit_delete_requests(request):
 
     mail_admins(subject,message,False)
 
-    return render_to_response('delete_requested.html',
-                              {'song_list': song_list,
-                               # TODO(rnk): Kill this duplication.
-                               'dl': ('dl' in request.REQUEST)})
+    return render_html_template('delete_requested.html', request,
+                                {'song_list': song_list})
 
 
 #--------------------------------- XML Hooks ---------------------------------#
@@ -962,8 +945,46 @@ def json_control(request):
         elif action == 'skip': Controller().skip()
         elif action == 'shuffle': Controller().shuffle()
         else: return json_error('invalid action: ' + action)
-    except ControlError, err: return json_error(str(err))
-    else: return json_success()
+    except ControlError, err:
+        return json_error(str(err))
+    else:
+        # Control succeeded, get the current playlist state and send that back.
+        return json_control_update(request)
+
+def playlist_info_json(channel_id=1):
+    channel = Channel.objects.get(pk=channel_id)
+    data = {}
+    ctrl = channel.controller()
+    songs = ctrl.get_queue_songs()
+    current_song = ctrl.get_current_song()
+    if current_song:
+        songs.insert(0, current_song)
+    # Provide data for the first three songs.
+    data['songs'] = []
+    for song in songs:
+        if len(data['songs']) >= 3:
+            break
+        if song == 'DQ':
+            # Skip dequeue noises.
+            continue
+        # Strip the metadata of extra spaces, or we'll truncate too much.
+        info_str = '%s - %s' % (song.title.strip(), song.artist.strip())
+        if len(info_str) > 30:
+            info_str = info_str[:27] + '...'
+        data['songs'].append(info_str)
+    data['elapsed_time'] = ctrl.get_elapsed_time()
+    data['song_duration'] = songs[0].time if songs else 0
+    data['playlist_length'] = len(songs)
+    data['playlist_duration'] = ctrl.get_queue_duration()
+    return cjson.encode(data)
+
+def json_control_update(request, channel_id=1):
+    try:
+        playlist_info = playlist_info_json(channel_id)
+    except ControlError, err:
+        return json_error(str(err))
+    else:
+        return render_json_response(playlist_info)
 
 def json_edit(request):
     if not request.user.is_authenticated():
@@ -989,7 +1010,8 @@ def json_edit(request):
         song.artist = artist
         audio['artist'] = artist
     # Update track number.
-    if form.get('track', None) == '': song.track = 0
+    if form.get('track', None) == '':
+        song.track = 0
     else:
         track = get_integer(form, 'track')
         if track is not None and 0 <= track < 999:
@@ -998,15 +1020,15 @@ def json_edit(request):
     # Save and report success.
     song.save()
     audio.save()
-    return render_json_to_response('done_editing.json', {'song':song})
+    return render_json_template('done_editing.json', {'song':song})
 
 def json_user_playlists(request):
     if request.user.is_authenticated():
         query = Q(owner=request.user) | Q(group__in=request.user.groups.all())
         playlists = Playlist.objects.filter(query)
     else: playlists = Playlist.objects.none()
-    return render_json_to_response('playlist_list.json',
-                                  {'playlist_list':playlists})
+    return render_json_template('playlist_list.json',
+                                {'playlist_list':playlists})
 
 def json_email_song_link(request):
     form = request.POST

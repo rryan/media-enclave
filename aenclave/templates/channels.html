@@ -38,12 +38,5 @@
 {% block postcopyright %}{{block.super}}{% if song_list %}
  <form name=dequeueform action="{% url aenclave-dequeue-songs %}" method=POST>
   <input type=hidden name=indices>
- </form>{% endif %}{% if current_song or skipping %}
- <div id=controls>{% if playing %}
-  <a id="pause" href="javascript:channels.pause();">&nbsp;</a>{% else %}
-  <a id="play" href="javascript:channels.play();">&nbsp;</a>{% endif %}
-  <a id="skip" href="javascript:channels.skip();">&nbsp;</a>
-  <a id="shuffle" href="javascript:channels.shuffle();">&nbsp;</a>
-  <div><div id=timebar {% if skipping %}class=dq{% else %}style="width:{% widthratio elapsed_time current_song.time 160 %}px;"{% endif %}></div></div>
- </div>{% endif %}
+ </form>{% endif %}
 {% endblock %}

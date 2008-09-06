@@ -1,77 +1,79 @@
+/******************************* GLOBAL STYLES *******************************/
+
 BODY {
-  background-color: #fff;
-  color: #000;
-  font-family: "Times New Roman", "Times", serif;
-  font-size: 14px;
-  margin: 11px 27px 0px;
+    background-color: #fff;
+    color: #000;
+    font-family: "Times New Roman", "Times", serif;
+    font-size: 14px;
+    margin: 11px 27px 0px;
 }
 
 P { text-align: center; }
 
 P.warning {
-  margin: 40px auto 20px;
-  text-align: center;
+    margin: 40px auto 20px;
+    text-align: center;
 }
 
 P.warning SPAN {
-  background-color: #fcc;
-  border: 1px #bbb solid;
-  padding: 3px 10px;
+    background-color: #fcc;
+    border: 1px #bbb solid;
+    padding: 3px 10px;
 }
 
 TT {
-  font-family: "Andale Mono", monospace;
-  font-size: 0.9em;
+    font-family: "Andale Mono", monospace;
+    font-size: 0.9em;
 }
 
 DIV.title {
-  font-family: "Georgia", "Times New Roman", "Times", serif;
-  font-size: 28px;
-  text-align: center;
-}           
+    font-family: "Georgia", "Times New Roman", "Times", serif;
+    font-size: 28px;
+    text-align: center;
+}
 
 DIV.title A {
-  color: #000;
-  text-decoration: none;
+    color: #000;
+    text-decoration: none;
 }
 DIV.title A:active { color: #900; }
 
 DIV#header {
-  position: absolute;
+    position: absolute;
     left: 20px;
     top: 20px;
-  width: 200px;
+    width: 200px;
 }
 
 DIV.subtitle {
-  font-size: 20px;
-  margin: 10px 0px;
-  text-align: center;
+    font-size: 20px;
+    margin: 10px 0px;
+    text-align: center;
 }
 
 DIV#searchbar {
-  position: absolute;
+    position: absolute;
     left: 240px;
     top: 32px;
 }
 
 DIV.links {
-  border: 1px #bdc solid;
-  margin: 0px auto 6px;
-  padding: 2px 0px 1px;
-  text-align: center;
-  width: 370px;
+    border: 1px #bdc solid;
+    margin: 0px auto 6px;
+    padding: 2px 0px 1px;
+    text-align: center;
+    width: 370px;
 }
 
 DIV.links A {
-  color: #9ba;
-  padding: 0px 6px;
-  text-decoration: none;
+    color: #9ba;
+    padding: 0px 6px;
+    text-decoration: none;
 }
 
 DIV.links A:hover {
-  color: #9ad;
-  text-decoration: underline;
+    color: #9ad;
+    text-decoration: underline;
 }
 
 DIV.links A:active { color: #d99; }
@@ -79,15 +81,144 @@ DIV.links A:active { color: #d99; }
 DIV#headgap { height: 90px; }
 
 DIV#login {
-  font-size: 12px;
-  position: absolute;
+    font-size: 12px;
+    position: absolute;
     right: 20px;
     top: 11px;
-  text-align: right;
+    text-align: right;
 }
 
 DIV#copyright {
-  font-size: 12px;
-  margin: 10px;
-  text-align: center;
+    font-size: 12px;
+    margin: 10px;
+    text-align: center;
 }
+
+/******************************** CONTROL BOX ********************************/
+
+DIV#controls {
+    background-color: #ddd;
+    border-top: 1px #aaa solid;
+    border-left: 1px #aaa solid;
+    height: 160px;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    text-align: left;
+    width: 230px;
+    z-index: 3;
+}
+
+DIV#controls H4 {
+    margin: 1px;
+}
+
+DIV#controls DIV#control-box {
+    position: relative;
+    height: 42px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+DIV#controls OL {
+    margin-top: 0px;
+    margin-left: -17px;
+    margin-bottom: 0px;
+    margin-right: 0px;
+}
+
+DIV#controls A.control-action {
+    background-color: #eee;
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: 1px #cce outset;
+    cursor: pointer;
+    display: block;
+    font-size: 1px;
+    height: 26px;
+    position: absolute;
+    top: 14px;
+    text-decoration: none;
+    width: 50px;
+}
+
+DIV#controls A:hover {
+    background-color: #ddf;
+}
+
+DIV#controls A:active {
+    background-color: #eaf;
+    border: 1px #cce inset;
+}
+
+DIV#controls A#play {
+    background-image: url(/media/aenclave/images/play.png);
+    left: 0px;
+}
+DIV#controls A#pause {
+    background-image: url(/media/aenclave/images/pause.png);
+    left: 0px;
+}
+DIV#controls A#skip {
+    background-image: url(/media/aenclave/images/skip.png);
+    left: 55px;
+}
+DIV#controls A#shuffle {
+    background-image: url(/media/aenclave/images/shuffle.png);
+    left: 110px;
+}
+
+A#controls-restore {
+    display: block;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    background-image: url(/media/aenclave/images/maximize.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    width: 16px;
+    height: 16px;
+    text-decoration: none;
+}
+
+DIV#controls A#controls-minimize {
+    position: relative;
+    top: 0px;
+    float: right;
+    border: none;
+    width: 16px;
+    height: 16px;
+    margin: 3px;
+    padding: 0px;
+    background-image: url(/media/aenclave/images/minimize.png);
+}
+
+DIV#controls DIV#progress-bar {
+    background-color: #dfd;
+    border: 1px #555 inset;
+    padding: 0px;
+    position: absolute;
+    left: 0px;
+    top: 2px;
+    /* This width must be consistent with the value in controls.js. */
+    width: 160px;
+    height: 8px;
+}
+
+DIV#controls DIV#timebar {
+    background-color: #8b8;
+    border: none;
+    height: 8px;
+    margin: 0px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+DIV#controls DIV DIV.dq {
+    background-color: #b88;
+    width: 160px;
+}
+
+/*****************************************************************************/

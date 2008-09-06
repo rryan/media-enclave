@@ -5,6 +5,7 @@
 import log
 import os
 import random
+import logging
 import traceback
 import urllib
 
@@ -47,7 +48,8 @@ class Controller(object):
         self.channel = channel
 
     def _xmms2_url(self, path):
-        return 'file://' + urllib.quote_plus(path, safe='/')
+        # XMMS2 will quote the URL for us -- all we have to do is provide file:// + path
+        return 'file://' + path
 
     #---------------------------- STATUS METHODS -----------------------------#
 
@@ -93,7 +95,7 @@ class Controller(object):
             #     back-up code seems to work in that situation.
             if current == 0:
                 plist = self.client.playlist_list_entries()
-                current = plist[self.client.playlist_current_pos()]
+                current = plist[self._get_current_position()]
             # Get the primary database key of the corresponding song object.
             info = self.client.medialib_get_info(current)
             pk_string = info['aenclave', 'pk']
@@ -105,6 +107,10 @@ class Controller(object):
             _catch()
             raise ControlError("Couldn't get the current song.")
 
+    def _get_current_position(self):
+        """controller.get_current_position() -> numeric position of current song in the playlist"""
+        return self.client.playlist_current_pos()['position']
+
     def get_queue_songs(self):
         """controller.get_queue_songs() -> list of songs in queue"""
         # If the queue is stopped, return the empty list.
@@ -115,7 +121,7 @@ class Controller(object):
             # If the list is empty, return the empty list.
             if len(plist) == 0: return []
             # Otherwise, chop off everything up through the current song.
-            plist = plist[self.client.playlist_current_pos()+1:]
+            plist = plist[self._get_current_position()+1:]
             # Get the primary database keys.
             pks = [int(self.client.medialib_get_info(ID)['aenclave','pk'])
                    for ID in plist]
@@ -136,7 +142,7 @@ class Controller(object):
             # If the playlist is empty, return zero.
             if length == 0: return 0
             # Otherwise, return the length not counting the current song.
-            return length - self.client.playlist_current_pos() - 1
+            return length - self._get_current_position() - 1
         except XMMSError:
             _catch()
             return 0  # not worth raising an error
@@ -154,7 +160,7 @@ class Controller(object):
             # the song that is currently playing.
             plist = self.client.playlist_list_entries()
             if len(plist) == 0: return 0
-            plist = plist[self.client.playlist_current_pos():]
+            plist = plist[self._get_current_position():]
         except XMMSError:
             _catch()
             return 0  # not worth raising an error
@@ -211,7 +217,6 @@ class Controller(object):
         try:
             # Pick a random dequeue noise and get its path.
             deq = random.choice(os.listdir(DEQUEUE_NOISES_DIR))
-            #deq = 'file://' + os.path.join(DEQUEUE_NOISES_DIR, deq)
             deq = self._xmms2_url(os.path.join(DEQUEUE_NOISES_DIR, deq))
         except OSError:
             # We can't find the files for some reason.
@@ -227,7 +232,7 @@ class Controller(object):
                 # can't insert a song beyond the length of the playlist, so if
                 # we're at the end of the playlist, we have to use
                 # playlist_add() instead of playlist_insert().
-                nextpos = self.client.playlist_current_pos() + 1
+                nextpos = self._get_current_position() + 1
                 if nextpos >= len(self.client.playlist_list_entries()):
                     self.client.playlist_add_id(ID)
                 else: self.client.playlist_insert_id(nextpos, ID)
@@ -240,7 +245,7 @@ class Controller(object):
         # forward relative to the current song, and then "tickling" the
         # playback.
         try:
-            nextpos = self.client.playlist_current_pos() + 1
+            nextpos = self._get_current_position() + 1
             if nextpos >= len(self.client.playlist_list_entries()):
                 # If there's no next track, we can't go to the next song, we
                 # have to stop playback.
@@ -263,7 +268,7 @@ class Controller(object):
             # If the list is empty, do nothing.
             if len(plist) == 0: return
             # Get the current position.
-            pos = self.client.playlist_current_pos()
+            pos = self._get_current_position()
             # Dequeue all upcoming songs.
             for index in xrange(len(plist)-1, pos, -1):
                 self.client.playlist_remove_entry(index)
@@ -298,20 +303,38 @@ class Controller(object):
             raise ControlError("The queue could not be cleaned.")
         # Add the songs to the end of the queue.
         for song in songs:
-            # The XMMS2 client expects URLs rather than paths, so we must
-            # prepend "file://" to the path and encode the URL.
+            # The XMMS2 client expects URLs rather than paths
             url = self._xmms2_url(song.audio.path)
             try:
                 # Have XMMS2 import the song data.
-                self.client.medialib_add_entry(url)
-                # Have XMMS2 remember the primary key of the database entry.
+                retval = self.client.medialib_add_entry(url)
+
+                # Get ID of the song in the media library
                 ID = self.client.medialib_get_id(url)
-                self.client.medialib_property_set(ID, 'pk', str(song.id),
-                                                  'aenclave')
+
+                # Sometimes medialib_get_id returns 0 directly after
+                # we add an item to the media library. To account for this
+                # if we get a 0, then loop a few times trying again.
+                if ID == 0:
+                    logging.debug("Attempting to recover from medialib_get_id==0 for '%s'." % url)
+                    for i in range(10):
+                        ID = self.client.medialib_get_id(url)
+
+                # Under no circumstances should you provide a 0 to xmmsclient. A bug in xmms2 will cause the server
+                # to start ignoring future requests.
+                if ID == 0:
+                    logging.debug("Tried to recover from medialib_get_id==0 for '%s' but could not. Dropping the song on the floor." % url)
+                    continue
+
+                # Have XMMS2 remember the primary key of the database entry.
+                self.client.medialib_property_set(ID, 'pk', str(song.id), 'aenclave')
+
                 # Add the song to the queue.
                 self.client.playlist_add_id(ID)
+
             except XMMSError:
                 _catch()
+                logging.error("Couldn't add song to the queue.")
                 raise ControlError("The song could not be added to the queue.")
             # Update the song's last_played date.
             else: song.queue_touch()
@@ -333,7 +356,7 @@ class Controller(object):
         # ignore the currently playing song.  Then we need to check if that
         # index is valid.
         try:
-            base = self.client.playlist_current_pos() + 1
+            base = self._get_current_position() + 1
             length = len(self.client.playlist_list_entries())
         except XMMSError:
             _catch()
@@ -367,7 +390,7 @@ class Controller(object):
         # ignore the currently playing song.  Then we need to check if that
         # index is valid.
         try:
-            base = self.client.playlist_current_pos() + 1
+            base = self._get_current_position() + 1
             length = len(self.client.playlist_list_entries())
         except XMMSError:
             _catch()

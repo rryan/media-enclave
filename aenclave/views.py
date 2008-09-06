@@ -1,5 +1,6 @@
 # menclave/aenclave/views.py
 
+import logging
 import datetime
 import itertools
 from math import ceil as ceiling
@@ -981,7 +982,7 @@ def playlist_info_json(channel_id=1):
             info_str = info_str[:27] + '...'
         data['songs'].append(info_str)
     data['elapsed_time'] = ctrl.get_elapsed_time()
-    data['song_duration'] = songs[0].time if songs else 0
+    data['song_duration'] = songs[0].time if songs and songs[0] != 'DQ' else 0
     data['playlist_length'] = len(songs)
     data['playlist_duration'] = ctrl.get_queue_duration()
     return cjson.encode(data)

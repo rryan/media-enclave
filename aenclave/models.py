@@ -62,7 +62,8 @@ class Song(models.Model):
 
     #------------------------------ Date Added -------------------------------#
 
-    date_added = models.DateTimeField(auto_now_add=True, editable=False)
+    #date_added = models.DateTimeField(auto_now_add=True, editable=False)
+    date_added = models.DateTimeField(auto_now_add=False, editable=False)
     def date_added_string(self): return datetime_string(self.date_added)
     date_added_string.short_description = 'date added'
 
@@ -73,9 +74,13 @@ class Song(models.Model):
     def last_queued_string(self): return datetime_string(self.last_queued)
     last_queued_string.short_description = 'last queued'
 
+    #------------------------------ Play Count -------------------------------#
+
+    play_count = models.PositiveIntegerField(default=0, editable=False) 
+
     #------------------------------ Audio Path -------------------------------#
 
-    audio = models.FileField(upload_to='aenclave/songs/%Y/%m/%d/')
+    audio = models.FileField(max_length=255, upload_to='aenclave/songs/%Y/%m/%d/')
 
     def nice_filename(self):
         """Make a filename of the form 'artist - album - track - title.mp3'."""
@@ -104,6 +109,10 @@ class Song(models.Model):
 
     visible = models.BooleanField(default=True, help_text="Non-visible songs"
                                   " do not appear in search results.")
+
+    #-------------------------------- File Checksum---------------------------#
+
+    filechecksum = models.TextField(help_text="A checksum for the file.")
 
     #------------------------------ Other Stuff ------------------------------#
 

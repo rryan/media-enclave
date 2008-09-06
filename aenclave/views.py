@@ -111,6 +111,15 @@ def get_int_list(form, key):
         except Exception: pass
     return ints
 
+def get_song_list(form, key='ids'):
+    """Given a list of ids in a form, fetch a list of Songs from the db.
+
+    This function preserves the order of the ids as given in the form.
+    """
+    ids = get_int_list(form, key)
+    song_dict = Song.objects.in_bulk(ids)
+    return [song_dict[i] for i in ids if i in song_dict]
+
 def parse_integer(string):
     try: return int(str(string))
     except Exception: raise ValueError('invalid integer: %r' % string)
@@ -233,11 +242,8 @@ def logout(request):
 #---------------------------------- Queuing ----------------------------------#
 
 def queue_songs(request):
-    form = request.REQUEST
     # Get the selected songs.
-    ids = get_int_list(form, 'ids')
-    song_dict = Song.objects.in_bulk(ids)
-    songs = [song_dict[i] for i in ids if i in song_dict]
+    songs = get_song_list(request.REQUEST)
     # Queue the songs.
     Controller().add_songs(songs)
     # Redirect to the channels page.
@@ -541,8 +547,7 @@ def create_playlist(request):
         return html_error(request, 'A playlist of that name already exists.')
     #    return error(request,'Nonunique name/owner.')  # TODO better feedback
     # Add the specified songs to the playlist.
-    ids = get_int_list(form, 'ids')
-    songs = Song.objects.in_bulk(ids).values()
+    songs = get_song_list(form)
     for song in songs: playlist.songs.add(song)
     playlist.save()
     # Redirect to the detail page for the newly created playlist.
@@ -564,8 +569,8 @@ def add_to_playlist(request):
         return html_error(request, 'You lack permission to edit this'
                           ' playlist.', 'Add Songs')
     # Add the songs and redirect to the detail page for this playlist.
-    # XXX(rnk): What about order?
-    for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
+    songs = get_song_list(form)
+    for song in songs:
         playlist.songs.add(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
@@ -586,7 +591,7 @@ def remove_from_playlist(request):
         return html_error(request, 'You lack permission to edit this'
                           ' playlist.', 'Remove Songs')
     # Remove the songs and redirect to the detail page for this playlist.
-    for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
+    for song in get_song_list(form):
         playlist.songs.remove(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
@@ -707,14 +712,15 @@ def upload_sftp(request):
 
 def dl(request):
     """Serve songs to the user, either as a zip archive or a single file."""
-    # Get song ids.  Use REQUEST to allow DL links and checkbox selections.
-    ids = get_int_list(request.REQUEST, 'ids')
-    if not ids:
+    # Use REQUEST to allow GET and POST selections.
+    songs = get_song_list(request.REQUEST)
+    if not songs:
+        # TODO(rnk): Better error handling.
         raise Exception("No ids were provided to dl.")
-    elif len(ids) == 1:
-        return send_song(ids[0])
+    elif len(songs) == 1:
+        return send_song(songs[0])
     else:
-        return send_songs(ids)
+        return send_songs(songs)
 
 class StreamingHttpResponse(HttpResponse):
 
@@ -734,12 +740,11 @@ class StreamingHttpResponse(HttpResponse):
 
     content = property(_get_content, _set_content)
 
-def send_song(pk):
+def send_song(song):
     """Return an HttpResponse that will serve an MP3 from disk.
 
     This happens without reading the whole MP3 in as a string.
     """
-    song = Song.objects.get(id=id)
     fd = file(song.audio.path)
     wrapper = FileWrapper(fd)
     response = StreamingHttpResponse(wrapper, content_type='audio/mpeg')
@@ -750,9 +755,8 @@ def send_song(pk):
     response['Content-Length'] = os.path.getsize(song.audio.path)
     return response
 
-def send_songs(ids):
+def send_songs(songs):
     """Serve a zip archive of the chosen songs."""
-    songs = Song.objects.in_bulk(ids).values()
     # Make an archive name with a timestamp of the form YYYY-MM-DD_HH-MM-SS.
     timestamp = '%i-%i-%i_%i-%i-%i' % datetime.datetime.today().timetuple()[:6]
     archive_name = 'nr_dl_%s.zip' % timestamp
@@ -823,7 +827,8 @@ def submit_delete_requests(request):
 
     song_list = []
 
-    for song in Song.objects.in_bulk(get_int_list(form, 'ids')).values():
+    songs = get_song_list(form)
+    for song in songs:
         song_string = (' * %(id)s - %(artist)s - %(album)s - %(title)s\n' %
                        {'id': str(song.id),
                         'artist': song.artist,
@@ -843,9 +848,7 @@ def submit_delete_requests(request):
 def xml_queue(request):
     form = request.POST
     # Get the selected songs.
-    ids = get_int_list(form, 'ids')
-    song_dict = Song.objects.in_bulk(ids)
-    songs = [song_dict[i] for i in ids if i in song_dict]
+    songs = get_song_list(form)
     # Queue the songs.
     try: Controller().add_songs(songs)
     except ControlError, err: return xml_error(str(err))
@@ -1035,8 +1038,7 @@ def json_email_song_link(request):
     email_address = form.get('email', '')
     if not re.match("^[-_a-zA-Z0-9.]+@[-_a-zA-Z0-9.]+$", email_address):
         return json_error("Invalid email address.")
-    ids = get_int_list(form, 'ids')
-    songs = Song.objects.in_bulk(ids).values()
+    songs = get_song_list(form)
     if songs:
         message = ["From: Audio Enclave <%s>\r\n" %
                    settings.DEFAULT_FROM_EMAIL,

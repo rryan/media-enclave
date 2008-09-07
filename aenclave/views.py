@@ -985,6 +985,7 @@ def playlist_info_json(channel_id=1):
     data['song_duration'] = songs[0].time if songs and songs[0] != 'DQ' else 0
     data['playlist_length'] = len(songs)
     data['playlist_duration'] = ctrl.get_queue_duration()
+    data['playing'] = ctrl.is_playing()
     return cjson.encode(data)
 
 def json_control_update(request, channel_id=1):

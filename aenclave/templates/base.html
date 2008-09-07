@@ -19,7 +19,8 @@
   <body onload="controls.initialize({{playlist_info|escape}})">
     <div id=login>
       {% if user.is_authenticated %}
-        <tt>{{user.username}}</tt> [<a href="{% url aenclave-logout %}">logout</a>]
+        <tt>{{user.username}}</tt>
+        [<a href="{% url aenclave-logout %}">logout</a>]
       {% else %}
         [<a href="{% url aenclave-login %}">login</a>]
       {% endif %}

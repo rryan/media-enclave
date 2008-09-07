@@ -2,6 +2,18 @@
 // BTW This module assumes that the Prototype library has been loaded.  Refer
 //     to www.prototypejs.org for documentation.
 
+Array.prototype.equals = function(other) {
+  if (this.length != other.length) {
+    return false;
+  }
+  for (var i = 0; i < this.length; i++) {
+    if (this[i] != other[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function pluralize(num, opt_plural, opt_singular) {
   var plural = opt_plural || 's';
   var singular = opt_singular || '';
@@ -22,7 +34,12 @@ var MyPeriodicalExecuter = Class.create(PeriodicalExecuter, {
     // constructor.
     this.callback = callback;
     this.frequency = frequency;
+    // currentlyExecuting is true if the callback is executing, and false
+    // otherwise.
     this.currentlyExecuting = false;
+    // timer is null when we are stopped, and a setInterval timer value
+    // otherwise.
+    this.timer = null;
   },
 
   // Start periodic execution of our callback.
@@ -70,6 +87,9 @@ var controls = {
         controls.update_elapsed_time(1 + controls.playlist_info.elapsed_time);
       }
     }, 1);
+    // WTF Don't delete the next line, or we'll reload the channels page a lot
+    //     because we'll think that the playlist has changed.
+    controls.playlist_info = playlist_info;
     controls.update_playlist_info(playlist_info);
     if (Boolean(cookies.read('controls_minimized'))) {
       controls.minimize();
@@ -107,14 +127,47 @@ var controls = {
     new Ajax.Request(url, options);
   },
 
+  _playlist_empty: function(playlist_info) {
+    return !Boolean(playlist_info &&
+                    playlist_info.songs &&
+                    playlist_info.songs.length > 0);
+  },
+
+  playlist_changed: function(playlist_info) {
+    // Ugh, this boolean logic is complicated.
+    var old_plist_empty = controls._playlist_empty(controls.playlist_info);
+    var new_plist_empty = controls._playlist_empty(playlist_info);
+    // If we're on channels, and the playlist changed, reload the page.
+    if (!(old_plist_empty || new_plist_empty)) {
+      return (controls.playlist_info.playlist_length ==
+                playlist_info.playlist_length &&
+              !controls.playlist_info.songs.equals(playlist_info.songs));
+    } else {
+      return old_plist_empty != new_plist_empty;
+    }
+  },
+
   // Updates the controls widget with new playlist information.
   update_playlist_info: function(playlist_info) {
-    if (!playlist_info) return;
+    var on_channels = window.location.pathname.indexOf('channels/') > -1;
+    if (on_channels && controls.playlist_changed(playlist_info)) {
+      window.location.reload();
+      return;
+    }
     controls.playlist_info = playlist_info;
-    if (playlist_info.songs && playlist_info.songs.length > 0) {
+    if (controls._playlist_empty(playlist_info)) {
+      controls.clear_controls();
+    } else {
       // We have some songs, display them.
       controls.update_elapsed_time(playlist_info.elapsed_time);
-      controls.timestepper.start();
+      if (playlist_info.playing) {
+        controls.timestepper.start();
+        $('pause').show();
+        $('play').hide();
+      } else {
+        $('pause').hide();
+        $('play').show();
+      }
       $('current-song').innerHTML = playlist_info.songs[0];
       var song_list = $('song-list');
       song_list.innerHTML = '';
@@ -131,8 +184,6 @@ var controls = {
         msg = '... ' + msg;
       }
       $('control-trailer').innerHTML = msg;
-    } else {
-      controls.clear_controls();
     }
   },
 
@@ -160,7 +211,7 @@ var controls = {
     // In case another callback gets executed, still set the bar to 0.
     setTimeout(function() {
       controls.update_elapsed_time(0);
-    }, 500);
+    }, 1000);
     $('current-song').innerHTML = '--';
     // Clear the song list and the other info.
     $('song-list').innerHTML = '';
@@ -189,6 +240,9 @@ var controls = {
 
   pause: function() {
     controls._control_action('pause');
+    controls.timestepper.stop();
+    $('pause').hide();
+    $('play').show();
   },
 
   skip: function() {

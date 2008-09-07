@@ -139,9 +139,9 @@ var controls = {
     var new_plist_empty = controls._playlist_empty(playlist_info);
     // If we're on channels, and the playlist changed, reload the page.
     if (!(old_plist_empty || new_plist_empty)) {
-      return (controls.playlist_info.playlist_length ==
-                playlist_info.playlist_length &&
-              !controls.playlist_info.songs.equals(playlist_info.songs));
+      return !(controls.playlist_info.playlist_length ==
+                 playlist_info.playlist_length &&
+               controls.playlist_info.songs.equals(playlist_info.songs));
     } else {
       return old_plist_empty != new_plist_empty;
     }

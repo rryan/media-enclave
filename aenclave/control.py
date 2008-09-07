@@ -7,7 +7,6 @@ import os
 import random
 import logging
 import traceback
-import urllib
 
 from xmmsclient import XMMSError, XMMSSync
 from xmmsclient import PLAYBACK_STATUS_PLAY as PLAY
@@ -108,8 +107,10 @@ class Controller(object):
             raise ControlError("Couldn't get the current song.")
 
     def _get_current_position(self):
-        """controller.get_current_position() -> numeric position of current song in the playlist"""
+        """controller.get_current_position() -> position of song in playlist"""
+        # Different versions of XMMS treat this API call differently.
         return self.client.playlist_current_pos()['position']
+        #return self.client.playlist_current_pos()
 
     def get_queue_songs(self):
         """controller.get_queue_songs() -> list of songs in queue"""

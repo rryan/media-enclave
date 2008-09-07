@@ -2,11 +2,11 @@
 
 """menclave.aenclave.control -- music player control functions"""
 
-import log
 import os
 import random
 import logging
 import traceback
+import logging
 
 from xmmsclient import XMMSError, XMMSSync
 from xmmsclient import PLAYBACK_STATUS_PLAY as PLAY
@@ -27,7 +27,7 @@ class ControlError(Exception):
 
 def _catch():
     """Call from within an except-block to record the error."""
-    print traceback.format_exc()  # DEBUG replace print with logging eventually
+    logging.error(traceback.format_exc())
 
 #=============================================================================#
 
@@ -41,8 +41,13 @@ class Controller(object):
         client = XMMSSync()
         try: client.connect(channel.pipe)
         except IOError:
-            _catch()
-            raise ControlError("The music daemon is not responding.")
+            logging.error("XMMS2 daemon is apparently dead. Running xmms2-launcher.")
+            os.spawnlp(os.P_WAIT, 'xmms2-launcher', 'xmms2-launcher')
+            try:
+                client.connect(channel.pipe)
+            except IOError:
+                _catch()
+                raise ControlError("The music daemon is not responding.")
         self.client = client
         self.channel = channel
 
@@ -371,7 +376,7 @@ class Controller(object):
             index += base
             # If the index is not valid, log an error and punt.
             if not 0 <= index < length:
-                log.error('ERROR', "can't remove song index %i from list of"
+                logging.error('ERROR', "can't remove song index %i from list of"
                           " length %i" % (index, length))
                 return
             # Remove the song from the playlist.
@@ -406,7 +411,7 @@ class Controller(object):
             frm += base
             # If the index is not valid, log an error and punt.
             if not 0 <= frm < length:
-                log.error('ERROR', "can't move song index %i in list of length %i" %
+                logging.error('ERROR', "can't move song index %i in list of length %i" %
                           (frm, length))
                 return
             # Move the song.

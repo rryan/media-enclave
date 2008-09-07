@@ -298,17 +298,18 @@ var songlist = {
       var td = tds[i];
       var box = document.createElement("INPUT");
       var text;
-      if (td.childNodes.length > 0) {
-        var child = td.lastChild;
-        if (child.tagName == "A") {
-          if (child.childNodes.length > 0) text = child.firstChild.data;
-          else text = "";
-        } else text = child.data;
-        td.removeChild(child);
-      } else text = "";
+      var links = td.getElementsByTagName('A');
+      if (links.length > 0) {
+        text = links[0].innerHTML;
+      } else {
+        text = td.innerHTML;
+      }
+      text = text.strip();
       box.type = "text";
       box.className = "text";
       box.value = text;
+      // Clear the cell and replace it with the input box.
+      td.innerHTML = '';
       td.appendChild(box);
     }
     // Replace the edit button with a done button.
@@ -325,18 +326,23 @@ var songlist = {
       params[td.getAttribute("name")] = td.lastChild.value;
     }
     // Send the request.
-    new Ajax.Request("/audio/json/edit/",
-                     {method: "post", parameters: params,
-                      onFailure: function() {
-                        target.className = "error";
-                        target.setAttribute("onclick", "");
-                        songlist.error_message("Got no reponse from server.");
-                      },
-                      onSuccess: function(transport, json) {
-                        if ("error" in json) {
-                          songlist.error_message(json.error);
-                        } else songlist._update_edited_song(target, json);
-                      }});
+    var options = {
+      method: "post",
+      parameters: params,
+      onFailure: function() {
+        target.className = "error";
+        target.setAttribute("onclick", "");
+        songlist.error_message("Got no reponse from server.");
+      },
+      onSuccess: function(transport, json) {
+        if ("error" in json) {
+          songlist.error_message(json.error);
+        } else {
+          songlist._update_edited_song(target, json);
+        }
+      }
+    };
+    new Ajax.Request("/audio/json/edit/", options);
   },
 
   // Called only by done_editing().  Update the row in the table based on the
@@ -355,7 +361,9 @@ var songlist = {
         link.setAttribute("href", info.href);
         link.appendChild(document.createTextNode(info.text));
         td.appendChild(link);
-      } else td.appendChild(document.createTextNode(info.text));
+      } else {
+        td.appendChild(document.createTextNode(info.text));
+      }
     }
   },
 

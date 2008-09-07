@@ -456,10 +456,10 @@ def browse_index(request):
 def browse_albums(request, letter):
     if not letter.isalpha():
         letter = '#'
-        matches = Song.visibles.filter(album__regex=r'^[^a-zA-Z]')
+        matches = Song.visibles.filter(album__regex=r'^[^a-zA-Z]').order_by()
     else:
         letter = letter.upper()
-        matches = Song.visibles.filter(album__istartswith=letter)
+        matches = Song.visibles.filter(album__istartswith=letter).order_by()
     albums = [item['album'] for item in matches.values('album').distinct()]
     return render_html_template('browse_albums.html', request,
                                 {'letter': letter, 'albums': albums},
@@ -468,10 +468,10 @@ def browse_albums(request, letter):
 def browse_artists(request, letter):
     if not letter.isalpha():
         letter = '#'
-        matches = Song.visibles.filter(artist__regex=r'^[^a-zA-Z]')
+        matches = Song.visibles.filter(artist__regex=r'^[^a-zA-Z]').order_by()
     else:
         letter = letter.upper()
-        matches = Song.visibles.filter(artist__istartswith=letter)
+        matches = Song.visibles.filter(artist__istartswith=letter).order_by()
     artists = [item['artist'] for item in matches.values('artist').distinct()]
     return render_html_template('browse_artists.html', request,
                                 {'letter': letter, 'artists': artists},

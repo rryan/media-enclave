@@ -5,4 +5,4 @@
  {"text":"{{song.album|json_escape}}",
   "href":"/audio/albums/{{song.album|json_escape}}/"},
  {"text":"{{song.artist|json_escape}}",
-  "href":"/audio/artists/{{song.artists|json_escape}}/"}]
+  "href":"/audio/artists/{{song.artist|json_escape}}/"}]

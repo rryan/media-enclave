@@ -299,10 +299,14 @@ var songlist = {
       var box = document.createElement("INPUT");
       var text;
       var links = td.getElementsByTagName('A');
-      if (links.length > 0) {
-        text = links[0].innerHTML;
+      // This was used to use .innerHTML, which isn't what we want. 
+      // That would put &amp; in the text box.
+      // We want .innerText, but FF doesn't support it, 
+      // so the cross browser way is .innerText || .textContent
+      if (links.length > 0) {	
+        text = links[0].innerText || td.textContent;
       } else {
-        text = td.innerHTML;
+        text = td.innerText || td.textContent;
       }
       text = text.strip();
       box.type = "text";

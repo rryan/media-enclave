@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+  <head>
+    <title>{% block title %}&AElig;ncl&auml;ve{% endblock %}</title>
+    <meta name="authors" content="Media Enclave Team"/>
+    <meta name="copyright" content="&copy; 1999&ndash;2007 by Putz Inc."/>
+    <meta name="robots" content="NONE"/>
+    {% block styles %}
+      <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/base.css"/>
+    {% endblock %}
+    {% block scripts %}
+      <script type="text/javascript" src="http://prototypejs.org/assets/2008/1/25/prototype-1.6.0.2.js"></script>
+      <script type="text/javascript" src="/media/aenclave/scripts/controls.js"></script>
+      <script type="text/javascript" src="/media/aenclave/scripts/cookies.js"></script>
+    {% endblock %}
+  </head>
+
+  <body onload="controls.initialize({{playlist_info|escape}})">
+    <div id=login>
+      {% if user.is_authenticated %}
+        <tt>{{user.username}}</tt>
+        [<a href="{% url aenclave-logout %}">logout</a>]
+      {% else %}
+        [<a href="{% url aenclave-login %}">login</a>]
+      {% endif %}
+    </div>
+
+    {% block body %}{% endblock %}
+
+    <div id=copyright>&copy; 1999&ndash;2008 by Putz Inc.</div>
+
+    {% block postcopyright %}{% endblock %}
+
+    <div id=controls>
+      <a id="controls-minimize" class="control-action" href="#"
+          onclick="controls.minimize()">&nbsp;</a>
+      <h4>Now Playing:</h4>
+      <ol>
+        <li id="current-song">--</li>
+      </ol>
+      <div id=control-box>
+        <div id=progress-bar><div id=timebar></div></div>
+        <a class="control-action" id="pause"
+            href="javascript:controls.pause();">&nbsp;</a>
+        <a class="control-action" style="display:none" id="play"
+            href="javascript:controls.play();">&nbsp;</a>
+        <a class="control-action" id="skip"
+            href="javascript:controls.skip();">&nbsp;</a>
+        <a class="control-action" id="shuffle"
+            href="javascript:controls.shuffle();">&nbsp;</a>
+      </div>
+      <ol id=song-list start=2>
+        <!--<li>title - artist - album - track</li>-->
+        <!--<li>title - artist - album - track</li>-->
+      </ol>
+      <span id="control-trailer">
+        <!--... 10 songs total, 1h30m playing time.-->
+      </span>
+    </div>
+    <a style="display:none" id="controls-restore" href="#"
+        onclick="controls.restore()">&nbsp;</a>
+  </body>
+
+</html>

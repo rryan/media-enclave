@@ -1,0 +1,63 @@
+/******************************* BROWSER INDEX *******************************/
+
+TABLE.index {
+  border-collapse: separate;
+  font-size: 16px;
+  margin: 30px auto 20px;
+  text-align: center;
+}
+
+TABLE.index TD.spacer {
+  padding: 0;
+  width: 100px;
+}
+
+TABLE.index TH {
+  background-color: #eee;
+  border: 1px #aaa solid;
+  color: #005;
+  font-size: 0.9em;
+  font-weight: bold;
+  padding: 0.4em 0.7em;
+}
+
+TABLE.index TBODY TD {
+  height: 30px;
+  width: 55px;
+}
+
+TABLE.index A {
+  display: block;
+  padding: 7px 0px;
+  width: 65px;
+  text-decoration: none;
+}
+
+TABLE.index A:hover {
+  background-color: #ececec;
+}
+
+/***************************** BROWSE BY LETTER ******************************/
+
+TABLE.matches {
+  margin: 20px auto;
+  text-align: center;
+  width: 90%;
+}
+
+TABLE.matches TD {
+  border: 1px #aaa solid;
+  padding: 0.25em 0.70em 0.30em;
+}
+
+TABLE.matches TD A {
+  color: #000;
+  text-decoration: none;
+}
+
+TABLE.matches TD A:hover {
+  color: #00f;
+  text-decoration: underline;
+}
+
+/*****************************************************************************/

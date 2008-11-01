@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block body %}
+ <br>
+ <div class=title>VEncl&auml;ve</div>
+ <div class=subtitle>&Pi;&Tau;&Zeta; Video Network</div>
+ <br>
+ <div class=links>
+  <a href="#">Filter</a>
+  <a href="#">Browse</a>
+  <a href="#">Channels</a>
+  <a href="#">Playlists</a>
+  <a href="#">Upload</a>
+  <a href="#">Roulette</a>
+ </div>
+ <form method=get action="#">
+ <p><input type=text name=q size=60></p>
+ <p>
+  <input type=submit value="Search library">
+  <input type=submit name=lucky value="I want to be showered">
+ </p>
+ </form>
+ <p>Now searching through {{total_video_count|intcomma}} video{{total_video_count|pluralize}}.</p>
+{% endblock %}

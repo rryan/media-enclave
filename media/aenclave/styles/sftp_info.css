@@ -1,0 +1,32 @@
+P {
+  margin: 20px auto;
+  text-align: justify;
+  width: 80%;
+}
+
+P.how {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+OL {
+  margin: 22px auto;
+  width: 80%;
+}
+
+OL LI {
+  margin: 15px 0px;
+}
+
+OL UL {
+  list-style-type: square;
+  margin: 6px 0px;
+}
+
+OL UL LI {
+  margin: 2px 0px;
+}
+
+OL UL TT {
+  font-size: 12px;
+}

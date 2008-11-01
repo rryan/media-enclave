@@ -1,0 +1,35 @@
+{% extends "songlist_base.html" %}
+{% load humanize %}
+
+{% block title %}{{block.super}} Playlist Detail{% endblock %}
+
+{% block header %}Playlist Detail{% endblock %}
+
+{% block styles %}{{block.super}}
+ <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/playlist.css">{% endblock %}
+
+{% block scripts %}{{block.super}}
+ <script type="text/javascript" src="/media/aenclave/scripts/playlist.js"></script>{% endblock %}
+
+{% block presonglist %}
+ <div id=plisthead>
+  <span>{{playlist.name}}</span> &mdash;
+  {{song_list|length|intcomma}} song{{song_list|length|pluralize}} &mdash;
+  [<a href="/audio/playlists/user/{{playlist.owner.username|escape}}/"><tt>{{playlist.owner.username}}</tt></a>{% if playlist.group %} / {{playlist.group.name}}{% endif %}]{% if allow_edit %}
+  <a class=edit href="javascript:songlist.error_message('Not done yet!');">Edit</a>{% endif %}
+ </div>{% if not song_list %}
+ <p>This playlist is empty.</p>{% endif %}
+{% endblock %}
+
+{% block actions %}{{block.super}}{% if allow_edit and song_list %}
+  <a href="javascript:playlist.remove();" class=remove>Remove selected songs</a>{% endif %}{% if allow_cede %}
+  <a href="javascript:playlist.askdel();" class=delete>Delete playlist&hellip;</a>{% endif %}{% endblock %}
+
+{% block postcopyright %}{{block.super}}{% if allow_edit %}
+ <form name=removeform action="/audio/playlists/remove/" method=POST>
+  <input type=hidden name=pid value={{playlist.id}}>
+  <input type=hidden name=ids>
+ </form>{% endif %}{% if allow_cede %}
+ <form name=playlistdeleteform action="/audio/playlists/delete/" method=POST>
+  <input type=hidden name=pid value={{playlist.id}}>
+ </form>{% endif %}{% endblock %}

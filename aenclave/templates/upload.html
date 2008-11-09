@@ -43,5 +43,8 @@
   </form>
   <p>Confused?&nbsp; Check out these <a href="{% url aenclave-sftp-info %}">instructions for SFTP uploading</a>.</p>
  </div>
+ <div class="upload">
+   The new hotness is coming. Click <a href="{% url aenclave-http-upload-fancy %}">here</a> to try it out.
+ </div>
  <p class=warning><span><b>PLEASE DO NOT UPLOAD DUPLICATE SONGS.</b>&nbsp; First make sure that your songs aren&rsquo;t already in the database.</span></p>{% else %}
  <p>You must <a href="{% url aenclave-login %}?goto={% url aenclave-upload-home %}">log in</a> to upload songs.</p>{% endif %}{% endblock %}

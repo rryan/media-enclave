@@ -121,6 +121,15 @@ urlpatterns = patterns(
         'menclave.aenclave.views.upload_http',
         name='aenclave-http-upload'),
 
+    url(r'^upload/fancy/$',
+        'menclave.aenclave.views.upload_http_fancy',
+        name='aenclave-http-upload-fancy'),
+
+    url(r'^upload/fancy/receive/$',
+        'menclave.aenclave.views.upload_http_fancy_receiver',
+            name='aenclave-http-upload-fancy-receiver'),
+
+
     url(r'^upload/sftp/$',
         'menclave.aenclave.views.upload_sftp',
         name='aenclave-sftp-upload'),

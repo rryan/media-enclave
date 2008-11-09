@@ -714,6 +714,79 @@ def upload_sftp(request):
                                  'sketchy_upload': sketchy},
                                 context_instance=RequestContext(request))
 
+def upload_http_fancy(request):
+    # If the user is not logged in, redirect to the main upload page (which
+    # will then tell the user to log in).
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect('/audio/upload/')
+
+
+
+
+    return render_html_template('upload_http_fancy.html', request,
+                                {'song_list': [],
+                                 'show_songlist': True},
+                                context_instance=RequestContext(request))
+
+def upload_http_fancy_receiver(request):
+
+    for k,f in request.REQUEST.items():
+        print k,f
+
+    # Centipedes, in my request headers?
+    # Yes! This view receives its session key in the POST, because
+    # the multiple-file-uploader uses Flash to send the request,
+    # and the best Flash can do is grab our cookies from javascript
+    # and send them in the POST.
+
+    session_key = request.REQUEST.get(settings.SESSION_COOKIE_NAME,None)
+    if not session_key:
+        raise Http404()
+
+    # This is how SessionMiddleware does it.
+    session_engine = __import__(settings.SESSION_ENGINE, {}, {}, [''])
+    try:
+        request.session = session_engine.SessionStore(session_key)
+    except Exception, e:
+        return html_error(e)
+
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect('/audio/upload/')
+    
+    audio = None
+    # The key is generally 'Filedata' but this is just easier.
+    for k,f in request.FILES.items():
+        audio = f
+
+    # SWFUpload does not properly fill out the song's mimetype, so
+    # just use the extension.
+    if audio is None:
+        return html_error(request, 'No file was uploaded.', 'HTTP Upload')
+    elif not audio.name.lower().endswith('.mp3'):
+        return html_error(request, 'You may only upload MP3 files.',
+                              'HTTP Upload')
+    # Save the song into the database -- we'll fix the tags in a moment.
+    song = Song(track=0, time=0)
+
+    song.audio.save(audio.name, audio)
+
+    # Now, open up the MP3 file and save the tag data into the database.
+    audio = MP3(song.audio.path, ID3=EasyID3)
+    try: song.title = audio['title'][0]
+    except (KeyError, IndexError): song.title = 'Unnamed Song'
+    try: song.album = audio['album'][0]
+    except (KeyError, IndexError): song.album = ''
+    try: song.artist = audio['artist'][0]
+    except (KeyError, IndexError): song.artist = ''
+    try: song.track = int(audio['tracknumber'][0].split('/')[0])
+    except (KeyError, IndexError, ValueError): song.track = 0
+    song.time = int(ceiling(audio.info.length))
+    song.save()
+    
+    return render_html_template('songlist_song_row.html', request,
+                                {'song': song},
+                                context_instance=RequestContext(request))
+
 #-------------------------------- DL Requests --------------------------------#
 
 def dl(request):

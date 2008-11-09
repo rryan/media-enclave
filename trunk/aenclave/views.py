@@ -738,13 +738,11 @@ def upload_http_fancy(request):
 
     return render_html_template('upload_http_fancy.html', request,
                                 {'song_list': [],
-                                 'show_songlist': True},
+                                 'show_songlist': True,
+                                 'force_actions_bar':True},
                                 context_instance=RequestContext(request))
 
 def upload_http_fancy_receiver(request):
-
-    for k,f in request.REQUEST.items():
-        print k,f
 
     # Centipedes, in my request headers?
     # Yes! This view receives its session key in the POST, because
@@ -935,7 +933,8 @@ song in songs])
     mail_admins(subject,message,False)
 
     return render_html_template('delete_requested.html', request,
-                                {'song_list': song_list})
+                                {'song_list': song_list},
+                                context_instance=RequestContext(request))
 
 
 #--------------------------------- XML Hooks ---------------------------------#
@@ -1089,6 +1088,7 @@ def json_edit(request):
     if not request.user.is_authenticated():
         return json_error('user not logged in')
     form = request.POST
+
     try: song = Song.objects.get(pk=int(form.get('id','')))
     except (ValueError, TypeError, Song.DoesNotExist), err:
         return json_error(str(err))

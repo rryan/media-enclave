@@ -3,7 +3,6 @@ function fileQueued(file) {
 	var progress = new FileProgress(file, this.customSettings.progressTarget);
 	progress.setStatus("Pending...");
 	progress.toggleCancel(true, this);
-
     } catch (ex) {
 	this.debug(ex);
     }
@@ -49,7 +48,7 @@ function fileQueueError(file, errorCode, message) {
 function fileDialogComplete(numFilesSelected, numFilesQueued) {
     try {
 	if (numFilesSelected > 0) {
-	    document.getElementById(this.customSettings.cancelButtonId).disabled = false;
+	    //document.getElementById(this.customSettings.cancelButtonId).disabled = false;
 	}
 		
 	/* I want auto start the upload and I can do that here */
@@ -59,10 +58,7 @@ function fileDialogComplete(numFilesSelected, numFilesQueued) {
     }
 }
 
-function updateUploadStatus(file, status) {
-    $('uploadFile').update(file.name);
-    $('uploadStatus').update(status);
-}
+
 
 function uploadStart(file) {
     try {
@@ -75,7 +71,6 @@ function uploadStart(file) {
 	progress.setStatus("Uploading...");
 	progress.toggleCancel(true, this);
 
-	updateUploadStatus(file, "Uploading...");
     }
     catch (ex) {}
 	
@@ -90,7 +85,6 @@ function uploadProgress(file, bytesLoaded, bytesTotal) {
 	progress.setProgress(percent);
 	progress.setStatus("Uploading...");
 
-	updateUploadStatus(file, "Uploading... " + percent + "%");
     } catch (ex) {
 	this.debug(ex);
     }
@@ -98,20 +92,17 @@ function uploadProgress(file, bytesLoaded, bytesTotal) {
 
 function uploadSuccess(file, serverData) {
     try {
-	//var json = serverData.evalJSON();
+
 	var progress = new FileProgress(file, this.customSettings.progressTarget);
 	progress.setComplete();
 	progress.setStatus("Complete.");
 	progress.toggleCancel(false);
 
-	updateUploadStatus(file, "Done");
-
-	var tr = new Element('tr').update(serverData);
+	//var tr = new Element('tr').update(serverData);
 	var tbody = $('songlist').select('TBODY')[0];
 	
 	//tbody.down('tr').insert({after: tr});
-	tbody.insert({after: '<tr>#{data}</tr>'.interpolate({data: serverData})});
-	
+	Element.insert(tbody, {bottom: '<tr>#{data}</tr>'.interpolate({data: serverData})});
     } catch (ex) {
 	this.debug(ex);
     }
@@ -123,7 +114,6 @@ function uploadError(file, errorCode, message) {
 	progress.setError();
 	progress.toggleCancel(false);
 
-	updateUploadStatus(file, "Error");
 	switch (errorCode) {
 	case SWFUpload.UPLOAD_ERROR.HTTP_ERROR:
 	    progress.setStatus("Upload Error: " + message);
@@ -152,15 +142,13 @@ function uploadError(file, errorCode, message) {
 	case SWFUpload.UPLOAD_ERROR.FILE_CANCELLED:
 	    // If there aren't any files left (they were all cancelled) disable the cancel button
 	    if (this.getStats().files_queued === 0) {
-		document.getElementById(this.customSettings.cancelButtonId).disabled = true;
+		//document.getElementById(this.customSettings.cancelButtonId).disabled = true;
 	    }
 	    progress.setStatus("Cancelled");
 	    progress.setCancelled();
-	    updateUploadStatus(file, "Cancelled");
 	    break;
 	case SWFUpload.UPLOAD_ERROR.UPLOAD_STOPPED:
 	    progress.setStatus("Stopped");
-	    updateUploadStatus(file, "Stopped");
 	    break;
 	default:
 	    progress.setStatus("Unhandled Error: " + errorCode);
@@ -176,7 +164,7 @@ function uploadError(file, errorCode, message) {
 
 function uploadComplete(file) {
     if (this.getStats().files_queued === 0) {
-	document.getElementById(this.customSettings.cancelButtonId).disabled = true;
+	//document.getElementById(this.customSettings.cancelButtonId).disabled = true;
     }
 }
 

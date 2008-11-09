@@ -237,7 +237,7 @@ def login(request):
     auth.login(request, user)
 
     # hack to try to pass them back to http land 
-    goto = request.POST.get('goto','/audio')
+    goto = request.REQUEST.get('goto','/audio')
     if goto.startswith('https'):
         goto = goto.replace('^https','http')
         

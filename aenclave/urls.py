@@ -99,8 +99,9 @@ urlpatterns = patterns(
         'menclave.aenclave.views.playlist_detail',
         name='aenclave-playlist'),
 
-    (r'^playlists/user/(?P<username>.+)/$',
-     'menclave.aenclave.views.user_playlists'),
+    url(r'^playlists/user/(?P<username>.+)/$',
+        'menclave.aenclave.views.user_playlists',
+        name='aenclave-user-playlist'),
 
     (r'^playlists/create/$',
      'menclave.aenclave.views.create_playlist'),

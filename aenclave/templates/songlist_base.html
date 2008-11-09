@@ -54,14 +54,15 @@
 
 {% block postcopyright %}{% if song_list or force_actions_bar %}
  <div id=actionsgap></div>
- <div id=actions>{% block actions %}{% if not no_queuing and song_list %}
-  <a href="javascript:songlist.queue();" class=queue>Queue selected songs</a>{% endif %}{% if user.is_authenticated and song_list %}
-  {% if dl %}
-    <a href="javascript:songlist.dl();" class=dl>DL selected songs</a>
-  {% endif %}
-  <a href="javascript:songlist.askcreate();" class=create>Save as playlist&hellip;</a>
-  <a href="javascript:songlist.askadd();" class=add>Add to playlist&hellip;</a>
-  <a href="javascript:songlist.askdelete();" class=delete>Request for deletion</a>{% endif %}{% endblock %}
+ <div id=actions>{% block actions %}{% if song_list or show_songlist %}
+  {% if not no_queuing %}<a href="javascript:songlist.queue();" class=queue>Queue selected songs</a>{% endif %}
+   {% if user.is_authenticated %}
+   {% if dl %}<a href="javascript:songlist.dl();" class=dl>DL selected songs</a>{% endif %}
+   <a href="javascript:songlist.askcreate();" class=create>Save as playlist&hellip;</a>
+   <a href="javascript:songlist.askadd();" class=add>Add to playlist&hellip;</a>
+   <a href="javascript:songlist.askdelete();" class=delete>Request for deletion</a>
+   {% endif %}{% endif %}
+   {% endblock %}
 
 </div>
  <div id=subactions></div>{% if not no_queuing %}

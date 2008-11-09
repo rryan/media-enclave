@@ -16,27 +16,30 @@ function FileProgress(file, targetID) {
 
 	this.fileProgressWrapper = document.getElementById(this.fileProgressID);
 	if (!this.fileProgressWrapper) {
-		this.fileProgressWrapper = document.createElement("div");
+		this.fileProgressWrapper = document.createElement("tr");
 		this.fileProgressWrapper.className = "progressWrapper";
 		this.fileProgressWrapper.id = this.fileProgressID;
 
-		this.fileProgressElement = document.createElement("div");
+		this.fileProgressElement = document.createElement("td");
 		this.fileProgressElement.className = "progressContainer";
+		//this.fileProgressElement.setAttribute('colspan', '6');
+		//this.fileProgressElement.setAttribute('style', 'text-align:center;');
+		
 
 		var progressCancel = document.createElement("a");
 		progressCancel.className = "progressCancel";
 		progressCancel.href = "#";
 		progressCancel.style.visibility = "hidden";
-		progressCancel.appendChild(document.createTextNode(" "));
+		progressCancel.appendChild(document.createTextNode("Cancel"));
 
-		var progressText = document.createElement("div");
+		var progressText = document.createElement("span");
 		progressText.className = "progressName";
 		progressText.appendChild(document.createTextNode(file.name));
 
-		var progressBar = document.createElement("div");
+		var progressBar = document.createElement("span");
 		progressBar.className = "progressBarInProgress";
 
-		var progressStatus = document.createElement("div");
+		var progressStatus = document.createElement("span");
 		progressStatus.className = "progressBarStatus";
 		progressStatus.innerHTML = "&nbsp;";
 
@@ -45,11 +48,25 @@ function FileProgress(file, targetID) {
 		this.fileProgressElement.appendChild(progressStatus);
 		this.fileProgressElement.appendChild(progressBar);
 
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
 		this.fileProgressWrapper.appendChild(this.fileProgressElement);
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
+		this.fileProgressWrapper.appendChild(document.createElement('td'));
 
-		document.getElementById(targetID).appendChild(this.fileProgressWrapper);
+		var tbody = $('songlist').select('TBODY')[0];
+		Element.insert(tbody, {bottom: this.fileProgressWrapper });
+	
+		//tbody.down('tr').insert({after: tr});
+		//tbody.insert({after: this.fileProgressWrapper}); //'<tr>#{data}</tr>'.interpolate({data: serverData})});
+		//tbody.appendChild(this.fileProgressWrapper);
+		//document.getElementById(targetID).appendChild(this.fileProgressWrapper);
 	} else {
-		this.fileProgressElement = this.fileProgressWrapper.firstChild;
+	    //this.fileProgressElement = this.fileProgressWrapper.firstChild;
+	    this.fileProgressElement = this.fileProgressWrapper.childNodes[2];
 	}
 
 	this.height = this.fileProgressWrapper.offsetHeight;
@@ -66,9 +83,11 @@ FileProgress.prototype.setComplete = function () {
 	this.fileProgressElement.childNodes[3].style.width = "";
 
 	var oSelf = this;
-	setTimeout(function () {
-		oSelf.disappear();
-	}, 1000);
+	oSelf.disappear();
+	
+	//setTimeout(function () {
+	//
+	//}, 1000);
 };
 FileProgress.prototype.setError = function () {
 	this.fileProgressElement.className = "progressContainer red";

@@ -31,3 +31,26 @@ DIV.upload TABLE TD {
   text-align: left;
   width: 50%;
 }
+
+.progressCancel {
+    font: blue;
+}
+
+.progressName {
+    font-weight: bold;
+    padding-right:10px;
+    padding-left:10px;
+}
+
+.progressBarStatus {
+    font-weight:bold;
+    padding-right:10px;
+    padding-left:10px;
+}
+
+.red {
+    background-color: red;
+}
+.green {
+    background-color: green;
+}

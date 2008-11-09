@@ -18,7 +18,7 @@
 		Event.observe(window, 'load', function() {
 			var settings = {
 				flash_url : "{{MEDIA_URL}}aenclave/scripts/swfupload.swf",
-				upload_url: "{% url aenclave-http-upload-fancy-receiver %}",	// Relative to the SWF file
+				upload_url: "{% url aenclave-http-upload-fancy-receiver %}",
 				post_params: {},
 				file_size_limit : "100 MB",
 				file_types : "*.mp3",
@@ -26,20 +26,19 @@
 				file_upload_limit : 100,
 				file_queue_limit : 0,
 				custom_settings : {
-					progressTarget : "fsUploadProgress",
-					cancelButtonId : "btnCancel"
+					progressTarget : "songlist",
 				},
 				debug: false,
 
 				// Button settings
-				button_image_url: "../images/TestImageNoText_65x29.png",	// Relative to the Flash file
-				button_width: "200",
-				button_height: "29",
-				button_placeholder_id: "spanButtonPlaceHolder",
+				button_image_url: "{{MEDIA_URL}}aenclave/images/button160x22.png",
+				button_width: "160",
+				button_height: "22",
+				button_placeholder_id: "buttonPlaceHolder",
 				button_text: '<span class="theFont">Click Here to Upload</span>',
 				button_text_style: ".theFont { font-size: 16; }",
 				button_text_left_padding: 12,
-				button_text_top_padding: 3,
+				button_text_top_padding: 0,
 				
 				// The event handler functions are defined in handlers.js
 				file_queued_handler : fileQueued,
@@ -64,22 +63,16 @@
 {% block presonglist %}
 
 <div align="center">
-  <div><b>Uploading:</b> <span id="uploadFile"><i>None</i></span> <b>Status:</b><span id="uploadStatus"><i>N/A</i></span></div>
-	<form id="form1" action="index.php" method="post" enctype="multipart/form-data">
+  <strong style="font-size: 18px;">You can upload multiple files at a time now! Just Shift+Click or Control+Click</strong><br/><br/>
 
-			<div class="fieldset flash" id="fsUploadProgress">
-			<span class="legend">Upload Queue</span>
-			</div>
-		<div id="divStatus">0 Files Uploaded</div>
-			<div>
-				<span id="spanButtonPlaceHolder" style="width:200px;"></span>
-				<br/>
-				<input id="btnCancel" type="button" value="Cancel All Uploads" onclick="swfu.cancelQueue();" disabled="disabled" style="margin-left: 2px; font-size: 8pt; height: 29px;" />
-			</div>
-
-	</form>
+  <span id="buttonPlaceHolder"></span><br/>
+  <div id="divStatus">0 Files Uploaded</div>
 </div>
 
+<p>(If this page doesn't work for you, you can use the old, single-file upload <a href="{% url aenclave-upload-home %}">here</a>.)</p>
 
- <p>Songs you upload will show up below. Please make sure that their tag information is up to date.</p>
+<p class=warning><span><b>PLEASE DO NOT UPLOAD DUPLICATE SONGS.</b>&nbsp; First make sure that your songs aren&rsquo;t already in the database.</span></p>
+
+ <p>Songs you upload will show up below. <em>Please make sure that their tag information is up to date.</em></p>
+
 {% endblock %}

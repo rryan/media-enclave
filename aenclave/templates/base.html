@@ -22,7 +22,7 @@
         <tt>{{user.username}}</tt>
         [<a href="{% url aenclave-logout %}">logout</a>]
       {% else %}
-        [<a href="{% url aenclave-login %}">login</a>]
+        [<a href="{% url aenclave-login %}?goto={{ request.build_absolute_uri }}">login</a>]
       {% endif %}
     </div>
 

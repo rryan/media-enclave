@@ -491,6 +491,13 @@ def view_artist(request, artist_name):
                                  'song_list': artist_songs},
                                 context_instance=RequestContext(request))
 
+def list_songs(request):
+    songs = get_song_list(request.REQUEST)
+
+    return render_html_template('list_songs.html', request,
+                                {'song_list': songs},
+                                context_instance=RequestContext(request))
+
 #--------------------------------- Channels ----------------------------------#
 
 def channel_detail(request, channel_id=1):
@@ -915,6 +922,9 @@ def submit_delete_requests(request):
                         'title': song.title})
         message += song_string
         song_list.append(song)
+
+    message += '\nView these songs <a href="http://nr.mit.edu/audio/songs/?ids=%s">here</a>.' % '+'.join([str(song.id) for 
+song in songs])
 
     mail_admins(subject,message,False)
 

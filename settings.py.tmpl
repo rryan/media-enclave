@@ -14,14 +14,18 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # If DEBUG is False, then any errors will be emailed to the ADMINS.
-ADMINS = (('Nice-Write', 'nice-write@mit.edu'),)
+ADMINS = (('Media-Enclave Admins', 'media-enclave-admins@www.example.com'),)
 
 # Information about broken links gets emailed to the MANAGERS.
 SEND_BROKEN_LINK_EMAILS = True
 MANAGERS = ADMINS
 
 # Subject prefix for emails sent out to ADMINS or MANAGERS.
-EMAIL_SUBJECT_PREFIX = '[NR3] '
+EMAIL_SUBJECT_PREFIX = '[Media-Enclave] '
+SERVER_EMAIL="somebody@www.example.com"
+DEFAULT_FROM_EMAIL="media-enclave@www.example.com"
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
 
 ### CUSTOMIZE ME: the hostname of the server running your media
 ### enclave install.
@@ -125,3 +129,7 @@ YEAR_MONTH_FORMAT = 'F Y'         # December 2006
 MONTH_DAY_FORMAT = 'j F'          # 3 December
 
 #=============================================================================#
+
+from xmmsclient import XMMSSync
+DAEMON_CONNECTION = XMMSSync()
+DAEMON_CONNECTION.connect('tcp://127.0.0.1:9000')

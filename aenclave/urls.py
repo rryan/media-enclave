@@ -75,6 +75,10 @@ urlpatterns = patterns(
         'menclave.aenclave.views.view_artist',
         name='aenclave-artist'),
 
+    url(r'^songs/$',
+        'menclave.aenclave.views.list_songs',
+        name='aenclave-list'),
+
     # Channels
 
     url(r'^channels/$',

@@ -13,6 +13,7 @@ from xmmsclient import PLAYBACK_STATUS_PLAY as PLAY
 from xmmsclient import PLAYBACK_STATUS_PAUSE as PAUSE
 from xmmsclient import PLAYBACK_STATUS_STOP as STOP
 
+from menclave.settings import DAEMON_CONNECTION
 from menclave.aenclave.models import Channel, Song
 
 __all__ = ('ControlError', 'Controller', 'DEQUEUE_NOISES_DIR')
@@ -38,17 +39,25 @@ class Controller(object):
     channel if no Channel object is given."""
     def __init__(self, channel=None):
         if channel is None: channel = Channel.default()
-        client = XMMSSync()
-        try: client.connect(channel.pipe)
-        except IOError:
-            logging.error("XMMS2 daemon is apparently dead. Running xmms2-launcher.")
-            os.spawnlp(os.P_WAIT, 'xmms2-launcher', 'xmms2-launcher')
-            try:
-                client.connect(channel.pipe)
-            except IOError:
-                _catch()
-                raise ControlError("The music daemon is not responding.")
-        self.client = client
+
+# WTF (rryan): This code is broken by Apache, because it spawns so
+# many damn workers, that so many connections to the music daemon are
+# made that it hits the unix file descriptor limit. For now, we just
+# use one connection, and pray there aren't race conditions (hah)
+
+#         client = XMMSSync()
+#         try: client.connect(channel.pipe)
+#         xcept IOError:
+#             logging.error("XMMS2 daemon is apparently dead. Running xmms2-launcher.")
+#             os.spawnlp(os.P_WAIT, 'xmms2-launcher', 'xmms2-launcher')
+#             try:
+#                 client.connect(channel.pipe)
+#             except IOError:
+#                 _catch()
+#                 raise ControlError("The music daemon is not responding.")
+#        self.client = client
+
+        self.client = DAEMON_CONNECTION
         self.channel = channel
 
     def _xmms2_url(self, path):

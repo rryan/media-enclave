@@ -230,6 +230,15 @@ var songlist = {
     }
   },
 
+  delete: function() {
+    with (songlist) {
+      start_subaction();
+      add_subaction_label("Really DELETE the selected songs?");
+      add_subaction_button("ok", "songlist.okdelete();", "Yes, those tunes suck!");
+      add_subaction_cancel_button();
+    }
+  },
+
   okdelete: function() {
     // WTF deleteform is the name of a hidden delete form on the page
     document.forms.deleteform.ids.value = songlist.gather_ids(false);

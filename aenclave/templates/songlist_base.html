@@ -60,7 +60,8 @@
    {% if dl %}<a href="javascript:songlist.dl();" class=dl>DL selected songs</a>{% endif %}
    <a href="javascript:songlist.askcreate();" class=create>Save as playlist&hellip;</a>
    <a href="javascript:songlist.askadd();" class=add>Add to playlist&hellip;</a>
-   <a href="javascript:songlist.askdelete();" class=delete>Request for deletion</a>
+   {% if user.is_staff %}<a href="javascript:songlist.delete();" class=delete>Delete selected songs</a>
+   {% else %}<a href="javascript:songlist.askdelete();" class=delete>Request for deletion</a>{% endif %}
    {% endif %}{% endif %}
    {% endblock %}
 

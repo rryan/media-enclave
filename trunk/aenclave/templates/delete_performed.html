@@ -1,0 +1,14 @@
+{% extends "songlist_base.html" %}
+{% load humanize %}
+
+{% block title %}{{block.super}} Delete Songs{% endblock %}
+
+{% block header %}Delete Songs{% endblock %}
+
+{% block styles %}{{block.super}}
+ <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/upload.css">{% endblock %}
+
+{% block presonglist %}
+ <p><em>With great power comes great responsibility.</em></p>
+ <p>The selected songs are no more. <strong>Please do not abuse this feature.</strong></p> 
+{% endblock %}

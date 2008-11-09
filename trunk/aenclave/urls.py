@@ -157,7 +157,7 @@ urlpatterns = patterns(
     # Delete Requests
 
     url(r'^delete-songs/$',
-        'menclave.aenclave.views.submit_delete_requests',
+        'menclave.aenclave.views.delete_songs',
         name='aenclave-delete-songs'),
 
     # XML hooks

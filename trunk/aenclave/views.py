@@ -902,6 +902,40 @@ def roulette(request):
 
 #------------------------------- Delete Requests -----------------------------#
 
+def delete_songs(request):
+    form = request.POST
+    
+    # The person must be authenticated
+    if not request.user.is_authenticated():
+        raise Http404()
+    
+    if not request.user.is_staff:
+        return submit_delete_requests(request)
+
+    subject = 'Song Deletion by ' + request.user.username
+    message = 'The following files were deleted by ' + request.user.username + ':\n'
+
+    song_list = []
+
+    songs = get_song_list(form)
+    for song in songs:
+        song_string = (' * %(id)s - %(artist)s - %(album)s - %(title)s\n' %
+                       {'id': str(song.id),
+                        'artist': song.artist,
+                        'album': song.album,
+                        'title': song.title})
+        message += song_string
+        song_list.append(song)
+    
+    mail_admins(subject,message,False)
+
+    # Do the dirty deed.
+    for song in songs:
+        song.delete()
+
+    return render_html_template('delete_performed.html', request,
+                                {},
+                                context_instance=RequestContext(request))
 
 def submit_delete_requests(request):
     form = request.POST

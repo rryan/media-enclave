@@ -16,7 +16,7 @@ from django.core.files import File
 from django.core.mail import send_mail, mail_admins
 from django.core.servers.basehttp import FileWrapper
 from django.db.models.query import Q
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from django.contrib.auth.decorators import login_required
@@ -238,7 +238,7 @@ def login(request):
     auth.login(request, user)
 
     # hack to try to pass them back to http land 
-    goto = request.REQUEST.get('goto','/audio')
+    goto = request.REQUEST.get('goto',reverse('aenclave-home'))
     if goto.startswith('https'):
         goto = goto.replace('^https','http')
         
@@ -246,7 +246,7 @@ def login(request):
 
 def logout(request):
     auth.logout(request)
-    return HttpResponseRedirect(request.GET.get('goto','/audio/'))
+    return HttpResponseRedirect(request.GET.get('goto',reverse('aenclave-home')))
 
 #---------------------------------- Queuing ----------------------------------#
 
@@ -261,7 +261,7 @@ def queue_songs(request):
         return json_control_update(request)
     else:
         # Redirect to the channels page.
-        return HttpResponseRedirect('/audio/channels/')
+        return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
 def dequeue_songs(request):
     form = request.POST
@@ -270,7 +270,7 @@ def dequeue_songs(request):
     # Dequeue the songs.
     Controller().remove_songs(indices)
     # Redirect to the channels page.
-    return HttpResponseRedirect('/audio/channels/')
+    return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
 #------------------------------- Normal Search -------------------------------#
 
@@ -299,7 +299,7 @@ def normal_search(request):
         song = queryset.order_by('?')[0]
         Controller().add_song(song)
         # Redirect to the channels page.
-        return HttpResponseRedirect('/audio/channels/')
+        return HttpResponseRedirect(reverse('aenclave-default-channel'))
     # Otherwise, display the search results.
     return render_html_template('search_results.html', request,
                                 {'song_list':queryset,
@@ -553,8 +553,9 @@ def user_playlists(request, username):
 
 def create_playlist(request):
     if not request.user.is_authenticated():
-        return html_error(request, 'You must <a href="/audio/login/">log'
-                          ' in</a> to create a playlist.', 'Create Playlist')
+        return html_error(request,
+                          'You must <a href="%s">log in</a> to create a playlist.' % reverse('aenclave-login'),
+                          'Create Playlist')
     form = request.POST
     name = get_unicode(form, 'name')
     if not name:
@@ -577,8 +578,9 @@ def create_playlist(request):
 def add_to_playlist(request):
     # Make sure the user is logged in.
     if not request.user.is_authenticated():
-        return html_error(request, 'You must <a href="/audio/login/">log '
-                          'in</a> to add songs to a playlist.', 'Add Songs')
+        return html_error(request,
+                          'You must <a href="%s">log in</a> to add songs to a playlist.' % reverse('aenclave-login'),
+                          'Add Songs')
     # Get the playlist to be added to.
     form = request.POST
     try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
@@ -598,8 +600,8 @@ def add_to_playlist(request):
 def remove_from_playlist(request):
     # Make sure the user is logged in.
     if not request.user.is_authenticated():
-        return html_error(request, 'You must <a href="/audio/login/">log '
-                          'in</a> to remove songs from a playlist.',
+        return html_error(request,
+                          'You must <a href="%s">log in</a> to remove songs from a playlist.' % reverse('aenclave-login'),
                           'Remove Songs')
     # Get the playlist to be removed from.
     form = request.POST
@@ -619,8 +621,9 @@ def remove_from_playlist(request):
 def delete_playlist(request):
     # Make sure the user is logged in.
     if not request.user.is_authenticated():
-        return html_error(request, 'You must <a href="/audio/login/">log'
-                          ' in</a> to delete a playlist.', 'Delete Playlist')
+        return html_error(request,
+                          'You must <a href="%s">log in</a> to delete a playlist.' % reverse('aenclave-login'),
+                          'Delete Playlist')
     # Get the playlist to be deleted.
     form = request.POST
     try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
@@ -633,8 +636,7 @@ def delete_playlist(request):
                           'Delete Playlist')
     # Delete the playlist and redirect to the user's playlists page.
     playlist.delete()
-    return HttpResponseRedirect('/audio/playlists/user/%s/' %
-                                request.user.username)
+    return HttpResponseRedirect(reverse('aenclave-user-playlist', request.user.username))
 
 #---------------------------------- Upload -----------------------------------#
 
@@ -664,7 +666,7 @@ def upload_http(request):
     # If the user is not logged in, redirect to the main upload page (which
     # will then tell the user to log in).
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/audio/upload/')
+        return HttpResponseRedirect(reverse('aenclave-upload-home'))
     # Nab the file and make sure it's legit.
     audio = request.FILES.get('audio', None)
     if audio is None:
@@ -705,7 +707,7 @@ def upload_sftp(request):
     # If the user is not logged in, redirect to the main upload page (which
     # will then tell the user to log in).
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/audio/upload/')
+        return HttpResponseRedirect(reverse('aenclave-upload-home'))
 
     song_list = []
     sketchy = False
@@ -761,8 +763,9 @@ def upload_http_fancy_receiver(request):
     except Exception, e:
         return html_error(e)
 
+    # SWFUpload will show an error to the user if this happens. 
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/audio/upload/')
+        return HttpResponseForbidden()
     
     audio = None
     # The key is generally 'Filedata' but this is just easier.
@@ -961,8 +964,8 @@ def submit_delete_requests(request):
         message += song_string
         song_list.append(song)
 
-    message += '\nView these songs <a href="http://nr.mit.edu/audio/songs/?ids=%s">here</a>.' % '+'.join([str(song.id) for 
-song in songs])
+    uri = "%s?ids=%s" % (request.build_absolute_uri(reverse("aenclave-list")), '+'.join([str(song.id) for song in songs]))
+    message += '\nView these songs here: %s\n' % uri
 
     mail_admins(subject,message,False)
 

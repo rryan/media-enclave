@@ -734,7 +734,7 @@ def upload_http_fancy(request):
 
     # HTTPS is way slowed down..
     if request.is_secure():
-        return HttpResponseRedirect("http://" + request.get_ost() + reverse("aenclave-http-upload-fancy"))
+        return HttpResponseRedirect("http://" + request.get_host() + reverse("aenclave-http-upload-fancy"))
 
     return render_html_template('upload_http_fancy.html', request,
                                 {'song_list': [],

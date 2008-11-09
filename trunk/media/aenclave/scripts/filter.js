@@ -154,14 +154,14 @@ function auspice(cat,rule) {
 
 function criterion() {
   var listitem = document.createElement("li");
-  listitem.appendChild(button("\u2212","remove(this);"));
+  listitem.appendChild(button("\u2212","removeFilter(this);"));
   listitem.appendChild(kind_select());
   listitem.appendChild(rule_select("str"));
   listitem.appendChild(field_span("str"));
   return listitem;
 }
 
-function remove(button) {
+function removeFilter(button) {
   var listitem = button.parentNode;
   listitem.parentNode.removeChild(listitem);
 }

@@ -234,7 +234,13 @@ def login(request):
 
     # Otherwise, we're good to go, so log the user in.
     auth.login(request, user)
-    return HttpResponseRedirect(request.POST.get('goto','/audio/'))
+
+    # hack to try to pass them back to http land 
+    goto = request.POST.get('goto','/audio')
+    if goto.startswith('https'):
+        goto = goto.replace('^https','http')
+        
+    return HttpResponseRedirect(goto)
 
 def logout(request):
     auth.logout(request)

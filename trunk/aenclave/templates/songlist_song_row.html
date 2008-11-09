@@ -1,0 +1,22 @@
+{% load aenclave %}
+<td><input type=checkbox name="{{song.id}}"/></td>
+<td name=track class=r>
+  {% if dl %}<a class="dl-link" href="/audio/dl?ids={{song.id}}">DL</a>{% endif %}
+  {{song.track_string}}
+</td>
+<td name=title{% if song.date_added|is_recent %} class=new{% endif %}>
+  {% if no_queuing %}
+  {{song.title|escape}}
+  {% else %}
+  <a class={% if song.last_queued|is_recent:1 %}recent{% else %}queue{% endif %}
+     href="/audio/queue/?ids={{song.id}}"
+     onclick="return songlist.queue_click(this)">
+    {{song.title|escape}}
+  </a>
+  {% endif %}
+</td>
+<td name=album>{% if song.album %}<a href="{% url aenclave-album song.album|urlencode %}">{{song.album|escape}}</a>{% endif %}</td>
+<td name=artist>{% if song.artist %}<a href="{% url aenclave-artist song.artist|urlencode %}">{{song.artist|escape}}{% endif %}</a></td>
+<td class=r>{{song.time_string}}</td>
+<td class=r>{{song.date_added_string}}</td>{% if user.is_authenticated %}
+<td class=edit onclick="songlist.edit_song(this);"></td>{% endif %}

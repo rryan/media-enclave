@@ -11,6 +11,7 @@ import zipfile
 
 from django.conf import settings
 from django.contrib import auth
+from django.core.urlresolvers import reverse
 from django.core.files import File
 from django.core.mail import send_mail, mail_admins
 from django.core.servers.basehttp import FileWrapper
@@ -730,6 +731,11 @@ def upload_sftp(request):
 
 @login_required(redirect_field_name='goto')
 def upload_http_fancy(request):
+
+    # HTTPS is way slowed down..
+    if request.is_secure():
+        return HttpResponseRedirect("http://" + request.get_ost() + reverse("aenclave-http-upload-fancy"))
+
     return render_html_template('upload_http_fancy.html', request,
                                 {'song_list': [],
                                  'show_songlist': True},

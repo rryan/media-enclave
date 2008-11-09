@@ -31,6 +31,11 @@ EMAIL_PORT = 25
 ### enclave install.
 HOST_NAME = "www.example.com:port"
 
+# The login_required decorator uses this to determine where
+# to redirect the user to login. It's lame to have this
+# written here, though.
+LOGIN_URL = "/audio/login"
+
 #================================= SESSIONS ==================================#
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 3  # three days (in seconds)

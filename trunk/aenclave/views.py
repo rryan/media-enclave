@@ -18,6 +18,7 @@ from django.db.models.query import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
+from django.contrib.auth.decorators import login_required
 
 import cjson
 
@@ -727,15 +728,8 @@ def upload_sftp(request):
                                  'sketchy_upload': sketchy},
                                 context_instance=RequestContext(request))
 
+@login_required(redirect_field_name='goto')
 def upload_http_fancy(request):
-    # If the user is not logged in, redirect to the main upload page (which
-    # will then tell the user to log in).
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/audio/upload/')
-
-
-
-
     return render_html_template('upload_http_fancy.html', request,
                                 {'song_list': [],
                                  'show_songlist': True},

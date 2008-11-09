@@ -31,15 +31,15 @@ class Song(models.Model):
 
     #--------------------------------- Title ---------------------------------#
 
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, db_index=True)
 
     #--------------------------------- Album ---------------------------------#
 
-    album = models.CharField(max_length=255)
+    album = models.CharField(max_length=255, db_index=True)
 
     #-------------------------------- Artist ---------------------------------#
 
-    artist = models.CharField(max_length=255)
+    artist = models.CharField(max_length=255, db_index=True)
 
     #--------------------------------- Track ---------------------------------#
 

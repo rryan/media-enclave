@@ -1,0 +1,14 @@
+{% extends "songlist_base.html" %}
+{% load humanize %}
+
+{% block title %}{{block.super}}List Songs{% endblock %}
+
+{% block header %}List Songs{% endblock %}
+
+{% block styles %}{{block.super}}
+ <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/upload.css"/>
+{% endblock %}
+
+{% block presonglist %}
+ <p>Listing {{song_list|length|apnumber|intcomma}} songs.</p>
+{% endblock %}

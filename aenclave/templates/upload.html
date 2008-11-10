@@ -5,10 +5,10 @@
 {% block header %}Upload Songs{% endblock %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/upload.css">{% endblock %}
+ <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/upload.css">{% endblock %}
 
 {% block scripts %}{{block.super}}
- <script type="text/javascript" src="/media/aenclave/scripts/upload.js"></script>{% endblock %}
+ <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/upload.js"></script>{% endblock %}
 
 {% block content %}{% if user.is_authenticated %}
  <!-- Tell them about the new fancy flash page -->

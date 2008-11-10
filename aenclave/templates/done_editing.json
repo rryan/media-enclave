@@ -1,8 +1,8 @@
 {% load aenclave %}[{"text":"{{song.track_string}}"},
  {"text":"{{song.title|json_escape}}"{% if not no_queuing %},
-  "href":"/audio/queue/?ids={{song.id}}",
+  "href":"{% url aenclave-queue-songs %}?ids={{song.id}}",
   "klass":"{% if song.last_queued|is_recent:1 %}recent{% else %}queue{% endif %}"{% endif %}},
- {"text":"{{song.album|json_escape}}",
-  "href":"/audio/albums/{{song.album|json_escape}}/"},
- {"text":"{{song.artist|json_escape}}",
-  "href":"/audio/artists/{{song.artist|json_escape}}/"}]
+ {"text":"{{song.album|json_escape}}"{% if song.album %},
+  "href":"{% url aenclave-album song.album %}"{% endif %}},
+ {"text":"{{song.artist|json_escape}}"{% if song.artist %},
+  "href":"{% url aenclave-artist song.artist %}"{% endif %}}]

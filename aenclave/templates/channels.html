@@ -6,7 +6,7 @@
 {% block header %}Channels{% endblock %}
 
 {% block scripts %}{{block.super}}
- <script type="text/javascript" src="/media/aenclave/scripts/channels.js"></script>
+ <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/channels.js"></script>
  <script type="text/javascript">
   window.onload = function() {
     channels.init_time_bar({

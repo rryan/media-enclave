@@ -1,7 +1,7 @@
 {% load aenclave %}
 <td><input type=checkbox name="{{song.id}}"/></td>
 <td name=track class=r>
-  {% if dl %}<a class="dl-link" href="/audio/dl?ids={{song.id}}">DL</a>{% endif %}
+  {% if dl %}<a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>{% endif %}
   {{song.track_string}}
 </td>
 <td name=title{% if song.date_added|is_recent %} class=new{% endif %}>
@@ -9,7 +9,7 @@
   {{song.title|escape}}
   {% else %}
   <a class={% if song.last_queued|is_recent:1 %}recent{% else %}queue{% endif %}
-     href="/audio/queue/?ids={{song.id}}"
+     href="{% url aenclave-queue-songs %}?ids={{song.id}}"
      onclick="return songlist.queue_click(this)">
     {{song.title|escape}}
   </a>

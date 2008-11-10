@@ -2,10 +2,10 @@
 {% load aenclave %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="/media/aenclave/styles/songlist.css">{% endblock %}
+ <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/songlist.css">{% endblock %}
 
 {% block scripts %}{{block.super}}
- <script type="text/javascript" src="/media/aenclave/scripts/songlist.js"></script>{% endblock %}
+ <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/songlist.js"></script>{% endblock %}
 
 {% block content %}{% block presonglist %}{% endblock %}{% if song_list or current_song or show_songlist %}
  <table class=data id=songlist>
@@ -27,13 +27,13 @@
   </tr></thead>
   <tbody>{% if skipping %}
    <tr class=c>
-    <td class=c><img src="/media/aenclave/images/speaker.png"></td>
+    <td class=c><img src="{{ MEDIA_URL }}aenclave/images/speaker.png"></td>
     <td class=c colspan=7>(Dequeuing current song...)</td>
    </tr>{% else %}{% if current_song %}
    <tr class=c>
-    <td class=c><img src="/media/aenclave/images/speaker.png" id=currentsong name="{{current_song.id}}"/></td>
+    <td class=c><img src="{{ MEDIA_URL }}aenclave/images/speaker.png" id=currentsong name="{{current_song.id}}"/></td>
     <td name=track class=r>
-      {% if dl %}<a class="dl-link" href="/audio/dl?ids={{song.id}}">DL</a>{% endif %}
+      {% if dl %}<a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>{% endif %}
       {{current_song.track_string}}
     </td>
     <td name=title{% if current_song.date_added|is_recent %} class=new{% endif %}>
@@ -70,14 +70,14 @@
  <form name=queueform action="{% url aenclave-queue-songs %}" method=POST>
   <input type=hidden name=ids>
  </form>{% endif %}{% if user.is_authenticated %}
- <form name=dlform action="/audio/dl/" method=POST>
+ <form name=dlform action="{% url aenclave-dl %}" method=POST>
   <input type=hidden name=ids>
  </form>
- <form name=createform action="/audio/playlists/create/" method=POST>
+ <form name=createform action="{% url aenclave-playlist-create %}" method=POST>
   <input type=hidden name=name>
   <input type=hidden name=ids>
  </form>
- <form name=addform action="/audio/playlists/add/" method=POST>
+ <form name=addform action="{% url aenclave-playlist-add %}" method=POST>
   <input type=hidden name=pid>
   <input type=hidden name=ids>
  </form>{% endif %}

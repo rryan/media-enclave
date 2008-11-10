@@ -23,8 +23,9 @@ urlpatterns = patterns(
         'menclave.aenclave.views.logout',
         name='aenclave-logout'),
 
-    (r'^user/$',  # DEBUG remove this eventually
-     'menclave.aenclave.views.user_debug'),
+    url(r'^user/$',  # DEBUG remove this eventually
+        'menclave.aenclave.views.user_debug',
+        name="aenclave-user-debug"),
 
     # Queuing
 
@@ -103,17 +104,21 @@ urlpatterns = patterns(
         'menclave.aenclave.views.user_playlists',
         name='aenclave-user-playlist'),
 
-    (r'^playlists/create/$',
-     'menclave.aenclave.views.create_playlist'),
+    url(r'^playlists/create/$',
+        'menclave.aenclave.views.create_playlist',
+        name='aenclave-playlist-create'),
 
-    (r'^playlists/add/$',
-     'menclave.aenclave.views.add_to_playlist'),
+    url(r'^playlists/add/$',
+        'menclave.aenclave.views.add_to_playlist',
+        name='aenclave-playlist-add'),
 
-    (r'^playlists/remove/$',
-     'menclave.aenclave.views.remove_from_playlist'),
+    url(r'^playlists/remove/$',
+        'menclave.aenclave.views.remove_from_playlist',
+        name='aenclave-playlist-remove'),
 
-    (r'^playlists/delete/$',
-     'menclave.aenclave.views.delete_playlist'),
+    url(r'^playlists/delete/$',
+        'menclave.aenclave.views.delete_playlist',
+        name='aenclave-playlist-delete'),
 
     # Uploading
 
@@ -146,8 +151,9 @@ urlpatterns = patterns(
 
     # DL
 
-    (r'^dl/$',
-     'menclave.aenclave.views.dl'),
+    url(r'^dl/$',
+        'menclave.aenclave.views.dl',
+        name='aenclave-dl'),
 
     # Roulette
 

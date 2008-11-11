@@ -7,22 +7,6 @@
 
 {% block scripts %}{{block.super}}
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/channels.js"></script>
-  <script type="text/javascript">
-    window.onload = function() {
-      channels.init_time_bar({
-          playing: {{playing|yesno:"true,false"}},
-          skipping: {{skipping|yesno:"true,false"}},
-          {% if skipping %}
-            elapsed_time: 0,
-            total_time: 1,
-          {% else %}
-            elapsed_time: {{elapsed_time}},
-            total_time: {% if current_song %}{{current_song.time}}{% else %}1{% endif %},
-          {% endif %}
-          timestamp: {{channel.last_touched_timestamp}}
-      });
-    }
-  </script>
 {% endblock %}
 
 {% block presonglist %}

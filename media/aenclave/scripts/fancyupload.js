@@ -102,6 +102,7 @@ function uploadSuccess(file, serverData) {
 
         //tbody.down('tr').insert({after: tr});
         Element.insert(tbody, {bottom: '<tr>#{data}</tr>'.interpolate({data: serverData})});
+        songlist.recolor_rows();
     } catch (ex) {
         this.debug(ex);
     }

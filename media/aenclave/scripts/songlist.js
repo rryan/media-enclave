@@ -11,7 +11,8 @@ jQuery(document).ready(function() {
         songlist.recolor_rows();
         // Tell the server that we've reordered the songs if it makes sense.
         var path = window.location.pathname;
-        if (var match = path.match(/^\/audio\/playlists\/normal\/(\d+)/)) {
+        var match;
+        if (match = path.match(/^\/audio\/playlists\/normal\/(\d+)/)) {
           songlist.update_songlist('/playlists/update/' + match[1]);
         }
       },
@@ -439,7 +440,11 @@ var songlist = {
   recolor_rows: function() {
     var tbody = songlist.table_body();
     var a = true;
-    for (var i = 0; i < tbody.rows.length; i++) {
+    var i = 0;
+    var firstRow = tbody.rows[0];
+    // If the first row has the current song, leave it with the class 'c'.
+    if (firstRow && firstRow.hasClassName('c')) i++;
+    for (; i < tbody.rows.length; i++) {
       var row = tbody.rows[i];
       if (a) row.className = 'a';
       else row.className = 'b';

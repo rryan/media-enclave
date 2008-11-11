@@ -7,8 +7,8 @@
 
 {% block scripts %}{{block.super}}
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/jquery-1.2.6.min.js"></script>
-  {# This lets jQuery and Prototype coexist.  Prototype gets '$', and to get
-     jQuery's '$', use the jQuery variable.  #}
+  {# This lets jQuery and Prototype coexist.  Prototype gets '$', and to get #}
+  {# jQuery's '$', use the jQuery variable.  #}
   <script type="text/javascript">jQuery.noConflict();</script>
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/jquery.tablednd_0_5.js"></script>
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/songlist.js"></script>
@@ -20,15 +20,18 @@
     <table class=data id=songlist>
       <thead>
         <tr>
-          <th style="width:1px;"><input type=checkbox onclick="songlist.select_all(this);"></th>
+          <th style="width:1px;">
+            <input type=checkbox onclick="songlist.select_all(this);"/>
+          </th>
+          <th>{# For the drag-handle. #}</th>
           {% if current_song %}
-            <th>{# For the drag-handle. #}</th>
             <th style="width:40px;">Track</th>
             <th>Title</th>
             <th>Album</th>
             <th>Artist</th>
             <th style="width:40px;">Time</th>
-            <th style="width:130px;">Date added</th>{% else %}
+            <th style="width:130px;">Date added</th>
+          {% else %}
             <th class=sort sorttype=int onclick="songlist.sorta(this);" style="width:40px;">Track</th>
             <th class=sort sorttype=text onclick="songlist.sorta(this);">Title</th>
             <th class=sort sorttype=text onclick="songlist.sorta(this);">Album</th>
@@ -55,7 +58,7 @@
                 <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
                     id=currentsong name="{{current_song.id}}"/>
               </td>
-              <td></td>
+              <td>{# For the drag-handle. #}</td>
               <td name=track class=r>
                 {% if dl %}
                   <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>
@@ -126,25 +129,25 @@
 
     {# Forms that get submitted by Javascript. #}
     {% if not no_queuing %}
-      <form name=queueform action="{% url aenclave-queue-songs %}" method=POST>
-        <input type=hidden name=ids/>
+      <form name="queueform" action="{% url aenclave-queue-songs %}" method="POST">
+        <input type="hidden" name="ids"/>
       </form>
     {% endif %}
     {% if user.is_authenticated %}
-      <form name=dlform action="{% url aenclave-dl %}" method=POST>
-        <input type=hidden name=ids/>
+      <form name="dlform" action="{% url aenclave-dl %}" method="POST">
+        <input type="hidden" name=ids/>
       </form>
-      <form name=createform action="{% url aenclave-playlist-create %}" method=POST>
-        <input type=hidden name=name/>
-        <input type=hidden name=ids/>
+      <form name="createform" action="{% url aenclave-playlist-create %}" method="POST">
+        <input type="hidden" name="name"/>
+        <input type="hidden" name="ids"/>
       </form>
-      <form name=addform action="{% url aenclave-playlist-add %}" method=POST>
-        <input type=hidden name=pid/>
-        <input type=hidden name=ids/>
+      <form name="addform" action="{% url aenclave-playlist-add %}" method="POST">
+        <input type="hidden" name="pid"/>
+        <input type="hidden" name="ids"/>
       </form>
     {% endif %}
-    <form name=deleteform action="{% url aenclave-delete-songs %}" method=POST>
-      <input type=hidden name=ids/>
+    <form name=deleteform action="{% url aenclave-delete-songs %}" method="POST">
+      <input type="hidden" name="ids"/>
     </form>
   {% endif %}
 {% endblock %}

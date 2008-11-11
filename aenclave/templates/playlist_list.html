@@ -5,36 +5,38 @@
 {% block header %}Playlists{% endblock %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/songlist.css"/>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/songlist.css"/>
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-<script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/songlist.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/songlist.js"></script>
 {% endblock %}
 
 {% block content %}
- {% if playlist_list %}
- <table class=data id=songlist>
-  <thead><tr>
-   <th class=sort sorttype="text" onclick="songlist.sorta(this);">Name</th>
-   <th class=sort sorttype="text" onclick="songlist.sorta(this);">Owner</th>
-   <th class=sort sorttype="int" onclick="songlist.sorta(this);"># Songs</th>
-   <th class=sort sorttype="date" onclick="songlist.sorta(this);">Last modified</th>
-   <th class=sort sorttype="date" onclick="songlist.sorta(this);">Date created</th>
-  </tr></thead>
-  <tbody>
-   {% for playlist in playlist_list %}
-   <tr class={% cycle a,b %}>
-    <td><a href="{{playlist.get_absolute_url}}">{{playlist.name|escape}}</a></td>
-    <td><a href="user/{{playlist.owner.username|escape}}/"><tt>{{playlist.owner.username}}</tt></a></td>
-    <td class=r>{{playlist.songs.count}}</td>
-    <td class=r>{{playlist.last_modified_string}}</td>
-    <td class=r>{{playlist.date_created_string}}</td>
-   </tr>
-   {% endfor %}
-  </tbody>
- </table>
- {% else %}
- <p>No playlists exist.</p>
- {% endif %}
+  {% if playlist_list %}
+    <table class=data id=songlist>
+      <thead>
+        <tr>
+          <th class=sort sorttype="text" onclick="songlist.sorta(this);">Name</th>
+          <th class=sort sorttype="text" onclick="songlist.sorta(this);">Owner</th>
+          <th class=sort sorttype="int" onclick="songlist.sorta(this);"># Songs</th>
+          <th class=sort sorttype="date" onclick="songlist.sorta(this);">Last modified</th>
+          <th class=sort sorttype="date" onclick="songlist.sorta(this);">Date created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for playlist in playlist_list %}
+          <tr class={% cycle a,b %}>
+            <td><a href="{{playlist.get_absolute_url}}">{{playlist.name|escape}}</a></td>
+            <td><a href="user/{{playlist.owner.username|escape}}/"><tt>{{playlist.owner.username}}</tt></a></td>
+            <td class=r>{{playlist.songs.count}}</td>
+            <td class=r>{{playlist.last_modified_string}}</td>
+            <td class=r>{{playlist.date_created_string}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No playlists exist.</p>
+  {% endif %}
 {% endblock %}

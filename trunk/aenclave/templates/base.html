@@ -10,9 +10,9 @@
       <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/base.css"/>
     {% endblock %}
     {% block scripts %}
-      <script type="text/javascript" src="{{ MEDIA_URL}}aenclave/scripts/prototype-1.6.0.2.js"></script>
-      <script type="text/javascript" src="{{ MEDIA_URL}}aenclave/scripts/controls.js"></script>
-      <script type="text/javascript" src="{{ MEDIA_URL}}aenclave/scripts/cookies.js"></script>
+      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/prototype-1.6.0.2.js"></script>
+      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/controls.js"></script>
+      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/cookies.js"></script>
       <script>
 	Event.observe(window,'load',function() {
 	  controls.initialize({{playlist_info|safe}});

@@ -120,6 +120,9 @@ urlpatterns = patterns(
         'menclave.aenclave.views.delete_playlist',
         name='aenclave-playlist-delete'),
 
+    (r'^playlists/update/$',
+     'menclave.aenclave.views.update_playlist'),
+
     # Uploading
 
     url(r'^upload/$',

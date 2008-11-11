@@ -1,6 +1,5 @@
 # menclave/aenclave/views.py
 
-import logging
 import datetime
 import itertools
 from math import ceil as ceiling
@@ -237,11 +236,11 @@ def login(request):
     # Otherwise, we're good to go, so log the user in.
     auth.login(request, user)
 
-    # hack to try to pass them back to http land 
+    # hack to try to pass them back to http land
     goto = request.REQUEST.get('goto',reverse('aenclave-home'))
     if goto.startswith('https'):
         goto = goto.replace('^https','http')
-        
+
     return HttpResponseRedirect(goto)
 
 def logout(request):
@@ -501,7 +500,6 @@ def view_artist(request, artist_name):
 
 def list_songs(request):
     songs = get_song_list(request.REQUEST)
-
     return render_html_template('list_songs.html', request,
                                 {'song_list': songs},
                                 context_instance=RequestContext(request))
@@ -551,11 +549,21 @@ def user_playlists(request, username):
 
 #----------------------------- Playlist Editing ------------------------------#
 
+def require_authentication(action_text, action_name):
+    """Requre the user to be logged in or display an error message."""
+    def decorator(real_handler):
+        def request_handler(request):
+            if not request.user.is_authenticated():
+                error_text = ('You must <a href="%s">log in</a> to'
+                              ' %s.' % (reverse('aenclave-login'), action_text))
+                return html_error(request, error_text, action_name)
+            else:
+                return real_handler(request)
+        return request_handler
+    return decorator
+
+@require_authentication('create a playlist', 'Create Playlist')
 def create_playlist(request):
-    if not request.user.is_authenticated():
-        return html_error(request,
-                          'You must <a href="%s">log in</a> to create a playlist.' % reverse('aenclave-login'),
-                          'Create Playlist')
     form = request.POST
     name = get_unicode(form, 'name')
     if not name:
@@ -575,12 +583,8 @@ def create_playlist(request):
     # Redirect to the detail page for the newly created playlist.
     return HttpResponseRedirect(playlist.get_absolute_url())
 
+@require_authentication('add songs to a playlist', 'Add Songs')
 def add_to_playlist(request):
-    # Make sure the user is logged in.
-    if not request.user.is_authenticated():
-        return html_error(request,
-                          'You must <a href="%s">log in</a> to add songs to a playlist.' % reverse('aenclave-login'),
-                          'Add Songs')
     # Get the playlist to be added to.
     form = request.POST
     try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
@@ -597,12 +601,8 @@ def add_to_playlist(request):
         playlist.songs.add(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
+@require_authentication('remove songs from a playlist', 'Remove Songs')
 def remove_from_playlist(request):
-    # Make sure the user is logged in.
-    if not request.user.is_authenticated():
-        return html_error(request,
-                          'You must <a href="%s">log in</a> to remove songs from a playlist.' % reverse('aenclave-login'),
-                          'Remove Songs')
     # Get the playlist to be removed from.
     form = request.POST
     try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
@@ -618,12 +618,8 @@ def remove_from_playlist(request):
         playlist.songs.remove(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
+@require_authentication('delete a playlist', 'Delete Playlist')
 def delete_playlist(request):
-    # Make sure the user is logged in.
-    if not request.user.is_authenticated():
-        return html_error(request,
-                          'You must <a href="%s">log in</a> to delete a playlist.' % reverse('aenclave-login'),
-                          'Delete Playlist')
     # Get the playlist to be deleted.
     form = request.POST
     try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
@@ -636,7 +632,23 @@ def delete_playlist(request):
                           'Delete Playlist')
     # Delete the playlist and redirect to the user's playlists page.
     playlist.delete()
-    return HttpResponseRedirect(reverse('aenclave-user-playlist', request.user.username))
+    return HttpResponseRedirect(reverse('aenclave-user-playlist',
+                                        request.user.username))
+
+def update_playlist(request):
+    # Check the user authentication.
+    if not request.user.is_authenticated():
+        return json_error('You must log in to edit playlists.')
+    # Get the playlist.
+    form = request.POST
+    try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
+    except Playlist.DoesNotExist:
+        return json_error('That playlist does not exist.')
+    # Check that they can edit it.
+    if not playlist.can_edit(request.user):
+        return json_error('You are not authorized to edit this playlist.')
+    # TODO(rnk): Update the order of the songs in the playlist.
+    # TODO(rnk): Establish an ordering of songs in the playlist!
 
 #---------------------------------- Upload -----------------------------------#
 
@@ -736,7 +748,8 @@ def upload_http_fancy(request):
 
     # HTTPS is way slowed down..
     if request.is_secure():
-        return HttpResponseRedirect("http://" + request.get_host() + reverse("aenclave-http-upload-fancy"))
+        return HttpResponseRedirect("http://" + request.get_host() +
+                                    reverse("aenclave-http-upload-fancy"))
 
     return render_html_template('upload_http_fancy.html', request,
                                 {'song_list': [],
@@ -763,10 +776,10 @@ def upload_http_fancy_receiver(request):
     except Exception, e:
         return html_error(e)
 
-    # SWFUpload will show an error to the user if this happens. 
+    # SWFUpload will show an error to the user if this happens.
     if not request.user.is_authenticated():
         return HttpResponseForbidden()
-    
+
     audio = None
     # The key is generally 'Filedata' but this is just easier.
     for k,f in request.FILES.items():
@@ -796,7 +809,7 @@ def upload_http_fancy_receiver(request):
     except (KeyError, IndexError, ValueError): song.track = 0
     song.time = int(ceiling(audio.info.length))
     song.save()
-    
+
     return render_html_template('songlist_song_row.html', request,
                                 {'song': song},
                                 context_instance=RequestContext(request))
@@ -907,11 +920,11 @@ def roulette(request):
 
 def delete_songs(request):
     form = request.POST
-    
+
     # The person must be authenticated
     if not request.user.is_authenticated():
         raise Http404()
-    
+
     if not request.user.is_staff:
         return submit_delete_requests(request)
 
@@ -929,7 +942,7 @@ def delete_songs(request):
                         'title': song.title})
         message += song_string
         song_list.append(song)
-    
+
     mail_admins(subject,message,False)
 
     # Do the dirty deed.

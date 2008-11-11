@@ -1,6 +1,28 @@
 // songlist -- functions for all pages with a songlist on them
-// BTW This module assumes that the Prototype library has been loaded.  Refer
-//     to www.prototypejs.org for documentation.
+// BTW This module assumes that both the Prototype and the jQuery library have
+//     been loaded.  Refer to www.prototypejs.org and www.jquery.com for
+//     documentation.
+
+// Setup TableDnD on page load.
+jQuery(document).ready(function() {
+  jQuery('#songlist').tableDnD({
+      onDrop: function(table, row) {
+        // Fix row colors.
+        songlist.recolor_rows();
+        // Tell the server that we've reordered the songs if it makes sense.
+        var path = window.location.pathname;
+        if (var match = path.match(/^\/audio\/playlists\/normal\/(\d+)/)) {
+          songlist.update_songlist('/playlists/update/' + match[1]);
+        }
+      },
+      dragHandle: 'drag-handle'
+  });
+  jQuery('#songlist tr').hover(function() {
+    jQuery('.drag-handle', this).addClass('drag-handle-dragging');
+  }, function() {
+    jQuery('.drag-handle', this).removeClass('drag-handle-dragging');
+  });
+});
 
 var songlist = {
 
@@ -293,6 +315,20 @@ var songlist = {
     addform.ids.value = songlist.gather_ids(false);
     songlist.end_subaction();
     addform.submit();
+  },
+
+  update_songlist: function(url, table) {
+    // Collect all the song ids in order and send them to the server.
+    var song_ids = [];
+    var boxen = $('songlist').getElementsByTagName("input");
+    for (var i = 0; i < boxen.length; i++) {
+      song_ids.push(boxen.name);
+    }
+    var options = {
+      method: 'post',
+      parameters: {song_ids: song_ids.join(',')}
+    };
+    new Ajax.Request(url, options);
   },
 
   /******************************* TAG EDITING *******************************/

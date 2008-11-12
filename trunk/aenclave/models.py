@@ -121,6 +121,9 @@ class Song(models.Model):
     class Meta:
         get_latest_by = 'date_added'
         ordering = ('artist', 'album', 'track')
+        permissions = ( ('can_queue', 'Can Queue'),
+                        ('can_control', 'Can Control Playback'),
+                        ('request_delete_song', 'Can Request Delete'))
 
     @models.permalink
     def get_absolute_url(self):

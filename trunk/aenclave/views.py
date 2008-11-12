@@ -19,6 +19,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from django.contrib.auth.decorators import login_required
+from django.utils.http import urlquote
 
 import cjson
 
@@ -28,6 +29,7 @@ from mutagen.mp3 import MP3
 from menclave.aenclave.models import Channel, Playlist, Song
 from menclave.aenclave.control import Controller, ControlError
 
+from menclave import settings
 #================================= UTILITIES =================================#
 
 def direct_to_template(request, template, extra_context=None, mimetype=None,
@@ -148,6 +150,76 @@ def parse_time(string):
 def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): str(value)})
 
+def get_anon_user():
+    username = settings.ANONYMOUS_USER
+    try:
+        anon = auth.models.User.objects.get(username = username)
+    except auth.models.User.DoesNotExist:
+        anon = auth.models.User.objects.create_user(username, 
+                                                    '',
+                                                    '')
+        anon.set_unusable_password()
+        anon.save()
+    return anon
+
+
+def permission_required(perm, action, erf=html_error):
+    """
+    Requre the user to have a permission or display an error message.
+    
+    perm - Permission to check.
+    action - the type of action attempted
+    erf - Error return function, takes request, text, title.
+    """
+    def decorator(real_handler):
+        def request_handler(request):
+            if not request.user.is_authenticated():
+                # Check if the anonymous user has access.
+                anon = get_anon_user()
+                if anon.has_perm(perm):
+                    return real_handler(request)
+
+                # Otherwise, show error message.
+                error_text = ('You must <a href="%s">log in</a> to'
+                              ' %s.' % (reverse('aenclave-login'), ' do that.'))
+                return erf(request, error_text, action)
+            elif not request.user.has_perm(perm):
+                # Check if the anonymous user has access.
+                anon = get_anon_user()
+
+                if anon.has_perm(perm):
+                    return real_handler(request)
+
+                # Otherwise, show error message.
+
+                error_text = ('You need more permissions to do that.')
+                return erf(request, error_text, action)
+            else:
+                return real_handler(request)
+        return request_handler
+    return decorator
+
+def permission_required_redirect(perm, redirect_field_name):
+    """
+    Mimicks functionality of django.contrib.auth.permission_required
+    """
+    def erf(request, error_text, action):
+        path = urlquote(request.get_full_path())
+        tup = settings.LOGIN_URL, redirect_field_name, path
+        return HttpResponseRedirect('%s?%s=%s' % tup)
+    return permission_required(perm, '', erf)
+                                        
+def permission_required_xml(perm):
+    return permission_required(perm,
+                               '',
+                               lambda r,text,act: xml_error(text))
+def permission_required_json(perm):
+    return permission_required(perm,
+                               '',
+                               lambda r,text,act: json_error(text))
+
+
+
 #=================================== VIEWS ===================================#
 
 #------------------------------- Login/Logout --------------------------------#
@@ -219,6 +291,7 @@ def logout(request):
 
 #---------------------------------- Queuing ----------------------------------#
 
+@permission_required('aenclave.can_queue', 'Queue Song')
 def queue_songs(request):
     form = request.REQUEST
     # Get the selected songs.
@@ -232,6 +305,7 @@ def queue_songs(request):
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
+@permission_required('aenclave.can_queue', 'Dequeue Song')
 def dequeue_songs(request):
     form = request.POST
     # Get the selected indices.
@@ -519,20 +593,7 @@ def user_playlists(request, username):
 
 #----------------------------- Playlist Editing ------------------------------#
 
-def require_authentication(action_text, action_name):
-    """Requre the user to be logged in or display an error message."""
-    def decorator(real_handler):
-        def request_handler(request):
-            if not request.user.is_authenticated():
-                error_text = ('You must <a href="%s">log in</a> to'
-                              ' %s.' % (reverse('aenclave-login'), action_text))
-                return html_error(request, error_text, action_name)
-            else:
-                return real_handler(request)
-        return request_handler
-    return decorator
-
-@require_authentication('create a playlist', 'Create Playlist')
+@permission_required('aenclave.add_playlist', 'Make Playlist')
 def create_playlist(request):
     form = request.POST
     name = get_unicode(form, 'name')
@@ -553,7 +614,7 @@ def create_playlist(request):
     # Redirect to the detail page for the newly created playlist.
     return HttpResponseRedirect(playlist.get_absolute_url())
 
-@require_authentication('add songs to a playlist', 'Add Songs')
+@permission_required('aenclave.change_playlist', 'Add Songs')
 def add_to_playlist(request):
     # Get the playlist to be added to.
     form = request.POST
@@ -571,7 +632,7 @@ def add_to_playlist(request):
         playlist.songs.add(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
-@require_authentication('remove songs from a playlist', 'Remove Songs')
+@permission_required('aenclave.change_playlist', 'Remove Songs')
 def remove_from_playlist(request):
     # Get the playlist to be removed from.
     form = request.POST
@@ -588,7 +649,7 @@ def remove_from_playlist(request):
         playlist.songs.remove(song)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
-@require_authentication('delete a playlist', 'Delete Playlist')
+@permission_required('aenclave.delete_playlist', 'Delete Playlist')
 def delete_playlist(request):
     # Get the playlist to be deleted.
     form = request.POST
@@ -605,10 +666,8 @@ def delete_playlist(request):
     return HttpResponseRedirect(reverse('aenclave-user-playlist',
                                         request.user.username))
 
+@permission_required('aenclave.change_playlist', 'Edit Playlist')
 def update_playlist(request):
-    # Check the user authentication.
-    if not request.user.is_authenticated():
-        return json_error('You must log in to edit playlists.')
     # Get the playlist.
     form = request.POST
     try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
@@ -644,11 +703,8 @@ def process_upload_song(filename):
     song.save()
     return [song, audio]
 
+@permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http(request):
-    # If the user is not logged in, redirect to the main upload page (which
-    # will then tell the user to log in).
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('aenclave-upload-home'))
     # Nab the file and make sure it's legit.
     audio = request.FILES.get('audio', None)
     if audio is None:
@@ -685,12 +741,8 @@ def upload_http(request):
 
 SFTP_UPLOAD_DIR = '/var/nicerack/sftp-upload'
 
+@permission_required_redirect('aenclave.add_song', 'goto')
 def upload_sftp(request):
-    # If the user is not logged in, redirect to the main upload page (which
-    # will then tell the user to log in).
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('aenclave-upload-home'))
-
     song_list = []
     sketchy = False
 
@@ -713,7 +765,7 @@ def upload_sftp(request):
                                  'sketchy_upload': sketchy},
                                 context_instance=RequestContext(request))
 
-@login_required(redirect_field_name='goto')
+@permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http_fancy(request):
 
     # HTTPS is way slowed down..
@@ -888,6 +940,7 @@ def roulette(request):
 
 #------------------------------- Delete Requests -----------------------------#
 
+@permission_required('aenclave.delete_song', 'Delete Song')
 def delete_songs(request):
     form = request.POST
 
@@ -923,6 +976,7 @@ def delete_songs(request):
                                 {},
                                 context_instance=RequestContext(request))
 
+@permission_required('aenclave.request_delete_song', 'Request Delete')
 def submit_delete_requests(request):
     form = request.POST
     # Add the songs and redirect to the detail page for this playlist.
@@ -959,6 +1013,7 @@ def submit_delete_requests(request):
 
 #--------------------------------- XML Hooks ---------------------------------#
 
+@permission_required_xml('aenclave.can_queue')
 def xml_queue(request):
     form = request.POST
     # Get the selected songs.
@@ -968,6 +1023,7 @@ def xml_queue(request):
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')
 
+@permission_required_xml('aenclave.can_queue')
 def xml_dequeue(request):
     form = request.POST
     # Get the selected songs.
@@ -977,6 +1033,7 @@ def xml_dequeue(request):
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')
 
+@permission_required_xml('aenclave.can_control')
 def xml_control(request):
     form = request.POST
     action = form.get('action','')
@@ -1009,6 +1066,7 @@ def xml_update(request):
         except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('reload')  # old timestamp
 
+@permission_required_xml('aenclave.change_song')
 def xml_edit(request):
     if not request.user.is_authenticated():
         return xml_error('user not logged in')
@@ -1054,6 +1112,7 @@ def xml_user_playlists(request):
 
 #-------------------------------- JSON Hooks ---------------------------------#
 
+@permission_required_json('aenclave.can_control')
 def json_control(request):
     action = request.POST.get('action','')
     try:
@@ -1104,6 +1163,7 @@ def json_control_update(request, channel_id=1):
     else:
         return render_json_response(playlist_info)
 
+@permission_required_json('aenclave.change_song')
 def json_edit(request):
     if not request.user.is_authenticated():
         return json_error('user not logged in')

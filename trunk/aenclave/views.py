@@ -29,7 +29,7 @@ from mutagen.mp3 import MP3
 from menclave.aenclave.models import Channel, Playlist, Song
 from menclave.aenclave.control import Controller, ControlError
 
-from menclave import settings
+from menclave import settings as enc_settings
 #================================= UTILITIES =================================#
 
 def direct_to_template(request, template, extra_context=None, mimetype=None,
@@ -151,7 +151,7 @@ def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): str(value)})
 
 def get_anon_user():
-    username = settings.ANONYMOUS_USER
+    username = enc_settings.ANONYMOUS_USER
     try:
         anon = auth.models.User.objects.get(username = username)
     except auth.models.User.DoesNotExist:
@@ -163,14 +163,19 @@ def get_anon_user():
     return anon
 
 
-def permission_required(perm, action, erf=html_error):
+def permission_required(perm, action, erf=html_error, perm_fail_erf=None):
     """
     Requre the user to have a permission or display an error message.
     
     perm - Permission to check.
     action - the type of action attempted
     erf - Error return function, takes request, text, title.
+    perm_fail_erf - define this to use a different erf for permissions
+    failures.
     """
+    if perm_fail_erf is None:
+        perm_fail_erf = erf
+
     def decorator(real_handler):
         def request_handler(request):
             if not request.user.is_authenticated():
@@ -193,7 +198,7 @@ def permission_required(perm, action, erf=html_error):
                 # Otherwise, show error message.
 
                 error_text = ('You need more permissions to do that.')
-                return erf(request, error_text, action)
+                return perm_fail_erf(request, error_text, action)
             else:
                 return real_handler(request)
         return request_handler
@@ -205,9 +210,9 @@ def permission_required_redirect(perm, redirect_field_name):
     """
     def erf(request, error_text, action):
         path = urlquote(request.get_full_path())
-        tup = settings.LOGIN_URL, redirect_field_name, path
+        tup = enc_settings.LOGIN_URL, redirect_field_name, path
         return HttpResponseRedirect('%s?%s=%s' % tup)
-    return permission_required(perm, '', erf)
+    return permission_required(perm, '', erf, html_error)
                                         
 def permission_required_xml(perm):
     return permission_required(perm,

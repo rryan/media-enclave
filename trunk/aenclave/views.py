@@ -159,51 +159,16 @@ def user_debug(request):
     return render_html_template('user_debug.html', request,
                                 context_instance=RequestContext(request))
 
-def login_with_ssl(request):
-    ssl_email = request.META.get('HTTP_SSL_CLIENT_S_DN_EMAIL', '')
-
-    matcher = re.compile('(.+)@MIT.EDU')
-
-    m = matcher.match(ssl_email)
-    if m is None:
-        return None
-
-    kerberos = m.group(1)
-
-    if kerberos is None:
-        return None
-
-    user = auth.authenticate(username=kerberos,password=SSL_AUTH_PASSWORD)
-
-    # user doesn't exist, so we need to create a new user
-    if user is None:
-        new_user = auth.models.User.objects.create_user(kerberos, ssl_email,
-                                                        SSL_AUTH_PASSWORD)
-        new_user.save()
-
-        # we have to do this instead of returning new_user because it hasn't
-        # been validated as authenticated yet, it's just the raw user object
-        # from the database
-        user = auth.authenticate(username=kerberos, password=SSL_AUTH_PASSWORD)
-
-    return user
-
 def login(request):
     form = request.POST
 
-    ssl_verify = request.META.get('HTTP_SSL_CLIENT_VERIFY', False)
-    if ssl_verify == 'SUCCESS':
-        ssl_verify = True
-    else:
-        ssl_verify = False
+    # First try SSL Authentication
 
-    # If the user authenticated with SSL, then try to log them in with their
-    # credentials
-    if ssl_verify:
-        user = login_with_ssl(request)
+    user = auth.authenticate(request=request)
+
     # Otherwise, treat this like a text login and show the login page if
     # necessary.
-    else:
+    if user is None:
         # If the user isn't trying to log in, then just display the login page.
         if not form.get('login', False):
             goto = request.GET.get('goto', None)
@@ -238,6 +203,11 @@ def login(request):
 
     # hack to try to pass them back to http land
     goto = request.REQUEST.get('goto',reverse('aenclave-home'))
+    
+    # hack to prevent infinite loop.
+    if goto == '':
+        goto = reverse('aenclave-home')
+
     if goto.startswith('https'):
         goto = goto.replace('^https','http')
 

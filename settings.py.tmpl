@@ -102,6 +102,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.doc.XViewMiddleware',
 )
 
+AUTHENTICATION_BACKENDS = (
+    'menclave.auth.KerberosBackend.KerberosBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 ROOT_URLCONF = 'menclave.urls'
 
 TEMPLATE_DIRS = (

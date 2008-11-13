@@ -6,21 +6,19 @@ import os
 import random
 import logging
 import traceback
-import logging
 
-from xmmsclient import XMMSError, XMMSSync
+from xmmsclient import XMMSError
 from xmmsclient import PLAYBACK_STATUS_PLAY as PLAY
 from xmmsclient import PLAYBACK_STATUS_PAUSE as PAUSE
 from xmmsclient import PLAYBACK_STATUS_STOP as STOP
 
-from menclave.settings import DAEMON_CONNECTION
+from menclave.settings import AENCLAVE_DEQUEUE_NOISES_DIR
+from menclave.aenclave.connection import CONNECTION_MANAGER
 from menclave.aenclave.models import Channel, Song
 
-__all__ = ('ControlError', 'Controller', 'DEQUEUE_NOISES_DIR')
+__all__ = ('ControlError', 'Controller')
 
 #=============================================================================#
-
-DEQUEUE_NOISES_DIR = '/var/nicerack/dequeue'
 
 class ControlError(Exception):
     """The exception class for music control-related errors."""
@@ -57,7 +55,7 @@ class Controller(object):
 #                 raise ControlError("The music daemon is not responding.")
 #        self.client = client
 
-        self.client = DAEMON_CONNECTION
+        self.client = CONNECTION_MANAGER.connection_for_channel(channel)
         self.channel = channel
 
     def _xmms2_url(self, path):
@@ -123,8 +121,13 @@ class Controller(object):
     def _get_current_position(self):
         """controller.get_current_position() -> position of song in playlist"""
         # Different versions of XMMS treat this API call differently.
-        return self.client.playlist_current_pos()['position']
-        #return self.client.playlist_current_pos()
+        # It either returns:
+        #  - the integer position
+        #  - a dict with the integer position under the key 'position'
+        value = self.client.playlist_current_pos()
+        if type(value) is type({}):
+            return value['position']
+        return value
 
     def get_queue_songs(self):
         """controller.get_queue_songs() -> list of songs in queue"""
@@ -231,8 +234,8 @@ class Controller(object):
         # Play a dequeue noise.
         try:
             # Pick a random dequeue noise and get its path.
-            deq = random.choice(os.listdir(DEQUEUE_NOISES_DIR))
-            deq = self._xmms2_url(os.path.join(DEQUEUE_NOISES_DIR, deq))
+            deq = random.choice(os.listdir(AENCLAVE_DEQUEUE_NOISES_DIR))
+            deq = self._xmms2_url(os.path.join(AENCLAVE_DEQUEUE_NOISES_DIR, deq))
         except OSError:
             # We can't find the files for some reason.
             _catch()

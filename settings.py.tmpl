@@ -36,6 +36,9 @@ LOGIN_URL = "/audio/login"
 AENCLAVE_SFTP_UPLOAD_DIR = "/path/to/sftp-upload"
 
 ### CUSTOMIZE ME
+AENCLAVE_DEQUEUE_NOISES_DIR = "/path/to/dequeue-noise"
+
+### CUSTOMIZE ME
 ### At the moment, only "mp3" and "m4a"
 SUPPORTED_AUDIO = ("mp3", "m4a")
 
@@ -151,21 +154,5 @@ DATETIME_FORMAT = 'j M Y H:i:s'   # 3 Dec 2006 15:34:12
 TIME_FORMAT = 'H:i:s'             # 15:34:12
 YEAR_MONTH_FORMAT = 'F Y'         # December 2006
 MONTH_DAY_FORMAT = 'j F'          # 3 December
-
-#=============================================================================#
-
-# The reason for having the XMMS connection here is that if you do not
-# cache the connection, each time a control event occurs you will open
-# a new connection to the XMMS2 daemon. This will eventually overflow
-# your file descriptor limit, and your server will become sad.
-
-# TODO(rryan) : The url is hard coded here. This is wrong. The channel
-# model stores the locator for the record, and the connection used is
-# dependent on the channel. This needs fixing ASAP. Ideally this would
-# turn into a thing that returns a new connection to a channel, or a
-# pre-existing version.
-from xmmsclient import XMMSSync
-DAEMON_CONNECTION = XMMSSync()
-DAEMON_CONNECTION.connect('tcp://127.0.0.1:9000')
 
 #=============================================================================#

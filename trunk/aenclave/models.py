@@ -7,7 +7,6 @@ import re
 
 from django.db import models
 from django.contrib.auth.models import Group, User
-from django.contrib import admin
 
 #================================= UTILITIES =================================#
 
@@ -137,19 +136,6 @@ class Song(models.Model):
     objects = models.Manager()
     visibles = VisibleManager()
 
-
-class SongAdmin(admin.ModelAdmin):
-    date_hierarchy = 'date_added'
-    list_display = ('track','title', 'time_string', 'album', 'artist',
-                    'date_added', 'adjusted_score', 'visible')
-    list_display_links = ('title','track')
-    list_filter = ('visible', 'date_added')
-    search_fields = ('title', 'album', 'artist')
-
-
-admin.site.register(Song,SongAdmin)
-
-
 #-----------------------------------------------------------------------------#
 
 class Playlist(models.Model):
@@ -193,15 +179,6 @@ class Playlist(models.Model):
         except User.DoesNotExist: return (user == self.owner)
         else: return True
 
-class PlaylistAdmin(admin.ModelAdmin):
-    date_hierarchy = 'date_created'
-    list_display = ('name', 'owner', 'group', 'last_modified',
-                    'date_created')
-    list_filter = ('owner', 'last_modified', 'date_created')
-    search_fields = ('name',)
-
-admin.site.register(Playlist,PlaylistAdmin)
-
 #-----------------------------------------------------------------------------#
 
 class Channel(models.Model):
@@ -242,14 +219,6 @@ class Channel(models.Model):
         self.save()  # `self.last_touched` will auto-update.
 
     def controller(self): return Controller(self)
-
-class ChannelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'pipe', 'last_touched')
-    list_display_links = ('name',)
-
-admin.site.register(Channel,ChannelAdmin)
-
-
 
 # This import goes at the end to avoid circularity.
 from control import Controller

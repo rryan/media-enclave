@@ -39,7 +39,7 @@ def direct_to_template(request, template, extra_context=None, mimetype=None,
     """Render a given template with extra template variables."""
     if extra_context is None: extra_context = {}
     dictionary = {'params': kwargs}
-    dictionary.update(global_template_vars(request))
+
     for key, value in extra_context.items():
         if callable(value):
             dictionary[key] = value()
@@ -54,12 +54,8 @@ def render_html_template(template, request, options=None, *args, **kwargs):
     # {} is an unsafe default value, so use use None instead.
     if options is None:
         options = {}
-    options.update(global_template_vars(request))
-    return render_to_response(template, options, *args, **kwargs)
 
-def global_template_vars(request):
-    return {'dl': ('dl' in request.REQUEST),
-            'playlist_info': playlist_info_json()}
+    return render_to_response(template, options, *args, **kwargs)
 
 def render_json_template(*args, **kwargs):
     """Renders a JSON template, and then calls render_json_response()."""

@@ -30,6 +30,8 @@ from menclave.aenclave.models import Channel, Playlist, Song
 from menclave.aenclave.control import Controller, ControlError
 
 from menclave import settings as enc_settings
+from menclave.aenclave import processing
+
 #================================= UTILITIES =================================#
 
 def direct_to_template(request, template, extra_context=None, mimetype=None,
@@ -686,77 +688,40 @@ def update_playlist(request):
 
 #---------------------------------- Upload -----------------------------------#
 
-def process_upload_song(filename):
-    # Save the song into the database -- we'll fix the tags in a moment.
-    song = Song(track=0, time=0)
-
-    # read the song and push the data
-    content = File(open(filename, 'r'))
-    song.audio.save(filename, content)
-
-    # Now, open up the MP3 file and save the tag data into the database.
-    audio = MP3(song.audio.path, ID3=EasyID3)
-    try: song.title = audio['title'][0]
-    except (KeyError, IndexError): song.title = 'Unnamed Song'
-    try: song.album = audio['album'][0]
-    except (KeyError, IndexError): song.album = ''
-    try: song.artist = audio['artist'][0]
-    except (KeyError, IndexError): song.artist = ''
-    try: song.track = int(audio['tracknumber'][0].split('/')[0])
-    except (KeyError, IndexError, ValueError): song.track = 0
-    song.time = int(ceiling(audio.info.length))
-    song.save()
-    return [song, audio]
-
 @permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http(request):
     # Nab the file and make sure it's legit.
     audio = request.FILES.get('audio', None)
     if audio is None:
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
-    elif (audio.content_type != 'audio/mpeg' or
-          not audio.name.lower().endswith('.mp3')):
-        return html_error(request, 'You may only upload MP3 files.',
-                          'HTTP Upload')
-    # Save the song into the database -- we'll fix the tags in a moment.
-    song = Song(track=0, time=0)
 
-    song.audio.save(audio.name, audio)
-
-    # Now, open up the MP3 file and save the tag data into the database.
-    audio = MP3(song.audio.path, ID3=EasyID3)
-    try: song.title = audio['title'][0]
-    except (KeyError, IndexError): song.title = 'Unnamed Song'
-    try: song.album = audio['album'][0]
-    except (KeyError, IndexError): song.album = ''
-    try: song.artist = audio['artist'][0]
-    except (KeyError, IndexError): song.artist = ''
-    try: song.track = int(audio['tracknumber'][0].split('/')[0])
-    except (KeyError, IndexError, ValueError): song.track = 0
-    song.time = int(ceiling(audio.info.length))
-    song.save()
-    # Let the user know what's going on.
-
-    #[song,audio] = process_upload_song(audio['filename'], audio['content']
+    try:
+        song, audio = processing.process_song(audio.name, audio)
+    except processing.BadContent:
+        return html_error(request, "You may only upload audio files.",
+                          "HTTP Upload")
 
     return render_html_template('upload_http.html', request,
                                 {'song_list': [song],
                                  'sketchy_upload': audio.info.sketchy},
                                 context_instance=RequestContext(request))
 
-SFTP_UPLOAD_DIR = '/var/nicerack/sftp-upload'
-
 @permission_required_redirect('aenclave.add_song', 'goto')
 def upload_sftp(request):
     song_list = []
     sketchy = False
+    sftp_upload_dir = enc_settings.AENCLAVE_SFTP_UPLOAD_DIR
 
     # Figure out available MP3's in SFTP upload DIR
-    for root, dirs, files in os.walk(SFTP_UPLOAD_DIR):
+    for root, dirs, files in os.walk(sftp_upload_dir):
         for filename in files:
-            if filename.lower().endswith('.mp3'):
+            if processing.valid_song(filename):
                 full_path = root + '/' + filename
-                [song,audio] = process_upload_song(full_path)
+
+                content = File(open(full_path, 'r'))
+    
+                song, audio = processing.process_song(full_path, content)
+                
                 song_list.append(song)
 
                 if audio.info.sketchy:
@@ -778,9 +743,11 @@ def upload_http_fancy(request):
         return HttpResponseRedirect("http://" + request.get_host() +
                                     reverse("aenclave-http-upload-fancy"))
 
+    file_types = map(lambda s: "*.%s" % s, enc_settings.SUPPORTED_AUDIO)
     return render_html_template('upload_http_fancy.html', request,
                                 {'song_list': [],
                                  'show_songlist': True,
+                                 'file_types': file_types,
                                  'force_actions_bar':True},
                                 context_instance=RequestContext(request))
 
@@ -816,27 +783,12 @@ def upload_http_fancy_receiver(request):
     # just use the extension.
     if audio is None:
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
-    elif not audio.name.lower().endswith('.mp3'):
+    elif not processing.valid_song(audio.name):
         return html_error(request, 'You may only upload MP3 files.',
                               'HTTP Upload')
     # Save the song into the database -- we'll fix the tags in a moment.
-    song = Song(track=0, time=0)
-
-    song.audio.save(audio.name, audio)
-
-    # Now, open up the MP3 file and save the tag data into the database.
-    audio = MP3(song.audio.path, ID3=EasyID3)
-    try: song.title = audio['title'][0]
-    except (KeyError, IndexError): song.title = 'Unnamed Song'
-    try: song.album = audio['album'][0]
-    except (KeyError, IndexError): song.album = ''
-    try: song.artist = audio['artist'][0]
-    except (KeyError, IndexError): song.artist = ''
-    try: song.track = int(audio['tracknumber'][0].split('/')[0])
-    except (KeyError, IndexError, ValueError): song.track = 0
-    song.time = int(ceiling(audio.info.length))
-    song.save()
-
+    song, audio = processing.process_song(audio.name, audio)
+    
     return render_html_template('songlist_song_row.html', request,
                                 {'song': song},
                                 context_instance=RequestContext(request))

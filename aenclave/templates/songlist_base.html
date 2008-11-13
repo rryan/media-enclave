@@ -82,10 +82,10 @@
           {% if not no_queuing %}
             <a href="javascript:songlist.queue();" class=queue>Queue selected songs</a>
           {% endif %}
+	  {% if dl %}
+            <a href="javascript:songlist.dl();" class=dl>DL selected songs</a>
+          {% endif %}
           {% if user.is_authenticated %}
-            {% if dl %}
-              <a href="javascript:songlist.dl();" class=dl>DL selected songs</a>
-            {% endif %}
             <a href="javascript:songlist.askcreate();" class=create>Save as playlist&hellip;</a>
             <a href="javascript:songlist.askadd();" class=add>Add to playlist&hellip;</a>
             {% if user.is_staff %}
@@ -106,10 +106,10 @@
         <input type="hidden" name="ids"/>
       </form>
     {% endif %}
-    {% if user.is_authenticated %}
       <form name="dlform" action="{% url aenclave-dl %}" method="POST">
-        <input type="hidden" name=ids/>
+        <input type="hidden" name="ids"/>
       </form>
+    {% if user.is_authenticated %}      
       <form name="createform" action="{% url aenclave-playlist-create %}" method="POST">
         <input type="hidden" name="name"/>
         <input type="hidden" name="ids"/>

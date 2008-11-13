@@ -52,39 +52,12 @@
           </tr>
         {% else %}
           {% if current_song %}
-            {# TODO(rnk): Remove duplication with songlist_song_row.html #}
             <tr class="c">
-              <td class="c select">
-                <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
-                    id="currentsong" name="{{current_song.id}}"/>
-              </td>
-              <td class="drag">{# For the drag-handle. #}</td>
-              <td name="track" class="r track editable">
-                {% if dl %}
-                  <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>
-                {% endif %}
-                {{current_song.track_string}}
-              </td>
-              <td name="title" class="title editable{% if current_song.date_added|is_recent %} new{% endif %}">
-                {{current_song.title|escape}}
-              </td>
-              <td name="album" class="album editable">
-                {% if current_song.album %}
-                  <a href="{% url aenclave-album current_song.album|urlencode %}">
-                    {{current_song.album|escape}}</a>
-                {% endif %}
-              </td>
-              <td name="artist" class="artist editable">
-                {% if current_song.artist %}
-                  <a href="{% url aenclave-artist current_song.artist|urlencode %}">
-                    {{current_song.artist|escape}}</a>
-                {% endif %}
-              </td>
-              <td class="time r">{{current_song.time_string}}</td>
-              <td class="date-added r">{{current_song.date_added_string}}</td>
-              {% if user.is_authenticated %}
-                <td class="edit" onclick="songlist.edit_song(this);"></td>
-              {% endif %}
+	      {% set song current_song %}
+	      {% set current True %}
+	      {% include "songlist_song_row.html" %}
+	      {% unset current %}
+	      {% unset song %}
             </tr>
           {% endif %}
         {% endif %}

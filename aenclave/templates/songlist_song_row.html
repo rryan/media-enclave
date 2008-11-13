@@ -1,6 +1,13 @@
 {% load aenclave %}
-<td class="select"><input type=checkbox name="{{song.id}}"/></td>
-<td class="drag-handle"></td>
+<td class="select c">
+  {% if current %}
+  <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
+       id="currentsong" name="{{song.id}}"/>
+  {% else %}
+  <input type=checkbox name="{{song.id}}"/>
+  {% endif %}
+</td>
+<td class="drag drag-handle"></td>
 <td name="track" class="track editable r">
   {% if dl %}
     <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>

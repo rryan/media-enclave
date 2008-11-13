@@ -7,7 +7,7 @@
   <input type=checkbox name="{{song.id}}"/>
   {% endif %}
 </td>
-<td class="drag drag-handle"></td>
+<td class="drag {% if not current %}drag-handle{% endif %}"></td>
 <td name="track" class="track editable r">
   {% if dl %}
     <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>

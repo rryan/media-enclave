@@ -124,14 +124,9 @@ class SetNode(template.Node):
         return "<Set Node: %s = %s>" % (self._variable, self._value)
 
     def render(self, context):
-        # WTF: This is kind of magic and unintuitive. If you make
-        # value the value of a currently existing variable, then you
-        # are doing assignment. Otherwise you are doing string assign.
-        value = context.get(self._value, None)
-        if value:
-            context[self._variable] = value
-        else:
-            context[self._variable] = self._value
+        # Use the Django machinery for resolving variables in contexts.
+        value = template.Variable(self._value).resolve(context)
+        context[self._variable] = value
         return ''
 
 class UnsetNode(template.Node):

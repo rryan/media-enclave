@@ -24,6 +24,7 @@ function kind_select() {
   node.appendChild(option("time","Song duration"));
   node.appendChild(option("date_added","Date added"));
   node.appendChild(option("last_queued","Last queued"));
+  node.appendChild(option("play_count","Play Count"));
   node.appendChild(option("and","Satisfies all"));
   node.appendChild(option("nand","Doesn't satisfy all"));
   node.appendChild(option("or","Satisfies any"));
@@ -130,7 +131,7 @@ function field_span(ausp) {
 
 function category(kind) {
   if (kind == "title" || kind == "album" || kind == "artist") return "str";
-  else if (kind == "time" || kind == "track") return "int";
+  else if (kind == "time" || kind == "track" || kind == "play_count") return "int";
   else if (kind == "date_added" || kind == "last_queued") return "date";
   else if (kind == "and" || kind == "or" || kind == "nand" || kind == "nor") {
     return "bool";

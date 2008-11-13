@@ -386,7 +386,7 @@ def _build_filter_tree(form, prefix):
                             'is','notis'):
                 raise KeyError('bad string rule: %r' % rule)
             return (kind, rule, string), 1, ()
-        elif kind in ('time','track'):
+        elif kind in ('time','track','play_count'):
             errors = []
             # Get f0 and, if needed, f1.
             try:
@@ -454,7 +454,7 @@ def _build_filter_query(tree):
         elif rule == 'is': query = Qu(kind, 'iexact', data)
         if negate: return ~Q(query)
         else: return query
-    elif kind in ('time','track'):
+    elif kind in ('time','track','play_count'):
         if rule in ('lte','gte'): return Qu(kind, rule, data)
         elif rule == 'is': return Qu(kind, 'exact', data)
         elif rule == 'notis': return ~Q(Qu(kind, 'exact', data))

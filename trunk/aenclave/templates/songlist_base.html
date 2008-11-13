@@ -54,7 +54,7 @@
           {% if current_song %}
             <tr class="c">
 	      {% set song current_song %}
-	      {% set current True %}
+	      {% set current "true" %}
 	      {% include "songlist_song_row.html" %}
 	      {% unset current %}
 	      {% unset song %}

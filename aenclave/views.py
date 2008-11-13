@@ -264,9 +264,7 @@ def login(request):
     error_message = ''
     if user is None:
         error_message = 'Invalid username/password.'
-        if ssl_verify:
-            error_message = ('SSL authentication failed. Use text-based'
-                             ' authentication, or contact an administrator.')
+
     # If the user account is disabled, then no dice.
     elif not user.is_active:
         error_message = ('The user account for <tt>%s</tt> has been disabled.' %

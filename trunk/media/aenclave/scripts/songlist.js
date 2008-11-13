@@ -334,54 +334,63 @@ var songlist = {
 
   /******************************* TAG EDITING *******************************/
 
+
+  /** Utility Functions for Swapping the class / onclick of the edit column **/
+  _edit_column_done: function(target) {
+	// target must already be wrapped by jQuery
+	target.removeClass("edit error").addClass("done");
+	target.each(function() { this.onclick = function() { songlist.done_editing(this); }});
+  },
+
+  _edit_column_edit: function(target) {
+	// target must already be wrapped by jQuery
+	target.removeClass("done error").addClass("edit");
+	target.each(function() { this.onclick = function() { songlist.edit_song(this); }});
+  },
+
+  _edit_column_error: function(target) {
+	// target must already be wrapped by jQuery
+	target.removeClass("done edit").addClass("error");
+	target.each(function() { this.onclick = function() { }});
+  },
+
   // This is called when the user clicks the edit button next to a song to edit
   // the song tags.
   edit_song: function(target) {
-    // Replace text with text boxes.
-    var row = target.parentNode;
-    var tds = row.getElementsByTagName("TD");
-    for (var i = 1; i <= 4; i++) {
-      var td = tds[i];
-      var box = document.createElement("INPUT");
-      var text;
-      var links = td.getElementsByTagName('A');
-      // This was used to use .innerHTML, which isn't what we want.
-      // That would put &amp; in the text box.
-      // We want .innerText, but FF doesn't support it,
-      // so the cross browser way is .innerText || .textContent
-      if (links.length > 0) {
-        text = links[0].innerText || td.textContent;
-      } else {
-        text = td.innerText || td.textContent;
-      }
-      text = text.strip();
-      box.type = "text";
-      box.className = "text";
-      box.value = text;
-      // Clear the cell and replace it with the input box.
-      td.innerHTML = '';
-      td.appendChild(box);
-    }
-    // Replace the edit button with a done button.
-    target.className = "done";
-    target.setAttribute("onclick", "songlist.done_editing(this);");
+    target = jQuery(target);
+    // Replace text with text boxes. (only do it on .editable children)
+    jQuery.map(
+	       target.parent("TR:first").children('.editable'), 
+	       function(cell) {
+		   cell = jQuery(cell);
+		   var input = jQuery(document.createElement("INPUT"));
+		   input.attr("type","text");
+		   input.attr('value', cell.text().strip());
+		   input.addClass("text");
+		   cell.empty().append(input);
+	       });
+
+    songlist._edit_column_done(target);
   },
 
   done_editing: function(target) {
     // Collect the parameters from the text boxes.
-    var tds = target.parentNode.getElementsByTagName("TD");
-    var params = {id: tds[0].firstChild.name};
-    for (var i = 1; i <= 4; i++) {
-      var td = tds[i];
-      params[td.getAttribute("name")] = td.lastChild.value;
-    }
+    target = jQuery(target);
+    var parent = target.parent("TR:first");
+    var songid = parent.children(".select").children(":first").attr('name');
+    var params = {id: songid};
+
+    parent.children(".editable").each(function() {
+	    elt = jQuery(this);
+	    params[elt.attr('name')] = elt.children("input:first").attr('value');
+	});
+       
     // Send the request.
     var options = {
       method: "post",
       parameters: params,
       onFailure: function() {
-        target.className = "error";
-        target.setAttribute("onclick", "");
+	songlist._edit_column_error(target);
         songlist.error_message("Got no reponse from server.");
       },
       onSuccess: function(transport, json) {
@@ -398,23 +407,23 @@ var songlist = {
   // Called only by done_editing().  Update the row in the table based on the
   // data sent back by the server.
   _update_edited_song: function(target, json) {
-    target.className = "edit";
-    target.setAttribute("onclick", "songlist.edit_song(this);");
-    var tds = target.parentNode.getElementsByTagName("TD");
-    for (var i = 1; i <= 4; i++) {
-      var td = tds[i];
-      td.removeChild(td.lastChild);
-      var info = json[i-1];
-      if (info.href) {
-        var link = document.createElement("A");
-        if (info.klass) link.className = info.klass;
-        link.setAttribute("href", info.href);
-        link.appendChild(document.createTextNode(info.text));
-        td.appendChild(link);
-      } else {
-        td.appendChild(document.createTextNode(info.text));
-      }
-    }
+    target = jQuery(target);
+
+    songlist._edit_column_edit(target);
+    
+    jQuery(target).parent("TR:first").children(".editable").each(function(i) {
+	    var elt = jQuery(this);
+	    var info = json[i];
+	    if(info.href) {
+		var link = jQuery(document.createElement("A"));
+		if(info.klass) link.addClass(info.klass);
+		link.attr('href', info.href);
+		link.text(info.text);
+		elt.empty().append(link);
+	    } else {
+		elt.empty().text(info.text);
+	    }
+	});
   },
 
   /***************************** SORTABLE TABLES *****************************/

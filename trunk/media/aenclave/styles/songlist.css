@@ -132,6 +132,40 @@ TABLE.data TBODY TD A.dl-link {
     text-decoration: underline;
 }
 
+/******************************** SONGLIST COLUMNS ***************************/
+
+.select {
+ width: 1px;
+}
+
+.drag {
+
+}
+
+.track {
+    width: 40px;
+}
+
+.title {
+    
+}
+
+.album {
+}
+
+.artist {
+}
+
+.time {
+    width: 40px; 
+}
+
+.date-added {
+    width: 130px;
+}
+
+
+
 /******************************** ACTIONS BAR ********************************/
 
 DIV#actions {

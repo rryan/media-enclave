@@ -20,70 +20,70 @@
     <table class=data id=songlist>
       <thead>
         <tr>
-          <th style="width:1px;">
+          <th class="select">
             <input type=checkbox onclick="songlist.select_all(this);"/>
           </th>
-          <th>{# For the drag-handle. #}</th>
+          <th class="drag">{# For the drag-handle. #}</th>
           {% if current_song %}
-            <th style="width:40px;">Track</th>
-            <th>Title</th>
-            <th>Album</th>
-            <th>Artist</th>
-            <th style="width:40px;">Time</th>
-            <th style="width:130px;">Date added</th>
+            <th class="track">Track</th>
+            <th class="title">Title</th>
+            <th class="album">Album</th>
+            <th class="artist">Artist</th>
+            <th class="time">Time</th>
+            <th class="date-added">Date added</th>
           {% else %}
-            <th class=sort sorttype=int onclick="songlist.sorta(this);" style="width:40px;">Track</th>
-            <th class=sort sorttype=text onclick="songlist.sorta(this);">Title</th>
-            <th class=sort sorttype=text onclick="songlist.sorta(this);">Album</th>
-            <th class=sort sorttype=text onclick="songlist.sorta(this);">Artist</th>
-            <th class=sort sorttype=time onclick="songlist.sorta(this);" style="width:40px;">Time</th>
-            <th class=sort sorttype=date onclick="songlist.sorta(this);" style="width:130px;">Date added</th>
+            <th class="sort song-track" sorttype="int" onclick="songlist.sorta(this);">Track</th>
+            <th class="sort title" sorttype="text" onclick="songlist.sorta(this);">Title</th>
+            <th class="sort album" sorttype="text" onclick="songlist.sorta(this);">Album</th>
+            <th class="sort artist" sorttype="text" onclick="songlist.sorta(this);">Artist</th>
+            <th class="sort time" sorttype="time" onclick="songlist.sorta(this);">Time</th>
+            <th class="sort date-added" sorttype="date" onclick="songlist.sorta(this);">Date added</th>
           {% endif %}
           {% if user.is_authenticated %}
-            <th class=edit></th>
+            <th class="edit"></th>
           {% endif %}
         </tr>
       </thead>
       <tbody>
         {% if skipping %}
-          <tr class=c>
-            <td class=c><img src="{{ MEDIA_URL }}aenclave/images/speaker.png"/></td>
-            <td class=c colspan=7>(Dequeuing current song...)</td>
+          <tr class="c">
+            <td class="c"><img src="{{ MEDIA_URL }}aenclave/images/speaker.png"/></td>
+            <td class="c" colspan="7">(Dequeuing current song...)</td>
           </tr>
         {% else %}
           {% if current_song %}
             {# TODO(rnk): Remove duplication with songlist_song_row.html #}
-            <tr class=c>
-              <td class=c>
+            <tr class="c">
+              <td class="c select">
                 <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
-                    id=currentsong name="{{current_song.id}}"/>
+                    id="currentsong" name="{{current_song.id}}"/>
               </td>
-              <td>{# For the drag-handle. #}</td>
-              <td name=track class=r>
+              <td class="drag">{# For the drag-handle. #}</td>
+              <td name="track" class="r track editable">
                 {% if dl %}
                   <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>
                 {% endif %}
                 {{current_song.track_string}}
               </td>
-              <td name=title{% if current_song.date_added|is_recent %} class=new{% endif %}>
+              <td name="title" class="title editable{% if current_song.date_added|is_recent %} new{% endif %}">
                 {{current_song.title|escape}}
               </td>
-              <td name=album>
+              <td name="album" class="album editable">
                 {% if current_song.album %}
                   <a href="{% url aenclave-album current_song.album|urlencode %}">
                     {{current_song.album|escape}}</a>
                 {% endif %}
               </td>
-              <td name=artist>
+              <td name="artist" class="artist editable">
                 {% if current_song.artist %}
                   <a href="{% url aenclave-artist current_song.artist|urlencode %}">
                     {{current_song.artist|escape}}</a>
                 {% endif %}
               </td>
-              <td class=r>{{current_song.time_string}}</td>
-              <td class=r>{{current_song.date_added_string}}</td>
+              <td class="time r">{{current_song.time_string}}</td>
+              <td class="date-added r">{{current_song.date_added_string}}</td>
               {% if user.is_authenticated %}
-                <td class=edit onclick="songlist.edit_song(this);"></td>
+                <td class="edit" onclick="songlist.edit_song(this);"></td>
               {% endif %}
             </tr>
           {% endif %}

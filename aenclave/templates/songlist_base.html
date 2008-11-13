@@ -53,11 +53,11 @@
         {% else %}
           {% if current_song %}
             <tr class="c">
-	      {% set song current_song %}
-	      {% set current "true" %}
-	      {% include "songlist_song_row.html" %}
-	      {% unset current %}
-	      {% unset song %}
+	      {% with current_song as song %}
+	        {% with "true" as current %}
+	          {% include "songlist_song_row.html" %}
+	        {% endwith %}
+	      {% endwith %}
             </tr>
           {% endif %}
         {% endif %}

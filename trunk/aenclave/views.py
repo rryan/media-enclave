@@ -665,7 +665,7 @@ def delete_playlist(request):
     # Delete the playlist and redirect to the user's playlists page.
     playlist.delete()
     return HttpResponseRedirect(reverse('aenclave-user-playlist',
-                                        request.user.username))
+                                        args=[request.user.username]))
 
 @permission_required('aenclave.change_playlist', 'Edit Playlist')
 def update_playlist(request):

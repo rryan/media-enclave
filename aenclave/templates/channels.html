@@ -16,7 +16,7 @@
       {{song_list|length|apnumber|intcomma}}
       song{{song_list|length|pluralize}} in the queue.</p>
   {% else %}
-    <p>No songs are in the queue.</p>
+    <p>{% if current_song %}There is one song playing. {% endif %}No songs are in the queue.</p>
   {% endif %}
 {% endblock %}
 

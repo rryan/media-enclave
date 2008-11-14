@@ -327,7 +327,7 @@ var songlist = {
     jQuery('#songlist .drag').remove();
   },
 
-  update_songlist: function(url, onCompleteCallback) {
+  update_songlist: function(url, opt_onComplete) {
     // Collect all the song ids in order and send them to the server.
     var song_ids = [];
     var boxen = jQuery('#songlist input');
@@ -340,7 +340,8 @@ var songlist = {
     jQuery.post(url, data, function(json, statusText) {
       if (statusText == 'success') {
         if (json.success) {
-          songlist.success_message(json.success);
+          // This is probably unnecesarry...
+          //songlist.success_message(json.success);
         } else if (json.error) {
           songlist.error_message(json.error);
         } else {
@@ -349,7 +350,9 @@ var songlist = {
       } else {
         songlist.error_message("Error reaching the server.");
       }
-      onCompleteCallback();
+      if (opt_onComplete) {
+        opt_onComplete();
+      }
     }, 'json');
   },
 

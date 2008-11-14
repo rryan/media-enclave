@@ -129,6 +129,10 @@ TABLE.data TBODY TD A.dl-link {
     text-decoration: underline;
 }
 
+TABLE.data TBODY TD A.dl-link IMG {
+    border: 0px;
+}
+
 /******************************** SONGLIST COLUMNS ***************************/
 
 .select {

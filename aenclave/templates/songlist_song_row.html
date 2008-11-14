@@ -40,6 +40,8 @@
 {% endif %}
 {% if dl %}
   <td>
-    <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">DL</a>
+    <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">
+      <img src="{{ MEDIA_ROOT }}aenclave/images/dl.png"/>
+    </a>
   </td>
 {% endif %}

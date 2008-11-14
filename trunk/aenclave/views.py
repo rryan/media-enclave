@@ -484,13 +484,8 @@ def filter_search(request):
 #--------------------------------- Browsing ----------------------------------#
 
 def browse_index(request):
-    # WTF Using .count() seems to get the wrong answer -- I think it's not
-    #     playing nice with .distinct() (as of Django SVN revision 6000).  Not
-    #     sure if that's Django's fault or SQLite's fault, but it'd be nice to
-    #     figure it out, since using len() is the Wrong Thing here (much less
-    #     memory efficient).
-    total_albums = len(Song.visibles.values('album').distinct())
-    total_artists = len(Song.visibles.values('artist').distinct())
+    total_albums = Song.visibles.values('album').distinct().count()
+    total_artists = Song.visibles.values('artist').distinct().count()
     return render_html_template('browse_index.html', request,
                                 {'total_albums': total_albums,
                                  'total_artists': total_artists},

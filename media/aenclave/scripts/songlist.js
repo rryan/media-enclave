@@ -306,12 +306,18 @@ var songlist = {
 
   /******************************* DRAG & DROP *******************************/
 
-  enable_dnd: function() {
+  enable_dnd: function(opt_onDrop) {
     jQuery('#songlist thead tr').append('<th class="drag"></th>');
     jQuery('#songlist tbody tr').append('<td class="drag"></td>');
+    // Make the current song undraggable.
+    jQuery('#songlist tr.c .drag').removeClass('drag');
     jQuery('#songlist').tableDnD({
         onDrop: function(table, row) {
           songlist.recolor_rows();
+          // Call this if the caller provided it.
+          if (opt_onDrop) {
+            opt_onDrop();
+          }
         },
         dragHandle: 'drag'
     });
@@ -324,9 +330,9 @@ var songlist = {
   update_songlist: function(url, onCompleteCallback) {
     // Collect all the song ids in order and send them to the server.
     var song_ids = [];
-    var boxen = $('songlist').getElementsByTagName('input');
+    var boxen = jQuery('#songlist input');
     for (var i = 0; i < boxen.length; i++) {
-      if (boxen[i].name) {
+      if (boxen[i].type == 'checkbox' && boxen[i].name) {
         song_ids.push(boxen[i].name);
       }
     }

@@ -8,7 +8,6 @@ import re
 import tempfile
 import zipfile
 import time
-import logging
 
 from django.conf import settings
 from django.contrib import auth
@@ -558,6 +557,18 @@ def channel_detail(request, channel_id=1):
                                  'playing': ctrl.is_playing(),
                                  'no_queuing': True},
                                 context_instance=RequestContext(request))
+
+def channel_reorder(request, channel_id=1):
+    try: channel = Channel.objects.get(pk=channel_id)
+    except Channel.DoesNotExist: raise Http404
+    ctrl = channel.controller()
+    form = request.POST
+    songs = get_song_list(form)
+    # FIXME(rnk): This is the stupidest, most non-threadsafe way possible to do
+    #             this.  I should probably be shot for it.  Please, for the
+    #             love of all that is holy, consider fixing this.
+    ctrl.clear_queued_songs()
+    ctrl.add_songs(songs)
 
 #----------------------------- Playlist Viewing ------------------------------#
 

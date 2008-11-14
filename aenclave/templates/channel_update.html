@@ -1,21 +1,21 @@
 {% load aenclave %}
 <script type="text/javascript">
-{% if reload %}
- window.location.reload();
-{% endif %}
-{% if error %}
- songlist.error_message("{{error|json_escape}}");
-{% endif %}
-{% if update %}
- var tbar = $('timebar');
- var new_elapsed_time = {{elapsed_time}};
- var new_total_time = {{total_time}};
- //alert(new_total_time + " " + tbar.total_time + " " + new_elapsed_time + " " + tbar.elapsed_time);
- if (new_total_time != tbar.total_time ||
-     new_elapsed_time < tbar.elapsed_time) {
-   window.location.reload();
- } else {
-   channels.update_elapsed_time(new_elapsed_time);
- }
-{% endif %}
+  {% if reload %}
+    window.location.reload();
+  {% endif %}
+  {% if error %}
+    songlist.error_message("{{error|json_escape}}");
+  {% endif %}
+  {% if update %}
+    var tbar = $('timebar');
+    var new_elapsed_time = {{elapsed_time}};
+    var new_total_time = {{total_time}};
+    //alert(new_total_time + " " + tbar.total_time + " " + new_elapsed_time + " " + tbar.elapsed_time);
+    if (new_total_time != tbar.total_time ||
+        new_elapsed_time < tbar.elapsed_time) {
+      window.location.reload();
+    } else {
+      channels.update_elapsed_time(new_elapsed_time);
+    }
+  {% endif %}
 </script>

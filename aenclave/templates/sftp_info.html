@@ -5,35 +5,49 @@
 {% block header %}SFTP Upload{% endblock %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/sftp_info.css">{% endblock %}
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/sftp_info.css"/>
+{% endblock %}
 
 {% block content %}
- <p>You can use SFTP to upload many songs to Audio Enclave at once.&nbsp;
-  This is much more efficient if you want to upload an entire album, for
-  instance.&nbsp; If you just have a single song to upload, it will probably
-  be easier to use the <a href="{% url aenclave-sftp-home %}">HTTP upload page</a> instead.</p>
- <p class=how>How to upload songs using SFTP</p>
- <ol>
+  <p>You can use SFTP to upload many songs to Audio Enclave at once.&nbsp; This
+    is much more efficient if you want to upload an entire album, for
+    instance.&nbsp; If you just have a single song to upload, it will probably
+    be easier to use the <a href="{% url aenclave-sftp-home %}">HTTP upload
+    page</a> instead.</p>
+  <p class="how">How to upload songs using SFTP</p>
+  <ol>
   <li>Install a working SFTP client.&nbsp; You can download SecureFX or Fetch
-   from the <a href="http://web.mit.edu/software/">IS&amp;T software page</a>.
+    from the <a href="http://web.mit.edu/software/">IS&amp;T software
+    page</a>.</li>
   <li>Connect to Nice-Rack with these settings:
-   <ul>
-    <li>Host: <tt>nice-rack.mit.edu</tt>
-    <li>Username: <tt>upload</tt>
-    <li>Port: <tt>22</tt>
-    <li>Protocol: <tt>SFTP</tt>
-   </ul>
-   Ask RJ, Femtomatt, Mart&iacute;, or some other Putz resident for the
-   password.
-  <li>Upload the songs; it&rsquo;s okay to have files in subdirectories.&nbsp;
-   You may only upload MP3 files.&nbsp;  Please do not upload songs that are
-   already in the database.
-  <li>After you have uploaded everything, click the button below{% if not user.is_authenticated %} (after first
-   <a href="{% aenclave-login %}?goto={% url aenclave-sftp-info %}">logging in</a>){% endif %}
-   and follow the instructions.
-  <li>Rock out.
- </ol>
- <form method=post action="{% aenclave-sftp-upload %}">
- <p><input type=submit value="Add uploaded songs"{% if user.is_authenticated %}>{% else %} disabled> You must <a href="{% url aenclave-login %}?goto={% aenclave-sftp-info %}">log in</a> before adding the songs.{% endif %}</p>
- </form>
+    <ul>
+      <li>Host: <tt>nice-rack.mit.edu</tt></li>
+      <li>Username: <tt>upload</tt></li>
+      <li>Port: <tt>22</tt></li>
+      <li>Protocol: <tt>SFTP</tt></li>
+    </ul>
+    Ask RJ, Femtomatt, Mart&iacute;, or some other Putz resident for the
+    password.
+    <li>Upload the songs; it&rsquo;s okay to have files in
+      subdirectories.&nbsp; You may only upload MP3 files.&nbsp;  Please do not
+      upload songs that are already in the database.</li>
+    <li>
+      After you have uploaded everything, click the button below
+      {% if not user.is_authenticated %}
+        (after first <a href="{% url aenclave-login %}?goto={% url aenclave-sftp-info %}">logging in</a>)
+      {% endif %}
+      and follow the instructions.
+    </li>
+    <li>Rock out.</li>
+  </ol>
+  <form method="post" action="{% url aenclave-sftp-upload %}">
+    <p>
+      {% if user.is_authenticated %}
+        <input type="submit" value="Add uploaded songs"/>
+      {% else %}
+        <input type="submit" value="Add uploaded songs" disabled="disabled"/>
+        You must <a href="{% url aenclave-login %}?goto={% url aenclave-sftp-info %}">log in</a> before adding the songs.
+      {% endif %}
+    </p>
+  </form>
 {% endblock %}

@@ -6,9 +6,9 @@
 {% block header %}List Songs{% endblock %}
 
 {% block styles %}{{block.super}}
- <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/upload.css"/>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/upload.css"/>
 {% endblock %}
 
 {% block presonglist %}
- <p>Listing {{song_list|length|apnumber|intcomma}} songs.</p>
+  <p>Listing {{song_list|length|apnumber|intcomma}} songs.</p>
 {% endblock %}

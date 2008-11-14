@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block presonglist %}
-  <div id=debugz></div>
+  <div id="debugz"></div>
   {% if song_list %}
     <p>There {{song_list|length|pluralize:"is,are"}}
       {{song_list|length|apnumber|intcomma}}
@@ -22,19 +22,19 @@
 
 {% block actions %}
   {% if song_list %}
-    <a href="javascript:channels.dequeue();" class=remove>Dequeue selected songs</a>
+    <a href="javascript:channels.dequeue();" class="remove">Dequeue selected songs</a>
   {% endif %}
   {{block.super}}
   {% if current_song and not skipping %}
-    <a href="javascript:channels.askemail();" class=email>Email link to song&hellip;</a>
+    <a href="javascript:channels.askemail();" class="email">Email link to song&hellip;</a>
   {% endif %}
-  <a href="javascript:channels.recent();" class=history>Recently played</a>
+  <a href="javascript:channels.recent();" class="history">Recently played</a>
 {% endblock %}
 
 {% block postcopyright %}{{block.super}}
   {% if song_list %}
-    <form name=dequeueform action="{% url aenclave-dequeue-songs %}" method=POST>
-      <input type=hidden name=indices>
+    <form name="dequeueform" action="{% url aenclave-dequeue-songs %}" method="POST">
+      <input type="hidden" name="indices">
     </form>
   {% endif %}
 {% endblock %}

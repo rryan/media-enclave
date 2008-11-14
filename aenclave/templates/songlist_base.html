@@ -17,11 +17,11 @@
 {% block content %}
   {% block presonglist %}{% endblock %}
   {% if song_list or current_song or show_songlist %}
-    <table class=data id=songlist>
+    <table class="data" id="songlist">
       <thead>
         <tr>
           <th class="select">
-            <input type=checkbox onclick="songlist.select_all(this);"/>
+            <input type="checkbox" onclick="songlist.select_all(this);"/>
           </th>
           <th class="drag">{# For the drag-handle. #}</th>
           {% if current_song %}
@@ -44,6 +44,7 @@
           {% endif %}
         </tr>
       </thead>
+
       <tbody>
         {% if skipping %}
           <tr class="c">
@@ -62,43 +63,45 @@
           {% endif %}
         {% endif %}
         {% for song in song_list %}
-          <tr class={% cycle a,b %}>
+          <tr class="{% cycle a,b %}">
             {% include "songlist_song_row.html" %}
           </tr>
         {% endfor %}
       </tbody>
+
     </table>
   {% endif %}
+
   {% block postsonglist %}{% endblock %}
 {% endblock %}
 
 {% block postcopyright %}
   {% if song_list or force_actions_bar %}
-    <div id=actionsgap></div>
+    <div id="actionsgap"></div>
 
-    <div id=actions>
+    <div id="actions">
       {% block actions %}
         {% if song_list or show_songlist %}
           {% if not no_queuing %}
-            <a href="javascript:songlist.queue();" class=queue>Queue selected songs</a>
+            <a href="javascript:songlist.queue();" class="queue">Queue selected songs</a>
           {% endif %}
 	  {% if dl %}
-            <a href="javascript:songlist.dl();" class=dl>DL selected songs</a>
+            <a href="javascript:songlist.dl();" class="dl">DL selected songs</a>
           {% endif %}
           {% if user.is_authenticated %}
-            <a href="javascript:songlist.askcreate();" class=create>Save as playlist&hellip;</a>
-            <a href="javascript:songlist.askadd();" class=add>Add to playlist&hellip;</a>
+            <a href="javascript:songlist.askcreate();" class="create">Save as playlist&hellip;</a>
+            <a href="javascript:songlist.askadd();" class="add">Add to playlist&hellip;</a>
             {% if user.is_staff %}
-              <a href="javascript:songlist.delete();" class=delete>Delete selected songs</a>
+              <a href="javascript:songlist.delete();" class="delete">Delete selected songs</a>
             {% else %}
-              <a href="javascript:songlist.askdelete();" class=delete>Request for deletion</a>
+              <a href="javascript:songlist.askdelete();" class="delete">Request for deletion</a>
             {% endif %}
           {% endif %}
         {% endif %}
       {% endblock %}
     </div>
 
-    <div id=subactions></div>
+    <div id="subactions"></div>
 
     {# Forms that get submitted by Javascript. #}
     {% if not no_queuing %}
@@ -119,7 +122,7 @@
         <input type="hidden" name="ids"/>
       </form>
     {% endif %}
-    <form name=deleteform action="{% url aenclave-delete-songs %}" method="POST">
+    <form name="deleteform" action="{% url aenclave-delete-songs %}" method="POST">
       <input type="hidden" name="ids"/>
     </form>
   {% endif %}

@@ -1,10 +1,10 @@
 {% load aenclave %}
 <td class="select c">
   {% if current %}
-  <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
-       id="currentsong" name="{{song.id}}"/>
+    <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
+         id="currentsong" name="{{song.id}}"/>
   {% else %}
-  <input type=checkbox name="{{song.id}}"/>
+    <input type="checkbox" name="{{song.id}}"/>
   {% endif %}
 </td>
 <td class="drag {% if not current %}drag-handle{% endif %}"></td>

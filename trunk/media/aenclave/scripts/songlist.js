@@ -318,7 +318,7 @@ var songlist = {
     addform.submit();
   },
 
-  update_songlist: function(url, table) {
+  update_songlist: function(url) {
     // Collect all the song ids in order and send them to the server.
     var song_ids = [];
     var boxen = $('songlist').getElementsByTagName("input");

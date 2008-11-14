@@ -149,6 +149,7 @@ class Playlist(models.Model):
 
     group = models.ForeignKey(Group, blank=True, null=True)
 
+    #songs = models.ManyToManyField(Song, blank=True, through='PlaylistEntry')
     songs = models.ManyToManyField(Song, blank=True)
 
     last_modified = models.DateTimeField(auto_now=True, editable=False)
@@ -178,6 +179,25 @@ class Playlist(models.Model):
         try: self.group.user_set.get(id=user.id)
         except User.DoesNotExist: return (user == self.owner)
         else: return True
+
+    def append_songs(self, songs):
+        # TODO(rnk): These should be batched into a transaction somehow.
+        for (i, song) in enumerate(songs):
+            entry = PlaylistEntry(playlist=self, song=song, position=i)
+            entry.save()
+
+#-----------------------------------------------------------------------------#
+
+class PlaylistEntry(models.Model):
+
+    playlist = models.ForeignKey(Playlist)
+
+    song = models.ForeignKey(Song)
+
+    position = models.IntegerField()
+
+    class Meta:
+        ordering = ('playlist', 'position', 'song')
 
 #-----------------------------------------------------------------------------#
 

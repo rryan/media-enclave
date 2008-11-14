@@ -14,12 +14,12 @@
 {% endblock %}
 
 {% block presonglist %}
-  <div id=plisthead>
+  <div id="plisthead">
     <span>{{playlist.name}}</span> &mdash;
     {{song_list|length|intcomma}} song{{song_list|length|pluralize}} &mdash;
     [<a href="{% url aenclave-user-playlist playlist.owner.username %}"><tt>{{playlist.owner.username}}</tt></a>{% if playlist.group %} / {{playlist.group.name}}{% endif %}]
     {% if allow_edit %}
-      <a class=edit href="javascript:songlist.error_message('Not done yet!');">Edit</a>
+      <a class="edit" href="javascript:songlist.error_message('Not done yet!');">Edit</a>
     {% endif %}
   </div>
   {% if not song_list %}
@@ -28,9 +28,9 @@
 {% endblock %}
 
 {% block actions %}{{block.super}}{% if allow_edit and song_list %}
-    <a href="javascript:playlist.remove();" class=remove>Remove selected songs</a>{% endif %}
+    <a href="javascript:playlist.remove();" class="remove">Remove selected songs</a>{% endif %}
   {% if allow_cede %}
-    <a href="javascript:playlist.askdel();" class=delete>Delete playlist&hellip;</a>{% endif %}
+    <a href="javascript:playlist.askdel();" class="delete">Delete playlist&hellip;</a>{% endif %}
 {% endblock %}
 
 {% block postcopyright %}{{block.super}}
@@ -41,7 +41,7 @@
     </form>
   {% endif %}
   {% if allow_cede %}
-    <form name="playlistdeleteform" action="{% url aenclave-playlist-delete %}" method=POST>
+    <form name="playlistdeleteform" action="{% url aenclave-playlist-delete %}" method="POST">
       <input type="hidden" name="pid" value="{{playlist.id}}"/>
     </form>
   {% endif %}

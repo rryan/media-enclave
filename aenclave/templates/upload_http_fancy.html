@@ -13,8 +13,8 @@
   <script src="{{ MEDIA_URL }}aenclave/scripts/fancyupload.js"></script>
   <script type="text/javascript">
     var swfu;
-
-    Event.observe(window, 'load', function() {
+    
+    jQuery(document).ready(function() {
       var settings = {
         flash_url : "{{MEDIA_URL}}aenclave/scripts/swfupload.swf",
         upload_url: "{% url aenclave-http-upload-fancy-receiver %}",
@@ -52,7 +52,7 @@
       };
 
       swfu = new SWFUpload(settings);
-    }, false);
+    });
   </script>
 {% endblock %}
 

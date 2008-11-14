@@ -39,7 +39,7 @@
   <td class="edit" onclick="songlist.edit_song(this);"></td>
 {% endif %}
 {% if dl %}
-  <td>
+  <td class="c">
     <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">
       <img src="{{ MEDIA_URL }}aenclave/images/dl.png"/>
     </a>

@@ -123,13 +123,12 @@ TABLE.data TBODY TD INPUT.text {
     width: 100%;
 }
 
-TABLE.data TBODY TD A.dl-link {
-    float: left;
+.dl-link {
     color: blue;
     text-decoration: underline;
 }
 
-TABLE.data TBODY TD A.dl-link IMG {
+.dl-link IMG {
     border: 0px;
 }
 

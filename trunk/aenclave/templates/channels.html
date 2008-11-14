@@ -7,6 +7,14 @@
 
 {% block scripts %}{{block.super}}
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/channels.js"></script>
+  <script type="text/javascript">
+    // This is here so we can get use the url templatetag.
+    jQuery(document).ready(function() {
+      songlist.enable_dnd(function() {
+        songlist.update_songlist('{% url aenclave-channel-reorder channel.id %}');
+      });
+    });
+  </script>
 {% endblock %}
 
 {% block presonglist %}

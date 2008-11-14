@@ -4,7 +4,6 @@ from calendar import timegm
 import datetime
 from math import exp
 import re
-import logging
 
 from django.db import models
 from django.db import transaction
@@ -168,7 +167,6 @@ class Playlist(models.Model):
         Note that the caller should open a transaction before calling this
         helper because we make many queries and they should be atomic.
         """
-        logging.debug(start_pos)
         for (i, song) in enumerate(songs):
             pos = start_pos + i
             entry = PlaylistEntry(playlist=self, song=song, position=pos)
@@ -182,7 +180,6 @@ class Playlist(models.Model):
         start_pos = 0
         for entry in last_entries:
             start_pos = entry.position + 1
-            logging.debug(repr(entry))
         self._append_songs(songs, start_pos)
 
     @transaction.commit_on_success

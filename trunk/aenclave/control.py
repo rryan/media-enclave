@@ -45,7 +45,7 @@ class Controller(object):
 
 #         client = XMMSSync()
 #         try: client.connect(channel.pipe)
-#         xcept IOError:
+#         except IOError:
 #             logging.error("XMMS2 daemon is apparently dead. Running xmms2-launcher.")
 #             os.spawnlp(os.P_WAIT, 'xmms2-launcher', 'xmms2-launcher')
 #             try:
@@ -389,7 +389,7 @@ class Controller(object):
             # If the index is not valid, log an error and punt.
             if not 0 <= index < length:
                 logging.error('ERROR', "can't remove song index %i from list of"
-                          " length %i" % (index, length))
+                              " length %i" % (index, length))
                 return
             # Remove the song from the playlist.
             try: self.client.playlist_remove_entry(index)
@@ -398,6 +398,9 @@ class Controller(object):
                 raise ControlError("The song could not be dequeued.")
         # Remember that this channel has been touched.
         self.channel.touch()
+
+    def clear_queued_songs(self):
+        self.remove_songs(range(0, self.get_queue_length()))
 
     def move_song(self, frm, to):
         self.move_songs([frm], to)

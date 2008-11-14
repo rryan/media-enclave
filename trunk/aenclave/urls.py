@@ -90,6 +90,10 @@ urlpatterns = patterns(
         'menclave.aenclave.views.channel_detail',
         name='aenclave-channel'),
 
+    url(r'^channels/(?P<channel_id>\d+)/reorder/$',
+        'menclave.aenclave.views.channel_reorder',
+        name='aenclave-channel-reorder'),
+
     # Playlists
 
     url(r'^playlists/$',

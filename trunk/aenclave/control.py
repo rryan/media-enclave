@@ -234,8 +234,12 @@ class Controller(object):
         # Play a dequeue noise.
         try:
             # Pick a random dequeue noise and get its path.
-            deq = random.choice(os.listdir(AENCLAVE_DEQUEUE_NOISES_DIR))
-            deq = self._xmms2_url(os.path.join(AENCLAVE_DEQUEUE_NOISES_DIR, deq))
+            dir_list = os.listdir(AENCLAVE_DEQUEUE_NOISES_DIR)
+            if(len(dir_list) == 0):
+                raise OSError("No deque files")
+            deq = random.choice(dir_list)
+            deq = self._xmms2_url(os.path.join(AENCLAVE_DEQUEUE_NOISES_DIR,
+                                               deq))
         except OSError:
             # We can't find the files for some reason.
             _catch()

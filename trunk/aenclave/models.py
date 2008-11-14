@@ -4,8 +4,10 @@ from calendar import timegm
 import datetime
 from math import exp
 import re
+import logging
 
 from django.db import models
+from django.db import transaction
 from django.contrib.auth.models import Group, User
 
 #================================= UTILITIES =================================#
@@ -20,12 +22,18 @@ def datetime_string(dt):
 #================================== MODELS ===================================#
 
 class VisibleManager(models.Manager):
+
     """VisibleManager -- manager for getting only visible songs"""
+
     def get_query_set(self):
         return super(VisibleManager, self).get_query_set().filter(visible=True)
 
+#-----------------------------------------------------------------------------#
 
 class Song(models.Model):
+
+    """The database model for music files."""
+
     def __unicode__(self): return self.title
 
     #--------------------------------- Title ---------------------------------#
@@ -139,6 +147,9 @@ class Song(models.Model):
 #-----------------------------------------------------------------------------#
 
 class Playlist(models.Model):
+
+    """The database model for users' playlists."""
+
     def __unicode__(self): return self.name
 
     #-------------------------------- Fields ---------------------------------#
@@ -149,8 +160,36 @@ class Playlist(models.Model):
 
     group = models.ForeignKey(Group, blank=True, null=True)
 
-    #songs = models.ManyToManyField(Song, blank=True, through='PlaylistEntry')
-    songs = models.ManyToManyField(Song, blank=True)
+    songs = models.ManyToManyField(Song, blank=True, through='PlaylistEntry')
+
+    def _append_songs(self, songs, start_pos):
+        """A helper for append_songs and set_songs.
+
+        Note that the caller should open a transaction before calling this
+        helper because we make many queries and they should be atomic.
+        """
+        logging.debug(start_pos)
+        for (i, song) in enumerate(songs):
+            pos = start_pos + i
+            entry = PlaylistEntry(playlist=self, song=song, position=pos)
+            entry.save()
+
+    @transaction.commit_on_success
+    def append_songs(self, songs):
+        """Append songs to the playlist without erasing existing ones."""
+        entries = PlaylistEntry.objects.filter(playlist=self)
+        last_entries = entries.order_by('position').reverse()[:1]
+        start_pos = 0
+        for entry in last_entries:
+            start_pos = entry.position + 1
+            logging.debug(repr(entry))
+        self._append_songs(songs, start_pos)
+
+    @transaction.commit_on_success
+    def set_songs(self, songs):
+        """Clear the playlist and replace it with these songs in this order."""
+        self.songs.clear()
+        self._append_songs(songs, 0)
 
     last_modified = models.DateTimeField(auto_now=True, editable=False)
     def last_modified_string(self): return datetime_string(self.last_modified)
@@ -180,15 +219,11 @@ class Playlist(models.Model):
         except User.DoesNotExist: return (user == self.owner)
         else: return True
 
-    def append_songs(self, songs):
-        # TODO(rnk): These should be batched into a transaction somehow.
-        for (i, song) in enumerate(songs):
-            entry = PlaylistEntry(playlist=self, song=song, position=i)
-            entry.save()
-
 #-----------------------------------------------------------------------------#
 
 class PlaylistEntry(models.Model):
+
+    """The database model that links playlists to songs and orders them."""
 
     playlist = models.ForeignKey(Playlist)
 
@@ -202,6 +237,9 @@ class PlaylistEntry(models.Model):
 #-----------------------------------------------------------------------------#
 
 class Channel(models.Model):
+
+    """The database model of an audio output channel."""
+
     def __unicode__(self): return self.name
 
     #-------------------------------- Fields ---------------------------------#

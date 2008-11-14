@@ -3,7 +3,17 @@
 var playlist = {
 
   edit: function() {
+    songlist.enable_dnd();
+    jQuery('#edit-button').hide();
+    jQuery('#save-button').show();
+  },
 
+  save: function(url) {
+    songlist.disable_dnd();
+    songlist.update_songlist(url, function() {
+      jQuery('#save-button').hide();
+      jQuery('#edit-button').show();
+    });
   },
 
   remove: function() {

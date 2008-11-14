@@ -1,4 +1,0 @@
-{% load aenclave %}{% comment %}
-This template is used for sending success responses for JSON requests where no
-more than a simple message (or no message) needs to be sent.
-{% endcomment %}{"success":"{{success_message|json_escape}}"}

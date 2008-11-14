@@ -87,15 +87,12 @@ TABLE.data TBODY TD.error {
     width: 12px;
 }
 
-TABLE.data TBODY TD.drag-handle {
-    cursor: move;
-    width: 16px;
-}
-
-TABLE.data TBODY TD.drag-handle-dragging {
+TABLE.data TBODY TD.drag {
     background-image: url(/media/aenclave/images/updown.png);
     background-position: center center;
     background-repeat: no-repeat;
+    cursor: move;
+    width: 16px;
 }
 
 TABLE.data TBODY TD A {

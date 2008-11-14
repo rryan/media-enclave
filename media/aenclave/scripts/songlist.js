@@ -252,24 +252,24 @@ var songlist = {
   askadd: function() {
     // We need to figure out which playlists the user is allowed to add to so
     // that we can list those in a dropdown menu.  Let's ask the server.
-    
+
     jQuery.ajax({
       url: "/audio/json/playlists/user/",
       type: 'GET',
       dataType: 'json',
       success: function(json) {
-	if("error" in json) {
-	  songlist.error_message(json.error);
-	} else {
-	  songlist._make_askadd_tray(json);
-	}
+        if("error" in json) {
+          songlist.error_message(json.error);
+        } else {
+          songlist._make_askadd_tray(json);
+        }
       },
       error: function() {
-	songlist.error_message("Got no reponse from server.");
+        songlist.error_message("Got no reponse from server.");
       }
     });
   },
-  
+
   // Called only by askadd().  Create a subaction tray with a dropdown list of
   // the user's playlists.
   _make_askadd_tray: function(json) {
@@ -365,50 +365,54 @@ var songlist = {
     target.removeClass("edit error").addClass("done");
     target.each(function() { this.onclick = function() { songlist.done_editing(this); }});
   },
-  
+
   _edit_column_edit: function(target) {
     // target must already be wrapped by jQuery
     target.removeClass("done error").addClass("edit");
     target.each(function() { this.onclick = function() { songlist.edit_song(this); }});
   },
-  
+
   _edit_column_error: function(target) {
     // target must already be wrapped by jQuery
     target.removeClass("done edit").addClass("error");
     target.each(function() { this.onclick = function() { }});
   },
-  
+
   // This is called when the user clicks the edit button next to a song to edit
   // the song tags.
   edit_song: function(target) {
     target = jQuery(target);
     // Replace text with text boxes. (only do it on .editable children)
     jQuery.map(
-      target.parent("TR:first").children('.editable'), 
+      target.parent("TR:first").children('.editable'),
       function(cell) {
-	cell = jQuery(cell);
-	var input = jQuery(document.createElement("INPUT"));
-	input.attr("type","text");
-	input.attr('value', cell.text().strip());
-	input.addClass("text");
-	cell.empty().append(input);
-      });
-    
+        cell = jQuery(cell);
+        var input = jQuery(document.createElement("INPUT"));
+        input.attr("type","text");
+        input.attr('value', cell.text().strip());
+        input.addClass("text");
+        input.keypress(function(e) {
+          // Check if the user hits enter in any of our textboxes.
+          if (e.keyCode == 13) songlist.done_editing(target);
+        });
+        cell.empty().append(input);
+      }
+    );
     songlist._edit_column_done(target);
   },
-  
+
   done_editing: function(target) {
     // Collect the parameters from the text boxes.
     target = jQuery(target);
     var parent = target.parent("TR:first");
     var songid = parent.children(".select").children(":first").attr('name');
     var params = {id: songid};
-    
+
     parent.children(".editable").each(function() {
       elt = jQuery(this);
       params[elt.attr('name')] = elt.children("input:first").attr('value');
     });
-    
+
     // Send the request.
     var options = {
       url: "/audio/json/edit/",
@@ -416,15 +420,17 @@ var songlist = {
       data: params,
       dataType: 'json',
       success: function(json) {
-	if("error" in json) {
-	  songlist.error_message(json.error);
-	} else {
-	  songlist._update_edited_song(target,json);
-	}},
+        if("error" in json) {
+          songlist.error_message(json.error);
+        } else {
+          songlist._update_edited_song(target,json);
+        }
+      },
       error: function() {
-	songlist._edit_column_error(target);
-	songlist.error_message("Got no reponse from server.");
-      }};
+        songlist._edit_column_error(target);
+        songlist.error_message("Got no reponse from server.");
+      }
+    };
     jQuery.ajax(options);
   },
 
@@ -434,18 +440,18 @@ var songlist = {
     target = jQuery(target);
 
     songlist._edit_column_edit(target);
-    
+
     jQuery(target).parent("TR:first").children(".editable").each(function(i) {
       var elt = jQuery(this);
       var info = json[i];
       if(info.href) {
-	var link = jQuery(document.createElement("A"));
-	if(info.klass) link.addClass(info.klass);
-	link.attr('href', info.href);
-	link.text(info.text);
-	elt.empty().append(link);
+        var link = jQuery(document.createElement("A"));
+        if(info.klass) link.addClass(info.klass);
+        link.attr('href', info.href);
+        link.text(info.text);
+        elt.empty().append(link);
       } else {
-	elt.empty().text(info.text);
+        elt.empty().text(info.text);
       }
     });
   },

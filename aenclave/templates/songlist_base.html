@@ -37,6 +37,9 @@
           {% if user.is_authenticated %}
             <th class="edit"></th>
           {% endif %}
+	  {% if dl %}
+            <th class="dl"></th>
+          {% endif %}
         </tr>
       </thead>
 

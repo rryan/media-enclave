@@ -132,7 +132,7 @@ TABLE.data TBODY TD A.dl-link {
 /******************************** SONGLIST COLUMNS ***************************/
 
 .select {
- width: 1px;
+    width: 1px;
 }
 
 .drag {
@@ -161,7 +161,9 @@ TABLE.data TBODY TD A.dl-link {
     width: 130px;
 }
 
-
+.dl {
+    width: 20px;
+}
 
 /******************************** ACTIONS BAR ********************************/
 

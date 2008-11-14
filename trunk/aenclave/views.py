@@ -569,6 +569,7 @@ def channel_reorder(request, channel_id=1):
     #             love of all that is holy, consider fixing this.
     ctrl.clear_queued_songs()
     ctrl.add_songs(songs)
+    return json_success('Successfully reordered channel.')
 
 #----------------------------- Playlist Viewing ------------------------------#
 

@@ -6,10 +6,6 @@
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/jquery-1.2.6.min.js"></script>
-  {# This lets jQuery and Prototype coexist.  Prototype gets '$', and to get #}
-  {# jQuery's '$', use the jQuery variable.  #}
-  <script type="text/javascript">jQuery.noConflict();</script>
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/jquery.tablednd_0_5.js"></script>
   <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/songlist.js"></script>
 {% endblock %}

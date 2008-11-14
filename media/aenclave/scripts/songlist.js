@@ -3,28 +3,6 @@
 //     been loaded.  Refer to www.prototypejs.org and www.jquery.com for
 //     documentation.
 
-// Setup TableDnD on page load.
-jQuery(document).ready(function() {
-  jQuery('#songlist').tableDnD({
-      onDrop: function(table, row) {
-        // Fix row colors.
-        songlist.recolor_rows();
-        // Tell the server that we've reordered the songs if it makes sense.
-        var path = window.location.pathname;
-        var match;
-        if (match = path.match(/^\/audio\/playlists\/normal\/(\d+)/)) {
-          songlist.update_songlist('/playlists/update/' + match[1]);
-        }
-      },
-      dragHandle: 'drag-handle'
-  });
-  jQuery('#songlist tr').hover(function() {
-    jQuery('.drag-handle', this).addClass('drag-handle-dragging');
-  }, function() {
-    jQuery('.drag-handle', this).removeClass('drag-handle-dragging');
-  });
-});
-
 var songlist = {
 
   /*************************** SUBACTION UTILITIES ***************************/
@@ -318,18 +296,47 @@ var songlist = {
     addform.submit();
   },
 
-  update_songlist: function(url) {
+  /******************************* DRAG & DROP *******************************/
+
+  enable_dnd: function() {
+    jQuery('#songlist thead tr').append('<th class="drag"></th>');
+    jQuery('#songlist tbody tr').append('<td class="drag"></td>');
+    jQuery('#songlist').tableDnD({
+        onDrop: function(table, row) {
+          songlist.recolor_rows();
+        },
+        dragHandle: 'drag'
+    });
+  },
+
+  disable_dnd: function() {
+    jQuery('#songlist .drag').remove();
+  },
+
+  update_songlist: function(url, onCompleteCallback) {
     // Collect all the song ids in order and send them to the server.
     var song_ids = [];
-    var boxen = $('songlist').getElementsByTagName("input");
+    var boxen = $('songlist').getElementsByTagName('input');
     for (var i = 0; i < boxen.length; i++) {
-      song_ids.push(boxen.name);
+      if (boxen[i].name) {
+        song_ids.push(boxen[i].name);
+      }
     }
-    var options = {
-      method: 'post',
-      parameters: {song_ids: song_ids.join(',')}
-    };
-    new Ajax.Request(url, options);
+    var data = {ids: song_ids.join(' ')};
+    jQuery.post(url, data, function(json, statusText) {
+      if (statusText == 'success') {
+        if (json.success) {
+          songlist.success_message(json.success);
+        } else if (json.error) {
+          songlist.error_message(json.error);
+        } else {
+          songlist.error_message("Malformed server response.");
+        }
+      } else {
+        songlist.error_message("Error reaching the server.");
+      }
+      onCompleteCallback();
+    }, 'json');
   },
 
   /******************************* TAG EDITING *******************************/

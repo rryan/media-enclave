@@ -7,6 +7,7 @@ import os
 import re
 import tempfile
 import zipfile
+import logging
 
 from django.conf import settings
 from django.contrib import auth
@@ -26,7 +27,7 @@ import cjson
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
 
-from menclave.aenclave.models import Channel, Playlist, Song
+from menclave.aenclave.models import Channel, Playlist, PlaylistEntry, Song
 from menclave.aenclave.control import Controller, ControlError
 
 from menclave import settings as enc_settings
@@ -70,10 +71,10 @@ def render_json_response(data):
     return resp
 
 def json_success(message=""):
-    return render_json_template('success.json', {'success_message':message})
+    return render_json_response(cjson.encode({'success': message}))
 
 def json_error(message):
-    return render_json_template('error.json', {'error_message':message})
+    return render_json_response(cjson.encode({'error': message}))
 
 def render_xml_to_response(*args, **kwargs):
     return HttpResponse(loader.render_to_string(*args, **kwargs),
@@ -153,9 +154,7 @@ def get_anon_user():
     try:
         anon = auth.models.User.objects.get(username = username)
     except auth.models.User.DoesNotExist:
-        anon = auth.models.User.objects.create_user(username, 
-                                                    '',
-                                                    '')
+        anon = auth.models.User.objects.create_user(username, '', '')
         anon.set_unusable_password()
         anon.save()
     return anon
@@ -164,7 +163,7 @@ def get_anon_user():
 def permission_required(perm, action, erf=html_error, perm_fail_erf=None):
     """
     Requre the user to have a permission or display an error message.
-    
+
     perm - Permission to check.
     action - the type of action attempted
     erf - Error return function, takes request, text, title.
@@ -175,30 +174,26 @@ def permission_required(perm, action, erf=html_error, perm_fail_erf=None):
         perm_fail_erf = erf
 
     def decorator(real_handler):
-        def request_handler(request):
+        def request_handler(request, *args, **kwargs):
             if not request.user.is_authenticated():
                 # Check if the anonymous user has access.
                 anon = get_anon_user()
                 if anon.has_perm(perm):
-                    return real_handler(request)
-
+                    return real_handler(request, *args, **kwargs)
                 # Otherwise, show error message.
-                error_text = ('You must <a href="%s">log in</a> to'
-                              ' %s.' % (reverse('aenclave-login'), ' do that.'))
+                error_text = ('You must <a href="%s">log in</a> to do that.' %
+                              reverse('aenclave-login'))
                 return erf(request, error_text, action)
             elif not request.user.has_perm(perm):
                 # Check if the anonymous user has access.
                 anon = get_anon_user()
-
                 if anon.has_perm(perm):
-                    return real_handler(request)
-
+                    return real_handler(request, *args, **kwargs)
                 # Otherwise, show error message.
-
                 error_text = ('You need more permissions to do that.')
                 return perm_fail_erf(request, error_text, action)
             else:
-                return real_handler(request)
+                return real_handler(request, *args, **kwargs)
         return request_handler
     return decorator
 
@@ -213,13 +208,10 @@ def permission_required_redirect(perm, redirect_field_name):
     return permission_required(perm, '', erf, html_error)
                                         
 def permission_required_xml(perm):
-    return permission_required(perm,
-                               '',
-                               lambda r,text,act: xml_error(text))
+    return permission_required(perm, '', lambda r,text,act: xml_error(text))
+
 def permission_required_json(perm):
-    return permission_required(perm,
-                               '',
-                               lambda r,text,act: json_error(text))
+    return permission_required(perm, '', lambda r,text,act: json_error(text))
 
 
 
@@ -578,9 +570,11 @@ def playlist_detail(request, playlist_id):
     try: playlist = Playlist.objects.get(pk=playlist_id)
     except Playlist.DoesNotExist: raise Http404
     can_cede = playlist.can_cede(request.user)
+    # This order_by uses PlaylistEntry's Meta ordering, which is position.
+    songs = playlist.songs.order_by('playlistentry')
     return render_html_template('playlist_detail.html', request,
                                 {'playlist': playlist,
-                                 'song_list': playlist.songs.all(),
+                                 'song_list': songs,
                                  'force_actions_bar': can_cede,
                                  'allow_cede': can_cede,
                                  'allow_edit': playlist.can_edit(request.user)},
@@ -610,7 +604,7 @@ def create_playlist(request):
     #    return error(request,'Nonunique name/owner.')  # TODO better feedback
     # Add the specified songs to the playlist.
     songs = get_song_list(form)
-    for song in songs: playlist.songs.add(song)
+    playlist.set_songs(songs)
     playlist.save()
     # Redirect to the detail page for the newly created playlist.
     return HttpResponseRedirect(playlist.get_absolute_url())
@@ -629,8 +623,7 @@ def add_to_playlist(request):
                           ' playlist.', 'Add Songs')
     # Add the songs and redirect to the detail page for this playlist.
     songs = get_song_list(form)
-    for song in songs:
-        playlist.songs.add(song)
+    playlist.append_songs(songs)
     return HttpResponseRedirect(playlist.get_absolute_url())
 
 @permission_required('aenclave.change_playlist', 'Remove Songs')
@@ -646,8 +639,8 @@ def remove_from_playlist(request):
         return html_error(request, 'You lack permission to edit this'
                           ' playlist.', 'Remove Songs')
     # Remove the songs and redirect to the detail page for this playlist.
-    for song in get_song_list(form):
-        playlist.songs.remove(song)
+    songs = get_song_list(form)
+    PlaylistEntry.objects.filter(song__in=songs).delete()
     return HttpResponseRedirect(playlist.get_absolute_url())
 
 @permission_required('aenclave.delete_playlist', 'Delete Playlist')
@@ -668,17 +661,20 @@ def delete_playlist(request):
                                         args=[request.user.username]))
 
 @permission_required('aenclave.change_playlist', 'Edit Playlist')
-def update_playlist(request):
+def edit_playlist(request, playlist_id):
     # Get the playlist.
     form = request.POST
-    try: playlist = Playlist.objects.get(pk=get_integer(form, 'pid'))
+    try: playlist = Playlist.objects.get(pk=playlist_id)
     except Playlist.DoesNotExist:
         return json_error('That playlist does not exist.')
     # Check that they can edit it.
     if not playlist.can_edit(request.user):
         return json_error('You are not authorized to edit this playlist.')
-    # TODO(rnk): Update the order of the songs in the playlist.
-    # TODO(rnk): Establish an ordering of songs in the playlist!
+    songs = get_song_list(form)
+    if songs:
+        playlist.set_songs(songs)
+        playlist.save()
+    return json_success('Successfully edited "%s".' % playlist.name)
 
 #---------------------------------- Upload -----------------------------------#
 

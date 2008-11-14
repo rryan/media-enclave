@@ -19,7 +19,8 @@
     {{song_list|length|intcomma}} song{{song_list|length|pluralize}} &mdash;
     [<a href="{% url aenclave-user-playlist playlist.owner.username %}"><tt>{{playlist.owner.username}}</tt></a>{% if playlist.group %} / {{playlist.group.name}}{% endif %}]
     {% if allow_edit %}
-      <a class="edit" href="javascript:songlist.error_message('Not done yet!');">Edit</a>
+      <a id="edit-button" class="edit" href="javascript:playlist.edit();">Edit</a>
+      <a style="display: none" id="save-button" class="edit" href="javascript:playlist.save('{% url aenclave-playlist-edit playlist.id %}');">Save</a>
     {% endif %}
   </div>
   {% if not song_list %}

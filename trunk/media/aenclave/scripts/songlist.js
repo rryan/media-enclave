@@ -468,6 +468,11 @@ var songlist = {
     return $('songlist').getElementsByTagName('tbody')[0];
   },
 
+  insert_row: function(row) {
+    jQuery(this.table_body()).append(row);
+    this.recolor_rows();
+  },
+
   // Recolor the rows of the songlist table so that they alternate properly.
   // This should be called at the end of functions that reorder the rows.
   recolor_rows: function() {

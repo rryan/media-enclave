@@ -44,6 +44,20 @@ TABLE.data THEAD TH.edit {
     width: 12px;
 }
 
+TABLE.data THEAD TH.dl {
+    background-image: url(/media/aenclave/images/dl.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    width: 12px;
+}
+
+TABLE.data THEAD TH.drag {
+    background-image: url(/media/aenclave/images/updown.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    width: 16px;
+}
+
 TABLE.data TBODY TR.a {}
 TABLE.data TBODY TR.b { background-color: #f2f2ff; }
 TABLE.data TBODY TR.c { border-bottom: 3px #ccf double; }
@@ -167,6 +181,7 @@ TABLE.data TBODY TD INPUT.text {
 .dl {
     width: 20px;
 }
+
 
 /******************************** ACTIONS BAR ********************************/
 

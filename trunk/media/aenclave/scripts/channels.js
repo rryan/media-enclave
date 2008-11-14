@@ -26,12 +26,14 @@ var channels = {
   okemail: function() {
     var params = {email: $("emailaddress").value, ids: $("currentsong").name}
     var options = {
-      method: "post",
-      parameters: params,
-      onFailure: function() {
+      url: "/audio/json/email/",
+      type: "post",
+      data: params,
+      dataType: 'json',
+      error: function() {
         songlist.error_message("Got no reponse from server.");
       },
-      onSuccess: function(transport, json) {
+      success: function(json) {
         if ("error" in json) {
           songlist.error_message(json.error);
         } else if ("success" in json) {
@@ -41,7 +43,7 @@ var channels = {
         }
       }
     };
-    new Ajax.Request("/audio/json/email/", options);
+    jQuery.ajax(options);
   },
 
   recent: function() {

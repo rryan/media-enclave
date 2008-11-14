@@ -108,11 +108,13 @@ var controls = {
       parameters = {'action': opt_action}
     }
     var options = {
-      method: 'post',
-      onFailure: function(transport) {
+      url: url,
+      type: 'post',
+      dataType: 'json',
+      error: function(transport) {
         controls.error(String(transport.status));
       },
-      onSuccess: function(transport, response_json) {
+      success: function(response_json) {
         // Update the control panel with the response JSON.
         if (response_json.error) {
           controls.error(response_json.error);
@@ -122,11 +124,11 @@ var controls = {
       }
     };
     if (parameters) {
-      options['parameters'] = parameters;
+      options['data'] = parameters;
     }
-    new Ajax.Request(url, options);
+    jQuery.ajax(options);
   },
-
+  
   _playlist_empty: function(playlist_info) {
     return !Boolean(playlist_info &&
                     playlist_info.songs &&

@@ -7,6 +7,7 @@ import os
 import re
 import tempfile
 import zipfile
+import time
 import logging
 
 from django.conf import settings
@@ -67,7 +68,6 @@ def render_json_response(data):
     """Sends an HttpResponse with the X-JSON header and the right mimetype."""
     resp = HttpResponse(data, mimetype=("application/json; charset=" +
                                         settings.DEFAULT_CHARSET))
-    resp['X-JSON'] = data
     return resp
 
 def json_success(message=""):

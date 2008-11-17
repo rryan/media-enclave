@@ -28,6 +28,8 @@ class VisibleManager(models.Manager):
         return super(VisibleManager, self).get_query_set().filter(visible=True)
 
 #-----------------------------------------------------------------------------#
+SONGS_ROOT = 'aenclave/songs/'
+SONG_AUDIO_UPLOAD_TO = SONGS_ROOT + '%Y/%m/%d/'
 
 class Song(models.Model):
 
@@ -88,7 +90,7 @@ class Song(models.Model):
 
     #------------------------------ Audio Path -------------------------------#
 
-    audio = models.FileField(max_length=255, upload_to='aenclave/songs/%Y/%m/%d/')
+    audio = models.FileField(max_length=255, upload_to=SONG_AUDIO_UPLOAD_TO)
 
     def nice_filename(self):
         """Make a filename of the form 'artist - album - track - title.mp3'."""

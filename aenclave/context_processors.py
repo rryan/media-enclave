@@ -4,8 +4,8 @@
 #
 #
 
-from views import playlist_info_json
+from menclave.aenclave.channel import json_channel_info
 
 def aenclave(request):
     return {'dl': ('dl' in request.REQUEST),
-            'playlist_info': playlist_info_json()}
+            'playlist_info': json_channel_info()}

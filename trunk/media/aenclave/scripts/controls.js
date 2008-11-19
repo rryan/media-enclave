@@ -152,11 +152,12 @@ var controls = {
   // Updates the controls widget with new playlist information.
   update_playlist_info: function(playlist_info) {
     var on_channels = window.location.pathname.indexOf('channels/') > -1;
+    controls.playlist_info = playlist_info;
     if (on_channels && controls.playlist_changed(playlist_info)) {
+      controls.updater.stop();
       window.location.reload();
       return;
     }
-    controls.playlist_info = playlist_info;
     if (controls._playlist_empty(playlist_info)) {
       controls.clear_controls();
     } else {

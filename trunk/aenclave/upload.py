@@ -8,7 +8,7 @@ from django.template import RequestContext
 from menclave.aenclave.login import permission_required_redirect
 from menclave.aenclave.html import html_error, render_html_template
 from menclave.aenclave import processing
-from menclave import settings
+from django.conf import settings
 
 #---------------------------------- Upload -----------------------------------#
 

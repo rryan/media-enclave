@@ -1,7 +1,7 @@
 import os
 
 from django.core.files import File
-from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
+from django.http import Http404, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 
@@ -75,29 +75,32 @@ def upload_http_fancy(request):
                                  'force_actions_bar':True},
                                 context_instance=RequestContext(request))
 
+def load_session_from_request(handler):
+    """Read the session key from the GET/POST vars instead of the cookie.
+
+    Centipedes, in my request headers?
+    Yes! We sometimes receive the session key in the POST, because the
+    multiple-file-uploader uses Flash to send the request, and the best Flash
+    can do is grab our cookies from javascript and send them in the POST.
+    """
+    def func(request, *args, **kwargs):
+        session_key = request.REQUEST.get(settings.SESSION_COOKIE_NAME, None)
+        if not session_key:
+            # TODO(rnk): Do something more sane like ask the user if their
+            #            session is expired or some other weirdness.
+            raise Http404()
+        # This is how SessionMiddleware does it.
+        session_engine = __import__(settings.SESSION_ENGINE, {}, {}, [''])
+        try:
+            request.session = session_engine.SessionStore(session_key)
+        except Exception, e:
+            return html_error(e)
+        return handler(request, *args, **kwargs)
+    return func
+
+@load_session_from_request
+@permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http_fancy_receiver(request):
-
-    # Centipedes, in my request headers?
-    # Yes! This view receives its session key in the POST, because
-    # the multiple-file-uploader uses Flash to send the request,
-    # and the best Flash can do is grab our cookies from javascript
-    # and send them in the POST.
-
-    session_key = request.REQUEST.get(settings.SESSION_COOKIE_NAME,None)
-    if not session_key:
-        raise Http404()
-
-    # This is how SessionMiddleware does it.
-    session_engine = __import__(settings.SESSION_ENGINE, {}, {}, [''])
-    try:
-        request.session = session_engine.SessionStore(session_key)
-    except Exception, e:
-        return html_error(e)
-
-    # SWFUpload will show an error to the user if this happens.
-    if not request.user.is_authenticated():
-        return HttpResponseForbidden()
-
     audio = None
     # The key is generally 'Filedata' but this is just easier.
     for k,f in request.FILES.items():
@@ -109,10 +112,10 @@ def upload_http_fancy_receiver(request):
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
     elif not processing.valid_song(audio.name):
         return html_error(request, 'You may only upload MP3 files.',
-                              'HTTP Upload')
+                          'HTTP Upload')
     # Save the song into the database -- we'll fix the tags in a moment.
     song, audio = processing.process_song(audio.name, audio)
-    
+
     return render_html_template('songlist_song_row.html', request,
                                 {'song': song},
                                 context_instance=RequestContext(request))

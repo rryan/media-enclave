@@ -11,7 +11,12 @@ function fileQueued(file) {
 function fileQueueError(file, errorCode, message) {
   try {
     if (errorCode === SWFUpload.QUEUE_ERROR.QUEUE_LIMIT_EXCEEDED) {
-      alert("You have attempted to queue too many files.\n" + (message === 0 ? "You have reached the upload limit." : "You may select " + (message > 1 ? "up to " + message + " files." : "one file.")));
+      alert("You have attempted to queue too many files.\n" +
+            (message === 0 ?
+             "You have reached the upload limit." :
+             "You may select " + (message > 1 ?
+                                  "up to " + message + " files." :
+                                  "one file.")));
       return;
     }
 

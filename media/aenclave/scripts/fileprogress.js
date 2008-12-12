@@ -50,7 +50,6 @@ function FileProgress(file, targetID) {
 
     this.fileProgressWrapper.appendChild(document.createElement('td'));
     this.fileProgressWrapper.appendChild(document.createElement('td'));
-    this.fileProgressWrapper.appendChild(document.createElement('td'));
     this.fileProgressWrapper.appendChild(this.fileProgressElement);
     this.fileProgressWrapper.appendChild(document.createElement('td'));
     this.fileProgressWrapper.appendChild(document.createElement('td'));
@@ -62,26 +61,28 @@ function FileProgress(file, targetID) {
     Element.insert(tbody, {bottom: this.fileProgressWrapper });
 
     //tbody.down('tr').insert({after: tr});
-    //tbody.insert({after: this.fileProgressWrapper}); //'<tr>#{data}</tr>'.interpolate({data: serverData})});
+    //tbody.insert({after: this.fileProgressWrapper});
     //tbody.appendChild(this.fileProgressWrapper);
     //document.getElementById(targetID).appendChild(this.fileProgressWrapper);
   } else {
     //this.fileProgressElement = this.fileProgressWrapper.firstChild;
-    this.fileProgressElement = this.fileProgressWrapper.childNodes[3];
+    this.fileProgressElement = this.fileProgressWrapper.childNodes[2];
   }
 
   this.height = this.fileProgressWrapper.offsetHeight;
 
 }
+
 FileProgress.prototype.setProgress = function (percentage) {
   this.fileProgressElement.className = "progressContainer green";
-  this.fileProgressElement.childNodes[3].className = "progressBarInProgress";
-  this.fileProgressElement.childNodes[3].style.width = percentage + "%";
+  this.fileProgressElement.childNodes[2].className = "progressBarInProgress";
+  this.fileProgressElement.childNodes[2].style.width = percentage + "%";
 };
+
 FileProgress.prototype.setComplete = function () {
   this.fileProgressElement.className = "progressContainer blue";
-  this.fileProgressElement.childNodes[3].className = "progressBarComplete";
-  this.fileProgressElement.childNodes[3].style.width = "";
+  this.fileProgressElement.childNodes[2].className = "progressBarComplete";
+  this.fileProgressElement.childNodes[2].style.width = "";
 
   var oSelf = this;
   oSelf.disappear();
@@ -90,26 +91,29 @@ FileProgress.prototype.setComplete = function () {
   //
   //}, 1000);
 };
+
 FileProgress.prototype.setError = function () {
   this.fileProgressElement.className = "progressContainer red";
-  this.fileProgressElement.childNodes[3].className = "progressBarError";
-  this.fileProgressElement.childNodes[3].style.width = "";
+  this.fileProgressElement.childNodes[2].className = "progressBarError";
+  this.fileProgressElement.childNodes[2].style.width = "";
 
   var oSelf = this;
   setTimeout(function () {
     oSelf.disappear();
   }, 5000);
 };
+
 FileProgress.prototype.setCancelled = function () {
   this.fileProgressElement.className = "progressContainer";
-  this.fileProgressElement.childNodes[3].className = "progressBarError";
-  this.fileProgressElement.childNodes[3].style.width = "";
+  this.fileProgressElement.childNodes[2].className = "progressBarError";
+  this.fileProgressElement.childNodes[2].style.width = "";
 
   var oSelf = this;
   setTimeout(function () {
     oSelf.disappear();
   }, 2000);
 };
+
 FileProgress.prototype.setStatus = function (status) {
   this.fileProgressElement.childNodes[2].innerHTML = status;
 };
@@ -143,7 +147,8 @@ FileProgress.prototype.disappear = function () {
       try {
         this.fileProgressWrapper.filters.item("DXImageTransform.Microsoft.Alpha").opacity = this.opacity;
       } catch (e) {
-        // If it is not set initially, the browser will throw an error.  This will set it if it is not set yet.
+        // If it is not set initially, the browser will throw an error.  This
+        // will set it if it is not set yet.
         this.fileProgressWrapper.style.filter = "progid:DXImageTransform.Microsoft.Alpha(opacity=" + this.opacity + ")";
       }
     } else {

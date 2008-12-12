@@ -69,7 +69,7 @@ def permission_required_redirect(perm, redirect_field_name):
         tup = settings.LOGIN_URL, redirect_field_name, path
         return HttpResponseRedirect('%s?%s=%s' % tup)
     return permission_required(perm, '', erf, html_error)
-                                        
+
 def permission_required_xml(perm):
     return permission_required(perm, '', lambda r,text,act: xml_error(text))
 
@@ -125,7 +125,7 @@ def login(request):
 
     # hack to try to pass them back to http land
     goto = request.REQUEST.get('goto',reverse('aenclave-home'))
-    
+
     # hack to prevent infinite loop.
     if goto == '':
         goto = reverse('aenclave-home')

@@ -2,12 +2,12 @@
 {% load aenclave %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/songlist.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/jquery.tablednd_0_5.js"></script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/songlist.js"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "jquery.tablednd_0_5.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "songlist.js" %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -46,7 +46,7 @@
       <tbody>
         {% if skipping %}
           <tr class="c">
-            <td class="c"><img src="{{ MEDIA_URL }}aenclave/images/speaker.png"/></td>
+            <td class="c"><img src="{% url aenclave-images "speaker.png" %}"/></td>
             <td class="c" colspan="7">(Dequeuing current song...)</td>
           </tr>
         {% else %}

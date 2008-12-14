@@ -2,7 +2,7 @@
 <td class="select c">
   {% spaceless %}
     {% if current %}
-      <img src="{{ MEDIA_URL }}aenclave/images/speaker.png"
+      <img src="{% url aenclave-images "speaker.png" %}"
           id="currentsong" name="{{song.id}}"/>
     {% else %}
       <input class="song_selected" type="checkbox" name="{{song.id}}"/>
@@ -41,7 +41,7 @@
 {% if dl %}
   <td class="c">
     <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">
-      <img src="{{ MEDIA_URL }}aenclave/images/dl.png"/>
+      <img src="{% url aenclave-images "dl.png" %}"/>
     </a>
   </td>
 {% endif %}

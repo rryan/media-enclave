@@ -6,7 +6,7 @@
 {% block header %}Channels{% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/channels.js"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "channels.js" %}"></script>
   <script type="text/javascript">
     // This is here so we can use the url templatetag.
     jQuery(document).ready(function() {

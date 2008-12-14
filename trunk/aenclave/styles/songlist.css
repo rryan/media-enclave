@@ -23,7 +23,7 @@ TABLE.data THEAD TH.sort {
 
 TABLE.data THEAD TH.sorta {
     background-color: #808080;
-    background-image: url(/media/aenclave/images/sorta.png);
+    background-image: url(/aenclave/images/sorta.png);
     background-position: left bottom;
     background-repeat: no-repeat;
     cursor: pointer;
@@ -31,28 +31,28 @@ TABLE.data THEAD TH.sorta {
 
 TABLE.data THEAD TH.sortd {
     background-color: #808080;
-    background-image: url(/media/aenclave/images/sortd.png);
+    background-image: url(/aenclave/images/sortd.png);
     background-position: left top;
     background-repeat: no-repeat;
     cursor: pointer;
 }
 
 TABLE.data THEAD TH.edit {
-    background-image: url(/media/aenclave/images/edit.png);
+    background-image: url(/aenclave/images/edit.png);
     background-position: center center;
     background-repeat: no-repeat;
     width: 12px;
 }
 
 TABLE.data THEAD TH.dl {
-    background-image: url(/media/aenclave/images/dl.png);
+    background-image: url(/aenclave/images/dl.png);
     background-position: center center;
     background-repeat: no-repeat;
     width: 12px;
 }
 
 TABLE.data THEAD TH.drag {
-    background-image: url(/media/aenclave/images/updown.png);
+    background-image: url(/aenclave/images/updown.png);
     background-position: center center;
     background-repeat: no-repeat;
     width: 16px;
@@ -73,14 +73,14 @@ TABLE.data TBODY TD.r { text-align: right; }
 TABLE.data TBODY TD.c { text-align: center; }
 
 TABLE.data TBODY TD.new A {
-    background-image: url(/media/aenclave/images/new.png);
+    background-image: url(/aenclave/images/new.png);
     background-position: left center;
     background-repeat: no-repeat;
     padding-left: 30px;
 }
 
 TABLE.data TBODY TD.edit {
-    background-image: url(/media/aenclave/images/edit.png);
+    background-image: url(/aenclave/images/edit.png);
     background-position: center center;
     background-repeat: no-repeat;
     cursor: pointer;
@@ -88,7 +88,7 @@ TABLE.data TBODY TD.edit {
 }
 
 TABLE.data TBODY TD.done {
-    background-image: url(/media/aenclave/images/ok.png);
+    background-image: url(/aenclave/images/ok.png);
     background-position: center center;
     background-repeat: no-repeat;
     cursor: pointer;
@@ -96,14 +96,14 @@ TABLE.data TBODY TD.done {
 }
 
 TABLE.data TBODY TD.error {
-    background-image: url(/media/aenclave/images/cancel.png);
+    background-image: url(/aenclave/images/cancel.png);
     background-position: center center;
     background-repeat: no-repeat;
     width: 12px;
 }
 
 TABLE.data TBODY TD.drag {
-    background-image: url(/media/aenclave/images/updown.png);
+    background-image: url(/aenclave/images/updown.png);
     background-position: center center;
     background-repeat: no-repeat;
     cursor: move;
@@ -221,28 +221,28 @@ DIV#actions A:active {
 }
 
 DIV#actions A.queue {
-    background: #eef url(/media/aenclave/images/speaker.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/speaker.png) 4px center no-repeat;
 }
 DIV#actions A.dl {
-    background: #eef url(/media/aenclave/images/dl.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/dl.png) 4px center no-repeat;
 }
 DIV#actions A.create {
-    background: #eef url(/media/aenclave/images/create.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/create.png) 4px center no-repeat;
 }
 DIV#actions A.delete {
-    background: #eef url(/media/aenclave/images/delete.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/delete.png) 4px center no-repeat;
 }
 DIV#actions A.add {
-    background: #eef url(/media/aenclave/images/add.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/add.png) 4px center no-repeat;
 }
 DIV#actions A.remove {
-    background: #eef url(/media/aenclave/images/remove.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/remove.png) 4px center no-repeat;
 }
 DIV#actions A.email {
-    background: #eef url(/media/aenclave/images/email.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/email.png) 4px center no-repeat;
 }
 DIV#actions A.history {
-    background: #eef url(/media/aenclave/images/history.png)
+    background: #eef url(/aenclave/images/history.png)
     4px center no-repeat;
 }
 
@@ -288,10 +288,10 @@ DIV#subactions A:active {
 }
 
 DIV#subactions .ok {
-    background: #eef url(/media/aenclave/images/ok.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/ok.png) 4px center no-repeat;
 }
 DIV#subactions .cancel {
-    background: #eef url(/media/aenclave/images/cancel.png) 4px center no-repeat;
+    background: #eef url(/aenclave/images/cancel.png) 4px center no-repeat;
 }
 
 DIV#subactions INPUT {

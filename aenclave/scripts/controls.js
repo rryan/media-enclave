@@ -2,12 +2,12 @@
 // BTW This module assumes that the Prototype library has been loaded.  Refer
 //     to www.prototypejs.org for documentation.
 
-Array.prototype.equals = function(other) {
-  if (this.length != other.length) {
+function shallow_array_equals(a1, a2) {
+  if (a1.length != a2.length) {
     return false;
   }
-  for (var i = 0; i < this.length; i++) {
-    if (this[i] != other[i]) {
+  for (var i = 0; i < a1.length; i++) {
+    if (a1[i] != a2[i]) {
       return false;
     }
   }
@@ -139,25 +139,28 @@ var controls = {
     // Ugh, this boolean logic is complicated.
     var old_plist_empty = controls._playlist_empty(controls.playlist_info);
     var new_plist_empty = controls._playlist_empty(playlist_info);
-    // If we're on channels, and the playlist changed, reload the page.
     if (!(old_plist_empty || new_plist_empty)) {
+      // If both playlists are non-empty, compare their contents.
       return !(controls.playlist_info.playlist_length ==
                  playlist_info.playlist_length &&
-               controls.playlist_info.songs.equals(playlist_info.songs));
+               shallow_array_equals(controls.playlist_info.songs,
+                                    playlist_info.songs));
     } else {
-      return old_plist_empty != new_plist_empty;
+      // If any playlist is empty, we haven't changed if they're both empty.
+      return !(old_plist_empty && new_plist_empty);
     }
   },
 
   // Updates the controls widget with new playlist information.
   update_playlist_info: function(playlist_info) {
+    // If we're on channels, and the playlist changed, reload the page.
     var on_channels = window.location.pathname.indexOf('channels/') > -1;
-    controls.playlist_info = playlist_info;
     if (on_channels && controls.playlist_changed(playlist_info)) {
       controls.updater.stop();
       window.location.reload();
       return;
     }
+    controls.playlist_info = playlist_info;
     if (controls._playlist_empty(playlist_info)) {
       controls.clear_controls();
     } else {

@@ -48,8 +48,9 @@ urlpatterns = patterns(
         {'template': 'filter.html'},
         name='aenclave-filter-home'),
 
-    (r'^filter/search/$',
-     'menclave.aenclave.search.filter_search'),
+    url(r'^filter/search/$',
+        'menclave.aenclave.search.filter_search',
+        name='aenclave-filter-search'),
 
     # Browsing
 

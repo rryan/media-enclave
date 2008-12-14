@@ -22,4 +22,8 @@
     </p>
   </form>
   <p>Now searching through {{total_song_count|intcomma}} song{{total_song_count|pluralize}}.</p>
+  <p>
+    <a href="{% url aenclave-filter-search %}?k=and&k_0=date_added&k_0_r=last&k_0_f0=2&k_0_f1=week">Recently uploaded songs</a> |
+    <a href="{% url aenclave-filter-search %}?k=and&k_0=last_queued&k_0_r=last&k_0_f0=24&k_0_f1=hour">Recently queued songs</a>
+  </p>
 {% endblock %}

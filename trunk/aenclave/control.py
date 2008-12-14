@@ -342,8 +342,9 @@ class Controller(object):
                     for i in range(10):
                         ID = self.client.medialib_get_id(url)
 
-                # Under no circumstances should you provide a 0 to xmmsclient. A bug in xmms2 will cause the server
-                # to start ignoring future requests.
+                # Under no circumstances should you provide a 0 to xmmsclient. A
+                # bug in xmms2 will cause the server to start ignoring future
+                # requests.
                 if ID == 0:
                     logging.debug("Tried to recover from medialib_get_id==0 for '%s' but could not. Dropping the song on the floor." % url)
                     continue

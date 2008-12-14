@@ -6,15 +6,15 @@ filter = {
 
   option: function(value, text) {
     var node = document.createElement("option");
-    node.setAttribute("value", value);
+    node.value = value;
     node.appendChild(document.createTextNode(text));
     return node;
   },
 
   button: function(value, action) {
     var node = document.createElement("input");
-    node.setAttribute("type", "button");
-    node.setAttribute("value", value);
+    node.type = "button";
+    node.value = value;
     node.setAttribute("onclick", action);
     return node;
   },
@@ -73,7 +73,7 @@ filter = {
 
   change_kind: function(select) {
     var option = select.childNodes[select.selectedIndex];
-    var newcat = filter.category(option.getAttribute("value"));
+    var newcat = filter.category(option.value);
     var oldcat = select.id;
     if (oldcat == newcat) return;
     // We are changing categories, so we need new stuff.
@@ -81,14 +81,14 @@ filter = {
     listitem.removeChild(select.nextSibling);
     listitem.removeChild(select.nextSibling);
     if (newcat == "bool") {
-      var btn = filter.button("+", "filter.add(this);")
+      var btn = filter.button("+", "filter.add_rule(this);")
       listitem.appendChild(btn);
       listitem.appendChild(document.createElement("ul"));
-      filter.add(btn);  // Add an item to the newly created list.
+      filter.add_rule(btn);  // Add an item to the newly created list.
     } else {
       var rulesel = filter.rule_select(newcat);
       listitem.appendChild(rulesel);
-      var rule = rulesel.firstChild.getAttribute("value");
+      var rule = rulesel.firstChild.value;
       listitem.appendChild(filter.field_span(filter.auspice(newcat, rule)));
     }
     select.id = newcat;
@@ -97,7 +97,7 @@ filter = {
   change_rule: function(select) {
     var cat = select.previousSibling.id;
     var option = select.childNodes[select.selectedIndex];
-    var newausp = filter.auspice(cat, option.getAttribute("value"));
+    var newausp = filter.auspice(cat, option.value);
     var oldausp = select.id;
     if (oldausp == newausp) return;
     // We are changing auspices, so we need new stuff.
@@ -109,17 +109,19 @@ filter = {
 
   textbox: function(size) {
     var node = document.createElement("input");
-    node.setAttribute("type", "text");
-    node.setAttribute("size", size);
+    node.type = "text";
+    node.size = size;
     return node;
   },
 
   field_span: function(ausp) {
     var span = document.createElement("span");
     span.className = "field";
-    if (ausp == "str") span.appendChild(filter.textbox("30"));
-    else if (ausp == "one") span.appendChild(filter.textbox("14"));
-    else if (ausp == "range") {
+    if (ausp == "str") {
+      span.appendChild(filter.textbox("30"));
+    } else if (ausp == "one") {
+      span.appendChild(filter.textbox("14"));
+    } else if (ausp == "range") {
       span.appendChild(filter.textbox("14"));
       span.appendChild(filter.textbox("14"));
     } else if (ausp == "udate") {
@@ -136,22 +138,28 @@ filter = {
   },
 
   category: function(kind) {
-    if (kind == "title" || kind == "album" || kind == "artist") return "str";
-    else if (kind == "time" || kind == "track" || kind == "play_count") return "int";
-    else if (kind == "date_added" || kind == "last_queued") return "date";
-    else if (kind == "and" || kind == "or" || kind == "nand" || kind == "nor") {
+    if (kind == "title" || kind == "album" || kind == "artist") {
+      return "str";
+    } else if (kind == "time" || kind == "track" || kind == "play_count") {
+      return "int";
+    } else if (kind == "date_added" || kind == "last_queued") {
+      return "date";
+    } else if (kind == "and" || kind == "or" || kind == "nand" ||
+               kind == "nor") {
       return "bool";
     } else return "nix";
   },
 
   auspice: function(cat, rule) {
-    if (cat == "str") return "str";
-    else if (cat == "int") {
+    if (cat == "str") {
+      return "str";
+    } else if (cat == "int") {
       if (rule == "is" || rule == "notis" || rule == "lte" || rule == "gte") {
         return "one";
-      } else if (rule == "inside" || rule == "outside") return "range";
-    }
-    else if (cat == "date") {
+      } else if (rule == "inside" || rule == "outside") {
+        return "range";
+      }
+    } else if (cat == "date") {
       if (rule == "before" || rule == "after") return "one";
       else if (rule == "inside" || rule == "outside") return "range";
       else if (rule == "last" || rule == "nolast") return "udate"
@@ -173,13 +181,13 @@ filter = {
     listitem.parentNode.removeChild(listitem);
   },
 
-  add: function(button) {
+  add_rule: function(button) {
     button.nextSibling.appendChild(filter.criterion());
   },
 
   subgather: function(item, prefix) {
     var kindsel = item.firstChild.nextSibling;
-    kindsel.setAttribute("name", prefix);
+    kindsel.name = prefix;
     if (kindsel.id == "bool") {
       prefix += "_"
       var kids = kindsel.nextSibling.nextSibling.childNodes;
@@ -188,11 +196,11 @@ filter = {
       }
     } else {
       var rulesel = kindsel.nextSibling;
-      rulesel.setAttribute("name", prefix+"_r");
+      rulesel.name = prefix+"_r";
       prefix += "_f"
       var flds = rulesel.nextSibling.childNodes;
       for (var i = 0; i < flds.length; i++) {
-        flds[i].setAttribute("name", prefix+i);
+        flds[i].name = prefix+i;
       }
     }
   },

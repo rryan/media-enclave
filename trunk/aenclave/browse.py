@@ -1,4 +1,3 @@
-
 from django.template import RequestContext
 
 from menclave.aenclave.models import Song

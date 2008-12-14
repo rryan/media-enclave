@@ -165,18 +165,18 @@ var controls = {
       controls.update_elapsed_time(playlist_info.elapsed_time);
       if (playlist_info.playing) {
         controls.timestepper.start();
-        $('pause').show();
-        $('play').hide();
+        jQuery('#pause').show();
+        jQuery('#play').hide();
       } else {
-        $('pause').hide();
-        $('play').show();
+        jQuery('#pause').hide();
+        jQuery('#play').show();
       }
-      $('current-song').innerHTML = playlist_info.songs[0];
-      var song_list = $('song-list');
-      song_list.innerHTML = '';
+      jQuery('#current-song').text(playlist_info.songs[0]);
+      var song_list = jQuery('#song-list');
+      song_list.empty();
       for (var i = 1; i < playlist_info.songs.length; i++) {
         var li = document.createElement('li');
-        song_list.appendChild(li);
+        song_list.append(li);
         li.innerHTML = playlist_info.songs[i];
       }
       var length = playlist_info.playlist_length;
@@ -186,7 +186,7 @@ var controls = {
       if (playlist_info.playlist_length > 3) {
         msg = '... ' + msg;
       }
-      $('control-trailer').innerHTML = msg;
+      jQuery('#control-trailer').text(msg);
     }
   },
 
@@ -194,17 +194,17 @@ var controls = {
   TIME_BAR_WIDTH: 160,
 
   update_elapsed_time: function(time) {
-    var tbar = $('timebar');
-    if (!tbar) return;
+    var tbar = jQuery('#timebar');
+    if (tbar.length == 0) return;
     controls.playlist_info.elapsed_time = time;
     var width = Math.min(controls.TIME_BAR_WIDTH, controls.TIME_BAR_WIDTH *
                          time / controls.playlist_info.song_duration);
-    tbar.style.width = width + 'px';
+    tbar.css('width', width + 'px');
   },
 
   error: function(msg) {
     controls.clear_controls();
-    $('current-song').innerHTML = 'ERROR: ' + msg;
+    jQuery('#current-song').text('ERROR: ' + msg);
   },
 
   clear_controls: function() {
@@ -215,24 +215,24 @@ var controls = {
     setTimeout(function() {
       controls.update_elapsed_time(0);
     }, 1000);
-    $('current-song').innerHTML = '--';
+    jQuery('#current-song').text('--');
     // Clear the song list and the other info.
-    $('song-list').innerHTML = '';
-    $('control-trailer').innerHTML = '';
+    jQuery('#song-list').empty();
+    jQuery('#control-trailer').empty();
   },
 
   /***************************** CONTROL BUTTONS *****************************/
 
   minimize: function() {
-    $('controls').hide();
-    $('controls-restore').show();
+    jQuery('#controls').hide();
+    jQuery('#controls-restore').show();
     controls.updater.stop();
     cookies.save('controls_minimized', '1', 365);
   },
 
   restore: function() {
-    $('controls-restore').hide();
-    $('controls').show();
+    jQuery('#controls-restore').hide();
+    jQuery('#controls').show();
     controls.updater.start();
     cookies.delete_('controls_minimized');
   },
@@ -244,8 +244,8 @@ var controls = {
   pause: function() {
     controls._control_action('pause');
     controls.timestepper.stop();
-    $('pause').hide();
-    $('play').show();
+    jQuery('#pause').hide();
+    jQuery('#play').show();
   },
 
   skip: function() {

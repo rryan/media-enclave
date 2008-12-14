@@ -11,16 +11,15 @@ var songlist = {
   start_subaction: function() {
     songlist.end_subaction();
     // Hide the action tray (thus uncovering the subaction tray).
-    $("actions").style.display = "none";
+    jQuery("#actions").hide();
   },
 
   // End the current subaction (if any).
   end_subaction: function() {
     // Unhide the action tray (thus covering the subaction tray).
-    $("actions").style.display = "block";
+    jQuery("#actions").show();
     // Remove all children from the subaction tray.
-    var tray = $("subactions");
-    while (tray.childNodes.length > 0) tray.removeChild(tray.lastChild);
+    jQuery("#subactions").empty();
   },
 
   // Cancel the current subaction (if any).
@@ -29,7 +28,7 @@ var songlist = {
   },
 
   add_subaction_item: function(item) {
-    $("subactions").appendChild(item);
+    jQuery("#subactions").append(item);
   },
 
   add_subaction_span: function(item) {
@@ -73,7 +72,7 @@ var songlist = {
   add_subaction_button: function(klass, action, text) {
     var button = document.createElement("a");
     button.className = klass;
-    button.setAttribute("href", "javascript:" + action);
+    button.href = "javascript:" + action;
     button.appendChild(document.createTextNode(text));
     songlist.add_subaction_item(button);
   },
@@ -107,39 +106,29 @@ var songlist = {
   // Sets the checked state of all checkboxes in the songlist to be the same as
   // the checkbox given as an argument.
   select_all: function(box) {
-    var boxen = $("songlist").getElementsByTagName("input");
     // WTF What if there are non-checkbox inputs in the songlist?  Who cares,
     //     those inputs will ignore the `checked` attribute anyway.
-    for (var i = 0; i < boxen.length; i++) boxen[i].checked = box.checked;
+    jQuery("#songlist input").attr('checked', !!box.checked);
   },
 
   // Returns a space-separated string of the IDs of all selected songs.
   //  empty: if true, nothing selected -> empty return value
   //         if false, nothing selected is equivalent to everything selected
   gather_ids: function(empty) {
-    var boxen = $("songlist").getElementsByTagName("input");
-    var selected = "";
-    var all = "";
-    // WTF We start with i=1 to skip the checkbox in the table head.
-    for (var i = 1; i < boxen.length; i++) {
-      var box = boxen[i];
-      var next = box.name + " ";
-      all += next;
-      if (box.checked == true) selected += next;
+    var names = jQuery("#songlist .song_selected :checked").attr('name');
+    if (!empty && names.length == 0) {
+      // If nothing is selected and empty is false, return all songs.
+      return jQuery("#songlist .song_selected").attr('name').join(' ');
     }
-    if (empty || selected.length > 0) return selected;
-    else return all;
+    return names.join(' ');
   },
 
   gather_indices: function() {
-    var boxen = $("songlist").getElementsByTagName("input");
-    var selected = "";
-    // WTF We start with i=1 to skip the checkbox in the table head.
-    for (var i = 1; i < boxen.length; i++) {
-      var box = boxen[i];
-      if (box.checked == true) selected += (i-1) + " ";
-    }
-    return selected;
+    var selected = [];
+    jQuery("#songlist .song_selected").each(function (i) {
+      if (this.checked) selected.push(i);
+    });
+    return selected.join(' ');
   },
 
   /********************************* ACTIONS *********************************/
@@ -148,7 +137,7 @@ var songlist = {
   queue_click: function(link) {
     // Add a paragraph after the link giving the status of the request.
     var para = document.createElement('p');
-    var control_div = $('controls');
+    var control_div = jQuery('#controls').get(0);
     control_div.appendChild(para);
     para.innerHTML = 'queueing...';
     // Set the cursor over the link to wait.
@@ -363,13 +352,17 @@ var songlist = {
   _edit_column_done: function(target) {
     // target must already be wrapped by jQuery
     target.removeClass("edit error").addClass("done");
-    target.each(function() { this.onclick = function() { songlist.done_editing(this); }});
+    target.each(function() {
+      this.onclick = function() { songlist.done_editing(this); }
+    });
   },
 
   _edit_column_edit: function(target) {
     // target must already be wrapped by jQuery
     target.removeClass("done error").addClass("edit");
-    target.each(function() { this.onclick = function() { songlist.edit_song(this); }});
+    target.each(function() {
+      this.onclick = function() { songlist.edit_song(this); }
+    });
   },
 
   _edit_column_error: function(target) {
@@ -383,28 +376,25 @@ var songlist = {
   edit_song: function(target) {
     target = jQuery(target);
     // Replace text with text boxes. (only do it on .editable children)
-    jQuery.map(
-      target.parent("TR:first").children('.editable'),
-      function(cell) {
-        cell = jQuery(cell);
-        var input = jQuery(document.createElement("INPUT"));
-        input.attr("type","text");
-        input.attr('value', cell.text().strip());
-        input.addClass("text");
-        input.keypress(function(e) {
-          // Check if the user hits enter in any of our textboxes.
-          if (e.keyCode == 13) songlist.done_editing(target);
-        });
-        cell.empty().append(input);
-      }
-    );
+    target.parent('tr:first').children('.editable').each(function() {
+      var cell = jQuery(this);
+      var input = jQuery(document.createElement("input"));
+      input.attr("type","text");
+      input.attr('value', cell.text().strip());
+      input.addClass("text");
+      input.keypress(function(e) {
+        // Check if the user hits enter in any of our textboxes.
+        if (e.keyCode == 13) songlist.done_editing(target);
+      });
+      cell.empty().append(input);
+    });
     songlist._edit_column_done(target);
   },
 
   done_editing: function(target) {
     // Collect the parameters from the text boxes.
     target = jQuery(target);
-    var parent = target.parent("TR:first");
+    var parent = target.parent("tr:first");
     var songid = parent.children(".select").children(":first").attr('name');
     var params = {id: songid};
 
@@ -461,44 +451,27 @@ var songlist = {
   // WTF These functions may not work properly for the songlist on the Channels
   //     page.  That's okay -- that songlist doesn't need to be sortable.
 
-  // Return the head of the songlist table.
-  table_head: function() {
-    return $('songlist').getElementsByTagName('thead')[0];
-  },
-
-  // Return the body of the songlist table.
-  table_body: function() {
-    // WTF This next line should be `return $('songlist').tbody;` but Safari
-    //     doesn't support the tbody attribute.
-    // $#!* Browser compatibility issues suck.
-    return $('songlist').getElementsByTagName('tbody')[0];
-  },
-
   insert_row: function(row) {
-    jQuery(this.table_body()).append(row);
+    jQuery('#songlist tbody').append(row);
     this.recolor_rows();
   },
 
   // Recolor the rows of the songlist table so that they alternate properly.
   // This should be called at the end of functions that reorder the rows.
   recolor_rows: function() {
-    var tbody = songlist.table_body();
-    var a = true;
-    var i = 0;
-    var firstRow = tbody.rows[0];
-    // If the first row has the current song, leave it with the class 'c'.
-    if (firstRow && firstRow.hasClassName('c')) i++;
-    for (; i < tbody.rows.length; i++) {
-      var row = tbody.rows[i];
-      if (a) row.className = 'a';
-      else row.className = 'b';
-      a = !a;
-    }
+    jQuery('#songlist tbody tr').each(function (i) {
+      var row = jQuery(this);
+      if (row.hasClass('c')) return;  // Skip the currently playing song.
+      row.removeClass('a');
+      row.removeClass('b');
+      row.addClass(!(i % 2) ? 'a' : 'b');  // Odd is 'a', even is 'b'.
+    });
   },
 
   // Reverse the rows in the songlist.
   reverse_rows: function() {
-    var tbody = songlist.table_body();
+    // We do this with raw DOM nodes because it's easier.
+    var tbody = jQuery('#songlist tbody').get(0);
     for (var i = tbody.rows.length - 1; i >= 0; i--) {
       var row = tbody.rows[i];
       tbody.removeChild(row);
@@ -524,55 +497,62 @@ var songlist = {
     return text;
   },
 
-  sort_rows_by: function(col, type, reversed) {
-    // Step 1: Pick a key function.
-    var key;
-    if (type == "int") {
-      key = function(text) {
-        var value = parseInt(text, 10);
-        if (isNaN(value)) return "";
-        else return value;
-      };
-    } else if (type == "date") {
-      key = function(text) {
-        var date = new Date();
-        var dateparts = text.split(" ");
-        var timeparts;
-        if (dateparts.length == 2) {
-          timeparts = dateparts[1].split(":");
-          date.setHours(parseInt(timeparts[0], 10));
-          date.setMinutes(parseInt(timeparts[1], 10));
-          date.setSeconds(parseInt(timeparts[2], 10));
-          if (dateparts[0] == "Today");
-          else if (dateparts[0] == "Yesterday") {
-            date = new Date(date - 24 * 60 * 60 * 1000);
-          }
-        } else {
-          date.setDate(parseInt(dateparts[0], 10));
-          date.setMonth({Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6,
-                         Aug:7, Sep:8, Oct:9, Nov:10, Dec:11}[dateparts[1]]);
-          date.setYear(parseInt(dateparts[2], 10));
-          timeparts = dateparts[3].split(":");
-        }
+  // The various functions for computing sort keys.
+  sort_keys: {
+
+    'int': function(text) {
+      var value = parseInt(text, 10);
+      if (isNaN(value)) return "";
+      else return value;
+    },
+
+    'date': function(text) {
+      var date = new Date();
+      var dateparts = text.split(" ");
+      var timeparts;
+      if (dateparts.length == 2) {
+        timeparts = dateparts[1].split(":");
         date.setHours(parseInt(timeparts[0], 10));
         date.setMinutes(parseInt(timeparts[1], 10));
         date.setSeconds(parseInt(timeparts[2], 10));
-        return date;
-      };
-    } else if (type == "time") {
-      key = function(text) {
-        var parts = text.split(":");
-        var total = 0;
-        for (var i = 0; i < parts.length; i++) {
-          total = 60 * total + parseInt(parts[i], 10);
+        if (dateparts[0] == "Today");
+        else if (dateparts[0] == "Yesterday") {
+          date = new Date(date - 24 * 60 * 60 * 1000);
         }
-        return total;
-      };
-    } else {
-      key = function(text) { return text; };
+      } else {
+        date.setDate(parseInt(dateparts[0], 10));
+        date.setMonth({Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6,
+            Aug:7, Sep:8, Oct:9, Nov:10, Dec:11}[dateparts[1]]);
+        date.setYear(parseInt(dateparts[2], 10));
+        timeparts = dateparts[3].split(":");
+      }
+      date.setHours(parseInt(timeparts[0], 10));
+      date.setMinutes(parseInt(timeparts[1], 10));
+      date.setSeconds(parseInt(timeparts[2], 10));
+      return date;
+    },
+
+    'time': function(text) {
+      var parts = text.split(":");
+      var total = 0;
+      for (var i = 0; i < parts.length; i++) {
+        total = 60 * total + parseInt(parts[i], 10);
+      }
+      return total;
+    },
+
+    'text': function(text) {
+      return text;
     }
+
+  },
+
+  sort_rows_by: function(col, type, reversed) {
+    // Step 1: Pick a key function.
+    var key = songlist.sort_keys[type];
+    if (!key) throw "Invalid sort key:" + type;
     // Step 2: Pull all the rows out of the table body.
-    var tbody = songlist.table_body();
+    var tbody = jQuery('#songlist tbody').get(0);
     var rows = [];
     for (var i = tbody.rows.length - 1; i >= 0; i--) {
       var row = tbody.rows[i];
@@ -606,38 +586,38 @@ var songlist = {
   },
 
   sorta: function(cell) {
-    var headers = songlist.table_head().getElementsByTagName('th');
-    var type = cell.getAttribute("sorttype");
+    // Use getAttribute because this is a non-standard attr.
+    var type = cell.getAttribute('sorttype');
     var col = 0;
-    for (var i = 0; i < headers.length; i++) {
-      var child = headers[i];
+    jQuery('#songlist thead th').each(function (i) {
+      var child = this;
       if (child == cell) {
         col = i;
-        child.setAttribute("onclick", "songlist.sortd(this);");
+        child.onclick = function() { songlist.sortd(child); };
         child.className = "sorta";
       } else if (child.className == "sorta" || child.className == "sortd") {
-        child.setAttribute("onclick", "songlist.sorta(this);");
+        child.onclick = function() { songlist.sorta(child); };
         child.className = "sort";
       }
-    }
+    });
     songlist.sort_rows_by(col, type, false);
   },
 
   sortd: function(cell) {
-    var headers = songlist.table_head().getElementsByTagName('th');
-    var type = cell.getAttribute("sorttype");
+    // Use getAttribute because this is a non-standard attr.
+    var type = cell.getAttribute('sorttype');
     var col = 0;
-    for (var i = 0; i < headers.length; i++) {
-      var child = headers[i];
+    jQuery('#songlist thead th').each(function (i) {
+      var child = this;
       if (child == cell) {
         col = i;
-        child.setAttribute("onclick", "songlist.sorta(this);");
+        child.onclick = function() { songlist.sorta(child); };
         child.className = "sortd";
       } else if (child.className == "sorta" || child.className == "sortd") {
-        child.setAttribute("onclick", "songlist.sorta(this);");
+        child.onclick = function() { songlist.sorta(child); };
         child.className = "sort";
       }
-    }
+    });
     songlist.sort_rows_by(col, type, true);
   }
 

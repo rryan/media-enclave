@@ -24,7 +24,10 @@ var channels = {
   },
 
   okemail: function() {
-    var params = {email: $("emailaddress").value, ids: $("currentsong").name}
+    var params = {
+      email: jQuery("#emailaddress").val(),
+      ids: jQuery("#currentsong").attr('name')
+    };
     var options = {
       url: "/audio/json/email/",
       type: "post",

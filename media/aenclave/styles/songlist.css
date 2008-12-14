@@ -60,6 +60,7 @@ TABLE.data THEAD TH.drag {
 
 TABLE.data TBODY TR.a {}
 TABLE.data TBODY TR.b { background-color: #f2f2ff; }
+/* TODO(rnk): 'c' means currently playing. Use a better name.  */
 TABLE.data TBODY TR.c { border-bottom: 3px #ccf double; }
 
 TABLE.data TBODY TD {

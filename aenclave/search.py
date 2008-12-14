@@ -8,7 +8,8 @@ from django.db.models import Q
 
 from menclave.aenclave.control import Controller
 from menclave.aenclave.models import Song
-from menclave.aenclave.utils import parse_date, parse_time, parse_integer, get_unicode
+from menclave.aenclave.utils import (parse_date, parse_time, parse_integer,
+                                     get_unicode)
 from menclave.aenclave.html import render_html_template, html_error
 
 def Qu(field, op, value):
@@ -162,7 +163,7 @@ def _build_filter_query(tree):
     elif kind in ('date_added','last_queued'):
         if rule in ('last','nolast'):
             number, unit = data
-            if unit == 'hour': delta = datetime.timedelta(0,3600)
+            if unit == 'hour': delta = datetime.timedelta(0, 3600)
             elif unit == 'day': delta = datetime.timedelta(1)
             elif unit == 'week': delta = datetime.timedelta(7)
             elif unit == 'month': delta = datetime.timedelta(30.43685)
@@ -178,9 +179,13 @@ def _build_filter_query(tree):
                 return Qu(kind, 'lt', data[0]) | Qu(kind, 'gt', data[1])
 
 def filter_search(request):
-    try: tree,total,errors = _build_filter_tree(request.GET, 'k')
-    except KeyError, err: return html_error(request, message=str(errors))
-    if errors: return html_error(request, message=str(errors)) #raise Http404  # TODO error (human's fault)
+    try:
+        (tree, total, errors) = _build_filter_tree(request.GET, 'k')
+    except KeyError, err:
+        return html_error(request, message=str(err))
+    # TODO error (human's fault)
+    if errors:
+        return html_error(request, message=str(errors))
     if total == 0: queryset = ()
     else: queryset = Song.visibles.filter(_build_filter_query(tree))
     return render_html_template('filter_results.html', request,

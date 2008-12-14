@@ -5,11 +5,11 @@
 {% block header %}Filter Search{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/filter.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "filter.css" %}"/>
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/filter.js"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "filter.js" %}"></script>
 {% endblock %}
 
 {# Note: The javascript is sensitive to some of the whitespace in the block #}

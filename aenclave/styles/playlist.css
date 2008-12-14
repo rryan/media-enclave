@@ -11,7 +11,7 @@ DIV#plisthead SPAN {
 }
 
 DIV#plisthead A.edit {
-  background: #eef url(/media/aenclave/images/edit.png) 4px center no-repeat;
+  background: #eef url(/aenclave/images/edit.png) 4px center no-repeat;
   border: 1px #cce outset;
   color: #779;
   font-size: 10pt;

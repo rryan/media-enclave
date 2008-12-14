@@ -152,19 +152,19 @@ DIV#controls A:active {
 }
 
 DIV#controls A#play {
-    background-image: url(/media/aenclave/images/play.png);
+    background-image: url(/aenclave/images/play.png);
     left: 0px;
 }
 DIV#controls A#pause {
-    background-image: url(/media/aenclave/images/pause.png);
+    background-image: url(/aenclave/images/pause.png);
     left: 0px;
 }
 DIV#controls A#skip {
-    background-image: url(/media/aenclave/images/skip.png);
+    background-image: url(/aenclave/images/skip.png);
     left: 55px;
 }
 DIV#controls A#shuffle {
-    background-image: url(/media/aenclave/images/shuffle.png);
+    background-image: url(/aenclave/images/shuffle.png);
     left: 110px;
 }
 
@@ -178,7 +178,7 @@ DIV#controls A#controls-minimize {
     margin: 3px;
     padding: 0px;
     background-color: white;
-    background-image: url(/media/aenclave/images/minimize.png);
+    background-image: url(/aenclave/images/minimize.png);
     border: thin solid black;
 }
 
@@ -189,7 +189,7 @@ A#controls-restore {
     bottom: 0;
     z-index: 4;
     background-color: white;
-    background-image: url(/media/aenclave/images/maximize.png);
+    background-image: url(/aenclave/images/maximize.png);
     background-position: center center;
     background-repeat: no-repeat;
     width: 16px;

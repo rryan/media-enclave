@@ -6,17 +6,17 @@
 {% block header %}HTTP Upload{% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script src="{{ MEDIA_URL }}aenclave/scripts/swfupload.js"></script>
-  <script src="{{ MEDIA_URL }}aenclave/scripts/swfupload.queue.js"></script>
-  <script src="{{ MEDIA_URL }}aenclave/scripts/swfupload.cookies.js"></script>
-  <script src="{{ MEDIA_URL }}aenclave/scripts/fileprogress.js"></script>
-  <script src="{{ MEDIA_URL }}aenclave/scripts/fancyupload.js"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "swfupload.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "swfupload.queue.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "swfupload.cookies.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "fileprogress.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "fancyupload.js" %}"></script>
   <script type="text/javascript">
     var swfu;
     
     jQuery(document).ready(function() {
       var settings = {
-        flash_url : "{{MEDIA_URL}}aenclave/scripts/swfupload.swf",
+        flash_url : "{% url aenclave-scripts "swfupload.swf" %}",
         upload_url: "{% url aenclave-http-upload-fancy-receiver %}",
         post_params: {},
         file_size_limit : "100 MB",
@@ -30,7 +30,7 @@
         debug: false,
 
         // Button settings
-        button_image_url: "{{MEDIA_URL}}aenclave/images/button160x22.png",
+        button_image_url: "{% url aenclave-images "button160x22.png" %}",
         button_width: "160",
         button_height: "22",
         button_placeholder_id: "buttonPlaceHolder",
@@ -57,7 +57,7 @@
 {% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/upload.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "upload.css" %}"/>
 {% endblock %}
 
 {% block presonglist %}

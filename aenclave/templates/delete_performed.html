@@ -6,7 +6,7 @@
 {% block header %}Delete Songs{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/upload.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "upload.css" %}"/>
 {% endblock %}
 
 {% block presonglist %}

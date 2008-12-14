@@ -7,7 +7,7 @@
 {% block header %}Artists ({{letter}}){% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/browse.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "browse.css" %}"/>
 {% endblock %}
 
 {% block content %}

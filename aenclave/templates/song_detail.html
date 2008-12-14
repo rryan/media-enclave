@@ -3,7 +3,7 @@
 {% block styles %}
   {{ block.super }}
   {# We do this to get the recent and queue classes. #}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/songlist.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
 {% endblock %}
 
 {% block header %}Song Detail{% endblock %}

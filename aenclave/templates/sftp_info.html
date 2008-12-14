@@ -5,7 +5,7 @@
 {% block header %}SFTP Upload{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/sftp_info.css"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "sftp_info.css" %}"/>
 {% endblock %}
 
 {% block content %}

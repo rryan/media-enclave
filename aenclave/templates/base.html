@@ -7,16 +7,16 @@
     <meta name="copyright" content="&copy; 1999&ndash;2007 by Putz Inc."/>
     <meta name="robots" content="NONE"/>
     {% block styles %}
-      <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}aenclave/styles/base.css"/>
+      <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "base.css" %}"/>
     {% endblock %}
     {% block scripts %}
-      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/prototype-1.6.0.2.js"></script>
-      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/jquery-1.2.6.min.js"></script>
+      <script type="text/javascript" src="{% url aenclave-scripts "prototype-1.6.0.2.js" %}"></script>
+      <script type="text/javascript" src="{% url aenclave-scripts "jquery-1.2.6.min.js" %}"></script>
       {# This lets jQuery and Prototype coexist.  Prototype gets '$', and to get #}
       {# jQuery's '$', use the jQuery variable.  #}
       <script type="text/javascript">jQuery.noConflict();</script>
-      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/controls.js"></script>
-      <script type="text/javascript" src="{{ MEDIA_URL }}aenclave/scripts/cookies.js"></script>
+      <script type="text/javascript" src="{% url aenclave-scripts "controls.js" %}"></script>
+      <script type="text/javascript" src="{% url aenclave-scripts "cookies.js" %}"></script>
       <script>
 	Event.observe(window,'load',function() {
 	  controls.initialize({{playlist_info|safe}});

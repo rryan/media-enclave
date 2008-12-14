@@ -115,15 +115,19 @@ var songlist = {
   //  empty: if true, nothing selected -> empty return value
   //         if false, nothing selected is equivalent to everything selected
   gather_ids: function(empty) {
-    var names = jQuery("#songlist .song_selected :checked").attr('name');
+    var boxen = jQuery("#songlist .song_selected:checked");
+    var names = jQuery.makeArray(boxen.map(function(i, box) {
+      return box.name;
+    }));
     if (!empty && names.length == 0) {
       // If nothing is selected and empty is false, return all songs.
-      return jQuery("#songlist .song_selected").attr('name').join(' ');
+      return jQuery("#songlist .song_selected:checked").join(' ');
     }
     return names.join(' ');
   },
 
   gather_indices: function() {
+    // WTF We can't use ':checked' here, because then we don't get indices.
     var selected = [];
     jQuery("#songlist .song_selected").each(function (i) {
       if (this.checked) selected.push(i);

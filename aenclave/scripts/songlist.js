@@ -57,8 +57,8 @@ var songlist = {
     box.value = value;
     songlist.add_subaction_span(box);
     if (opt_callback) {
-      Event.observe(box, 'keyup', function(evt) {
-        if (evt.keyCode == Event.KEY_RETURN) {
+      jQuery(box).keyup(function(evt) {
+        if (evt.keyCode == 13) {  // 13 is return.
           opt_callback();
         }
       });
@@ -228,7 +228,7 @@ var songlist = {
     }
   },
 
-  delete: function() {
+  delete_: function() {
     with (songlist) {
       start_subaction();
       add_subaction_label("Really DELETE the selected songs?");

@@ -18,7 +18,7 @@
       <script type="text/javascript" src="{% url aenclave-scripts "controls.js" %}"></script>
       <script type="text/javascript" src="{% url aenclave-scripts "cookies.js" %}"></script>
       <script>
-	Event.observe(window,'load',function() {
+        jQuery(document).ready(function(e) {
 	  controls.initialize({{playlist_info|safe}});
 	});
       </script>

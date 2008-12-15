@@ -24,22 +24,31 @@ function pluralize(num, opt_plural, opt_singular) {
   }
 }
 
-// This is PeriodicalExecuter that does not start on construction, but can be
-// started and restarted with calls to start() and stop().
-var MyPeriodicalExecuter = Class.create(PeriodicalExecuter, {
+// This is a little stateful object that will call the callback with the given
+// frequency, but will also ensure that no two callbacks execute at the same
+// time.  The code has been diked from prototypejs, since that's all we used
+// from it.
+function PeriodicalExecuter(callback, frequency) {
+  this.callback = callback;
+  this.frequency = frequency;
+  // currentlyExecuting is true if the callback is executing, and false
+  // otherwise.
+  this.currentlyExecuting = false;
+  // timer is null when we are stopped, and a setInterval timer value otherwise.
+  this.timer = null;
+}
 
-  // Override the constructor so that we don't start executing on construction.
-  initialize: function(callback, frequency) {
-    // The below is cargo-culted from the original PeriodicalExecuter
-    // constructor.
-    this.callback = callback;
-    this.frequency = frequency;
-    // currentlyExecuting is true if the callback is executing, and false
-    // otherwise.
-    this.currentlyExecuting = false;
-    // timer is null when we are stopped, and a setInterval timer value
-    // otherwise.
-    this.timer = null;
+PeriodicalExecuter.prototype = {
+  registerCallback: function() {
+    // WTF We do this dance of wrapping onTimerEvent with oSelf to work around
+    //     Javascript's usage of 'this'.
+    var oSelf = this;
+    this.timer = setInterval(function() { oSelf.onTimerEvent(); },
+                             this.frequency * 1000);
+  },
+
+  execute: function() {
+    this.callback(this);
   },
 
   // Start periodic execution of our callback.
@@ -54,13 +63,22 @@ var MyPeriodicalExecuter = Class.create(PeriodicalExecuter, {
   },
 
   stop: function() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
+    if (!this.timer) return;
+    clearInterval(this.timer);
+    this.timer = null;
+  },
+
+  onTimerEvent: function() {
+    if (!this.currentlyExecuting) {
+      try {
+        this.currentlyExecuting = true;
+        this.execute();
+      } finally {
+        this.currentlyExecuting = false;
+      }
     }
   }
-
-});
+};
 
 var controls = {
 
@@ -79,9 +97,8 @@ var controls = {
   playlist_info: null,
 
   initialize: function(playlist_info) {
-    controls.updater = new MyPeriodicalExecuter(controls.update,
-                                                controls.DELAY);
-    controls.timestepper = new MyPeriodicalExecuter(function() {
+    controls.updater = new PeriodicalExecuter(controls.update, controls.DELAY);
+    controls.timestepper = new PeriodicalExecuter(function() {
       if (controls.playlist_info) {
         // TODO(rnk): Use the browser's clock to avoid drift better.
         controls.update_elapsed_time(1 + controls.playlist_info.elapsed_time);
@@ -180,7 +197,7 @@ var controls = {
       for (var i = 1; i < playlist_info.songs.length; i++) {
         var li = document.createElement('li');
         song_list.append(li);
-        li.innerHTML = playlist_info.songs[i];
+        jQuery(li).text(playlist_info.songs[i]);
       }
       var length = playlist_info.playlist_length;
       var duration = playlist_info.playlist_duration;

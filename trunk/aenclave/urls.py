@@ -1,6 +1,7 @@
 # menclave/aenclave/urls.py
 
 from django.conf.urls.defaults import url, patterns
+from django.conf import settings
 
 from menclave.aenclave.models import Song
 
@@ -12,23 +13,6 @@ urlpatterns = patterns(
         {'template': 'index.html',
          'extra_context': {'total_song_count': Song.visibles.count}},
         name='aenclave-home'),
-
-    # Static content
-
-    url(r'^scripts/(?P<path>.*)$',
-        'django.views.static.serve',
-        {'document_root': 'aenclave/scripts/'},
-        name='aenclave-scripts'),
-
-    url(r'^styles/(?P<path>.*)$',
-        'django.views.static.serve',
-        {'document_root': 'aenclave/styles/'},
-        name='aenclave-styles'),
-
-    url(r'^images/(?P<path>.*)$',
-        'django.views.static.serve',
-        {'document_root': 'aenclave/images/'},
-        name='aenclave-images'),
 
     # Login/logout
 
@@ -234,3 +218,25 @@ urlpatterns = patterns(
      'menclave.aenclave.channel.json_control_update'),
 
 )
+
+if settings.DEBUG:
+    urlpatterns += patterns(
+        '',
+
+        # Static content
+
+        url(r'^scripts/(?P<path>.*)$',
+            'django.views.static.serve',
+            {'document_root': 'aenclave/scripts/'},
+            name='aenclave-scripts'),
+
+        url(r'^styles/(?P<path>.*)$',
+            'django.views.static.serve',
+            {'document_root': 'aenclave/styles/'},
+            name='aenclave-styles'),
+
+        url(r'^images/(?P<path>.*)$',
+            'django.views.static.serve',
+            {'document_root': 'aenclave/images/'},
+            name='aenclave-images'),
+    )

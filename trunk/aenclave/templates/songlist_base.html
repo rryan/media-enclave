@@ -90,7 +90,7 @@
             <a href="javascript:songlist.askcreate();" class="create">Save as playlist&hellip;</a>
             <a href="javascript:songlist.askadd();" class="add">Add to playlist&hellip;</a>
             {% if user.is_staff %}
-              <a href="javascript:songlist.delete();" class="delete">Delete selected songs</a>
+              <a href="javascript:songlist.delete_();" class="delete">Delete selected songs</a>
             {% else %}
               <a href="javascript:songlist.askdelete();" class="delete">Request for deletion</a>
             {% endif %}

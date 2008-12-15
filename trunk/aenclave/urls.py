@@ -14,6 +14,23 @@ urlpatterns = patterns(
          'extra_context': {'total_song_count': Song.visibles.count}},
         name='aenclave-home'),
 
+    # Static content
+
+    url(r'^scripts/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'aenclave/scripts/'},
+        name='aenclave-scripts'),
+
+    url(r'^styles/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'aenclave/styles/'},
+        name='aenclave-styles'),
+
+    url(r'^images/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'aenclave/images/'},
+        name='aenclave-images'),
+
     # Login/logout
 
     url(r'^login/$',
@@ -223,20 +240,4 @@ if settings.DEBUG:
     urlpatterns += patterns(
         '',
 
-        # Static content
-
-        url(r'^scripts/(?P<path>.*)$',
-            'django.views.static.serve',
-            {'document_root': 'aenclave/scripts/'},
-            name='aenclave-scripts'),
-
-        url(r'^styles/(?P<path>.*)$',
-            'django.views.static.serve',
-            {'document_root': 'aenclave/styles/'},
-            name='aenclave-styles'),
-
-        url(r'^images/(?P<path>.*)$',
-            'django.views.static.serve',
-            {'document_root': 'aenclave/images/'},
-            name='aenclave-images'),
     )

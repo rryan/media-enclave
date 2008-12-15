@@ -1,7 +1,6 @@
 # menclave/aenclave/urls.py
 
 from django.conf.urls.defaults import url, patterns
-from django.conf import settings
 
 from menclave.aenclave.models import Song
 
@@ -235,9 +234,3 @@ urlpatterns = patterns(
      'menclave.aenclave.channel.json_control_update'),
 
 )
-
-if settings.DEBUG:
-    urlpatterns += patterns(
-        '',
-
-    )

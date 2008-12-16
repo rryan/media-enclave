@@ -58,7 +58,7 @@ function FileProgress(file, targetID) {
     this.fileProgressWrapper.appendChild(document.createElement('td'));
 
     var tbody = jQuery('#songlist tbody').get(0);
-    Element.insert(tbody, {bottom: this.fileProgressWrapper });
+    tbody.appendChild(this.fileProgressWrapper);
 
     //tbody.down('tr').insert({after: tr});
     //tbody.insert({after: this.fileProgressWrapper});

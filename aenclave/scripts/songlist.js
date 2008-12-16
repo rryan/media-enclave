@@ -3,6 +3,10 @@
 //     been loaded.  Refer to www.prototypejs.org and www.jquery.com for
 //     documentation.
 
+String.prototype.strip = function() {
+  return this.replace(/^\s+/, '').replace(/\s+$/, '');
+};
+
 var songlist = {
 
   /*************************** SUBACTION UTILITIES ***************************/

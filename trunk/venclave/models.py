@@ -48,15 +48,17 @@ class Genre(models.Model):
 
 #-----------------------------------------------------------------------------#
 
-class VideoMetadata(models.Model):
+class ContentMetadata(models.Model):
     """
-    Video metadata holder
+    Content metadata container
     """
     imdb = models.OneToOneField("IMDBMetadata", null=True)
     rotten_tomatoes = models.OneToOneField("RottenTomatoesMetadata", null=True)
     manual = models.OneToOneField("ManualMetadata", null=True)
 
-class VideoMetadataSource(models.Model):
+#-----------------------------------------------------------------------------#
+
+class ContentMetadataSource(models.Model):
     """
     Abstract base class for storing metadata
     """
@@ -66,13 +68,13 @@ class VideoMetadataSource(models.Model):
     def source_name(self):
         raise NotImplementedError("the source isn't properly defined")
 
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    updated = models.DateTimeField(auto_now=True, editable=False)
 
     class Meta:
         abstract = True
 
-class IMDBMetadata(VideoMetadataSource):
+class IMDBMetadata(ContentMetadataSource):
     """
     IMDB sourced metadata
     """
@@ -86,7 +88,7 @@ class IMDBMetadata(VideoMetadataSource):
     plot_summary = models.TextField()
     rating = models.FloatField()
 
-class RottenTomatoesMetadata(VideoMetadataSource):
+class RottenTomatoesMetadata(ContentMetadataSource):
     """
     RottenTomatoes metadata
     """
@@ -98,7 +100,7 @@ class RottenTomatoesMetadata(VideoMetadataSource):
     percent_rating = models.IntegerField()
     average_rating = models.FloatField()
 
-class ManualMetadata(VideoMetadataSource):
+class ManualMetadata(ContentMetadataSource):
     """
     Manually entered metadata
     """
@@ -109,16 +111,39 @@ class ManualMetadata(VideoMetadataSource):
 
     description = models.TextField()
     
-
 #-----------------------------------------------------------------------------#
 
-class Video(models.Model):
+class ContentNode(models.Model):
     def __unicode__(self): return self.title
 
     #--------------------------------- Title ---------------------------------#
+    
+    title = models.CharField(max_length=1024)
 
-    title = models.CharField(max_length=255)
+    #--------------------------------- Parent Node ---------------------------#
 
+    parent = models.ForeignKey("ContentNode")
+
+    #--------------------------------- Content Metadata ----------------------#
+
+    metadata = models.OneToOneField("ContentMetadata")
+
+    #--------------------------------- Content Path --------------------------#
+
+    path = models.FilePathField(upload_to='venclave/content/', blank=True)
+
+    #--------------------------------- Timestamps ----------------------------#
+
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    updated = models.DateTimeField(auto_now=True, editable=False)
+
+    def date_added_string(self): return datetime_string(self.created)
+    date_added_string.short_description = 'date added'
+
+#-----------------------------------------------------------------------------#
+
+class VideoNode(ContentNode):
+    
     #--------------------------------- Time ----------------------------------#
 
     time = models.PositiveIntegerField(help_text="The duration of the video,"
@@ -132,6 +157,8 @@ class Video(models.Model):
 
     #--------------------------------- Kind ----------------------------------#
 
+    # this is probably useless
+
     KIND_CHOICES = (('mo', 'movie'),
                     ('tv', 'TV episode'),
                     ('sh', 'short'),
@@ -139,16 +166,6 @@ class Video(models.Model):
                     ('rc', 'random clip'))
 
     kind = models.CharField(max_length=2, choices=KIND_CHOICES)
-
-    #------------------------------ Metadata ---------------------------------#
-    
-    metadata = models.OneToOneField("VideoMetadata")
-
-    #------------------------------ Date Added -------------------------------#
-
-    date_added = models.DateTimeField(auto_now_add=True, editable=False)
-    def date_added_string(self): return datetime_string(self.date_added)
-    date_added_string.short_description = 'date added'
 
     #------------------------------ Last Queued ------------------------------#
 

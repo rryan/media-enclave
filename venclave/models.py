@@ -38,7 +38,7 @@ class VisibleManager(models.Manager):
 
 #-----------------------------------------------------------------------------#
 
-class Producer(models.Model):
+class Director(models.Model):
     name = models.TextField()
 
 #-----------------------------------------------------------------------------#
@@ -66,6 +66,9 @@ class VideoMetadataSource(models.Model):
     def source_name(self):
         raise NotImplementedError("the source isn't properly defined")
 
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         abstract = True
 
@@ -77,11 +80,9 @@ class IMDBMetadata(VideoMetadataSource):
     @classmethod
     def source_name(cls):
         return "IMDB"
-    
-    
 
     genre = models.ManyToManyField("Genre")
-    producers = models.ManyToManyField("Producer")
+    directors = models.ManyToManyField("Directors")
     plot_summary = models.TextField()
     rating = models.FloatField()
 

@@ -36,6 +36,80 @@ class VisibleManager(models.Manager):
     def get_query_set(self):
         return super(VisibleManager, self).get_query_set().filter(visible=True)
 
+#-----------------------------------------------------------------------------#
+
+class Producer(models.Model):
+    name = models.TextField()
+
+#-----------------------------------------------------------------------------#
+
+class Genre(models.Model):
+    name = models.TextField()
+
+#-----------------------------------------------------------------------------#
+
+class VideoMetadata(models.Model):
+    """
+    Video metadata holder
+    """
+    imdb = models.OneToOneField("IMDBMetadata", null=True)
+    rotten_tomatoes = models.OneToOneField("RottenTomatoesMetadata", null=True)
+    manual = models.OneToOneField("ManualMetadata", null=True)
+
+class VideoMetadataSource(models.Model):
+    """
+    Abstract base class for storing metadata
+    """
+    def __unicode__(self): return "%s Metadata" % self.source_name()
+
+    @classmethod
+    def source_name(self):
+        raise NotImplementedError("the source isn't properly defined")
+
+    class Meta:
+        abstract = True
+
+class IMDBMetadata(VideoMetadataSource):
+    """
+    IMDB sourced metadata
+    """
+    
+    @classmethod
+    def source_name(cls):
+        return "IMDB"
+    
+    
+
+    genre = models.ManyToManyField("Genre")
+    producers = models.ManyToManyField("Producer")
+    plot_summary = models.TextField()
+    rating = models.FloatField()
+
+class RottenTomatoesMetadata(VideoMetadataSource):
+    """
+    RottenTomatoes metadata
+    """
+
+    @classmethod
+    def source_name(cls):
+        return "RottenTomatoes"
+
+    percent_rating = models.IntegerField()
+    average_rating = models.FloatField()
+
+class ManualMetadata(VideoMetadataSource):
+    """
+    Manually entered metadata
+    """
+
+    @classmethod
+    def source_name(cls):
+        return "Manual"
+
+    description = models.TextField()
+    
+
+#-----------------------------------------------------------------------------#
 
 class Video(models.Model):
     def __unicode__(self): return self.title
@@ -65,6 +139,10 @@ class Video(models.Model):
 
     kind = models.CharField(max_length=2, choices=KIND_CHOICES)
 
+    #------------------------------ Metadata ---------------------------------#
+    
+    metadata = models.OneToOneField("VideoMetadata")
+
     #------------------------------ Date Added -------------------------------#
 
     date_added = models.DateTimeField(auto_now_add=True, editable=False)
@@ -77,6 +155,14 @@ class Video(models.Model):
                                        editable=False)
     def last_queued_string(self): return datetime_string(self.last_queued)
     last_queued_string.short_description = 'last queued'
+
+    #------------------------------ Play Count -------------------------------#
+    
+    play_count = models.IntegerField(editable=False)
+
+    #------------------------------ Download Count ---------------------------#
+    
+    downloads = models.IntegerField(editable=False)
 
     #------------------------------ Video Path -------------------------------#
 
@@ -97,18 +183,6 @@ class Video(models.Model):
                                   " do not appear in search results.")
 
     #------------------------------ Other Stuff ------------------------------#
-
-    class Admin:
-        date_hierarchy = 'date_added'
-        fields = (('General Information',
-                   {'fields': ('title', 'video', 'time', 'kind',
-                               'cover_art')}),
-                  ('Searching Metadata',
-                   {'fields': ('tags', 'visible')}))
-        list_display = ('title', 'time_string', 'date_added', 'visible')
-        list_display_links = ('title',)
-        list_filter = ('visible', 'date_added')
-        search_fields = ('title',)
 
     class Meta:
         get_latest_by = 'date_added'
@@ -168,10 +242,6 @@ class Channel(models.Model):
         return timegm(self.last_touched.timetuple())
 
     #------------------------------ Other Stuff ------------------------------#
-
-    class Admin:
-        list_display = ('id', 'name', 'pipe', 'last_touched')
-        list_display_links = ('name',)
 
     class Meta:
         get_latest_by = 'last_touched'

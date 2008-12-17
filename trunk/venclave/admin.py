@@ -13,11 +13,9 @@ class VideoAdmin(admin.ModelAdmin):
     list_filter = ('visible', 'date_added')
     search_fields = ('title',)
 
-admin.site.register(VideoAdmin)
-
-
 class ChannelAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'pipe', 'last_touched')
     list_display_links = ('name',)
 
+admin.site.register(VideoAdmin)
 admin.site.register(ChannelAdmin)

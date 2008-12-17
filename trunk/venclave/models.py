@@ -16,6 +16,7 @@ def datetime_string(dt):
 
 #================================== MODELS ===================================#
 
+# TODO(rryan) Should we replace this with django-tagging?
 class Tag(models.Model):
     def __unicode__(self): return self.name
 
@@ -32,7 +33,7 @@ class Tag(models.Model):
 #-----------------------------------------------------------------------------#
 
 class VisibleManager(models.Manager):
-    """VisibleManager -- manager for getting only visible videos"""
+    """VisibleManager -- manager for getting only visible content"""
     def get_query_set(self):
         return super(VisibleManager, self).get_query_set().filter(visible=True)
 
@@ -55,6 +56,7 @@ class ContentMetadata(models.Model):
     imdb = models.OneToOneField("IMDBMetadata", null=True)
     rotten_tomatoes = models.OneToOneField("RottenTomatoesMetadata", null=True)
     manual = models.OneToOneField("ManualMetadata", null=True)
+    file = models.OneToOneField("FileMetadata", null=True)
 
 #-----------------------------------------------------------------------------#
 
@@ -84,7 +86,7 @@ class IMDBMetadata(ContentMetadataSource):
         return "IMDB"
 
     genre = models.ManyToManyField("Genre")
-    directors = models.ManyToManyField("Directors")
+    directors = models.ManyToManyField("Director")
     plot_summary = models.TextField()
     rating = models.FloatField()
 
@@ -100,6 +102,27 @@ class RottenTomatoesMetadata(ContentMetadataSource):
     percent_rating = models.IntegerField()
     average_rating = models.FloatField()
 
+class FileMetadata(ContentMetadataSource):
+    """
+    File-based metadata
+    """
+
+    @classmethod
+    def source_name(cls):
+        return "File"
+
+    #--------------------------------- Time ----------------------------------#
+
+    time = models.PositiveIntegerField(help_text="The duration of the video,"
+                                       " in seconds.")
+    def time_string(self):
+        string = str(datetime.timedelta(0, self.time))
+        if self.time < 600: return string[3:]
+        elif self.time < 3600: return string[2:]
+        else: return string
+    time_string.short_description = 'time'
+
+
 class ManualMetadata(ContentMetadataSource):
     """
     Manually entered metadata
@@ -114,50 +137,34 @@ class ManualMetadata(ContentMetadataSource):
 #-----------------------------------------------------------------------------#
 
 class ContentNode(models.Model):
-    def __unicode__(self): return self.title
+    def __unicode__(self): return self.full_name()
 
     #--------------------------------- Title ---------------------------------#
     
     title = models.CharField(max_length=1024)
+    season = models.IntegerField(default=0)
+    episode = models.IntegerField(default=0)
 
-    #--------------------------------- Parent Node ---------------------------#
+    def simple_name(self):
+        return self.title
 
-    parent = models.ForeignKey("ContentNode")
+    def compact_name(self):
+        if self.kind == 'tv':
+            return "%s S%2dE%2d" % (self.title, self.season, self.episode)
+        return self.title
 
-    #--------------------------------- Content Metadata ----------------------#
+    def full_name(self):
+        if self.kind == 'tv':
+            return "%s Season %2d Episode %2d" % (self.title, self.season, self.episode)
+        return self.title
 
-    metadata = models.OneToOneField("ContentMetadata")
-
-    #--------------------------------- Content Path --------------------------#
-
-    path = models.FilePathField(upload_to='venclave/content/', blank=True)
-
-    #--------------------------------- Timestamps ----------------------------#
-
-    created = models.DateTimeField(auto_now_add=True, editable=False)
-    updated = models.DateTimeField(auto_now=True, editable=False)
-
-    def date_added_string(self): return datetime_string(self.created)
-    date_added_string.short_description = 'date added'
-
-#-----------------------------------------------------------------------------#
-
-class VideoNode(ContentNode):
-    
-    #--------------------------------- Time ----------------------------------#
-
-    time = models.PositiveIntegerField(help_text="The duration of the video,"
-                                       " in seconds.")
-    def time_string(self):
-        string = str(datetime.timedelta(0, self.time))
-        if self.time < 600: return string[3:]
-        elif self.time < 3600: return string[2:]
-        else: return string
-    time_string.short_description = 'time'
+    def fully_qualified_name(self):
+        if self.parent:
+            return "%s > %s" % (self.parent.fully_qualified_name(), self.compact_name())
+        else:
+            return self.compact_name()
 
     #--------------------------------- Kind ----------------------------------#
-
-    # this is probably useless
 
     KIND_CHOICES = (('mo', 'movie'),
                     ('tv', 'TV episode'),
@@ -167,38 +174,57 @@ class VideoNode(ContentNode):
 
     kind = models.CharField(max_length=2, choices=KIND_CHOICES)
 
-    #------------------------------ Last Queued ------------------------------#
+    #--------------------------------- Release Date --------------------------#
 
-    last_queued = models.DateTimeField(default=None, blank=True, null=True,
-                                       editable=False)
-    def last_queued_string(self): return datetime_string(self.last_queued)
-    last_queued_string.short_description = 'last queued'
+    release_date = models.DateTimeField()
 
-    #------------------------------ Play Count -------------------------------#
-    
-    play_count = models.IntegerField(editable=False)
+    #--------------------------------- Parent Node ---------------------------#
 
-    #------------------------------ Download Count ---------------------------#
-    
-    downloads = models.IntegerField(editable=False)
+    parent = models.ForeignKey("ContentNode", null=True)
 
-    #------------------------------ Video Path -------------------------------#
+    #--------------------------------- Content Metadata ----------------------#
 
-    video = models.FileField(upload_to='venclave/videos/%Y/%m/%d/')
+    metadata = models.OneToOneField("ContentMetadata")
+
+    #--------------------------------- Content Path --------------------------#
+
+    path = models.FilePathField(path='venclave/content/',
+                                recursive=True,
+                                blank=True,
+                                max_length=512)
+
+    #------------------------------ Content File------------------------------#
+        
+    content = models.FileField(upload_to='venclave/content/')
 
     #------------------------------- Cover Art -------------------------------#
 
     cover_art = models.ImageField(upload_to='venclave/cover_art/%Y/%m/%d',
                                   blank=True, null=True)
 
+    #------------------------------ Download Count ---------------------------#
+    
+    downloads = models.IntegerField(editable=False)
+
     #--------------------------------- Tags ----------------------------------#
 
     tags = models.ManyToManyField(Tag, blank=True)
 
+    #--------------------------------- Timestamps ----------------------------#
+
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    updated = models.DateTimeField(auto_now=True, editable=False)
+
+    def date_added_string(self): return datetime_string(self.created)
+    date_added_string.short_description = 'date added'
+
     #-------------------------------- Visible --------------------------------#
 
-    visible = models.BooleanField(default=True, help_text="Non-visible videos"
-                                  " do not appear in search results.")
+    visible = models.BooleanField(default=True, help_text="Non-visible content"
+                                  " does not appear in search results.")
+
+    objects = models.Manager()
+    visibles = VisibleManager()
 
     #------------------------------ Other Stuff ------------------------------#
 
@@ -209,22 +235,16 @@ class VideoNode(ContentNode):
     @models.permalink
     def get_absolute_url(self):
         return ('django.views.generic.list_detail.object_detail',
-                (str(self.id),), {'queryset': Video.objects,
-                                  'template_name': 'video_detail.html'})
+                (str(self.id),), {'queryset': ContentNode.objects,
+                                  'template_name': 'content_detail.html'})
 
-    def queue_touch(self):
-        self.last_queued = datetime.datetime.now()
-        self.save()
-
-    objects = models.Manager()
-    visibles = VisibleManager()
 
 #-----------------------------------------------------------------------------#
 
 class Chapter(models.Model):
     def __unicode__(self): return self.name
 
-    video = models.ForeignKey(Video, related_name='chapters')
+    content = models.ForeignKey("ContentNode", related_name='chapters')
 
     name = models.CharField(max_length=50)
 
@@ -233,8 +253,8 @@ class Chapter(models.Model):
                                        " chapter starts, in seconds.")
 
     class Meta:
-        ordering = ('video', 'time',)
-        unique_together = (('video', 'name'),)
+        ordering = ('content', 'time',)
+        unique_together = (('content', 'name'),)
 
 #-----------------------------------------------------------------------------#
 
@@ -276,9 +296,5 @@ class Channel(models.Model):
         self.save()  # `self.last_touched` will auto-update.
 
     def controller(self): return Controller(self)
-
-
-# This import goes at the end to avoid circularity.
-#from control import Controller
 
 #=============================================================================#

@@ -229,7 +229,7 @@ class ContentNode(models.Model):
     #------------------------------ Other Stuff ------------------------------#
 
     class Meta:
-        get_latest_by = 'date_added'
+        get_latest_by = 'created'
         ordering = ('title',)
 
     @models.permalink

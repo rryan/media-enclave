@@ -67,7 +67,7 @@ class ContentMetadataSource(models.Model):
     def __unicode__(self): return "%s Metadata" % self.source_name()
 
     @classmethod
-    def source_name(self):
+    def source_name(cls):
         raise NotImplementedError("the source isn't properly defined")
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -85,6 +85,8 @@ class IMDBMetadata(ContentMetadataSource):
     def source_name(cls):
         return "IMDB"
 
+    imdb_id = models.CharField(max_length=255, null=True)
+    imdb_canonical_title = models.CharField(max_length=1024, null=True)
     genre = models.ManyToManyField("Genre")
     directors = models.ManyToManyField("Director")
     plot_summary = models.TextField()
@@ -136,14 +138,36 @@ class ManualMetadata(ContentMetadataSource):
     
 #-----------------------------------------------------------------------------#
 
+
+KIND_TV = 'tv'
+KIND_MOVIE = 'mo'
+KIND_SERIES = 'se'
+KIND_TRAILER = 'tr'
+KIND_RANDOMCLIP = 'rc'
+KIND_UNKNOWN = 'uk'
+
 class ContentNode(models.Model):
     def __unicode__(self): return self.full_name()
 
-    #--------------------------------- Title ---------------------------------#
+    #--------------------------------- Kind ----------------------------------#
     
-    title = models.CharField(max_length=1024)
-    season = models.IntegerField(default=0)
-    episode = models.IntegerField(default=0)
+    # Nodes can have different kinds.
+    KIND_CHOICES = ((KIND_MOVIE, 'movie'),
+                    (KIND_TV, 'TV episode'),
+                    (KIND_SERIES, 'TV series'),
+                    (KIND_TRAILER, 'trailer'),
+                    (KIND_RANDOMCLIP, 'random clip'),
+                    (KIND_UNKNOWN, 'unknown'))
+
+    kind = models.CharField(max_length=2, choices=KIND_CHOICES)
+
+    #--------------------------------- Title ---------------------------------#
+
+    title = models.CharField(max_length=1024, null=True)
+
+    # only applicable for kind=='tv', null if not applicable
+    season = models.IntegerField(null=True)
+    episode = models.IntegerField(null=True)
 
     def simple_name(self):
         return self.title
@@ -164,19 +188,10 @@ class ContentNode(models.Model):
         else:
             return self.compact_name()
 
-    #--------------------------------- Kind ----------------------------------#
-
-    KIND_CHOICES = (('mo', 'movie'),
-                    ('tv', 'TV episode'),
-                    ('sh', 'short'),
-                    ('tr', 'trailer'),
-                    ('rc', 'random clip'))
-
-    kind = models.CharField(max_length=2, choices=KIND_CHOICES)
 
     #--------------------------------- Release Date --------------------------#
 
-    release_date = models.DateTimeField()
+    release_date = models.DateTimeField(null=True)
 
     #--------------------------------- Parent Node ---------------------------#
 

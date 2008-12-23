@@ -12,6 +12,31 @@ from django.conf import settings
 
 from menclave.venclave import models
 
+#============================== MOVIES =======================================#
+
+# parses a movies.list
+
+MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-(?P<endyear>(?:\d{4}|\?{4}))){0,1}$"
+
+def parse_movies(filename):
+    """
+    Parse an IMDB movies.list file and spit out a giant list of titles
+    in standard format.
+    """
+    movie_matcher = re.compile(MOVIE_RE)
+    movie_index = []
+    
+    with open(filename,"r") as f:
+        for line in f:
+            match = movie_matcher.match(line)
+
+            if match:
+                title = match.group('title')
+                movie_index.append(title)
+
+    print "parse_movies done"
+    return movie_index
+
 #============================== PLOT =========================================#
 
 # On IMDB multiple plot summaries can be contributed by different
@@ -77,6 +102,8 @@ def parse_plots(filename):
                 
             except StopIteration:
                 break
+            
+    print "parse_plots done"
     return plot_index
 
 #============================== GENRES =======================================#
@@ -120,6 +147,7 @@ def parse_genres(filename):
                 genre = match.group('genre')
                 genre_index.setdefault(title,[]).append(genre)
 
+    print "parse_genres done"
     return genre_index
 
 #============================== DIRECTORS ====================================#
@@ -147,9 +175,13 @@ DIRECTOR_START_RE="^(?P<director>.+?)\t+(?P<title>.+)$"
 DIRECTOR_CONTINUE_RE = "^\t+(?P<title>.+)$"
 
 def parse_directors(filename):
+    """
+    Parses directorms.list and spits out a map of director names to
+    list of titles they directed.
+    """
     start = re.compile(DIRECTOR_START_RE)
     continue_ = re.compile(DIRECTOR_CONTINUE_RE)
-    directors = []
+    directors_index = {}
     
     with open(filename,"r") as f:
         finished = False
@@ -185,11 +217,15 @@ def parse_directors(filename):
                         
                         titles.append(continue_match.group('title'))
 
-                    # add the director to the list
-                    directors.append({'director': director, 'titles': titles})
+                    # add the director to each title
+                    for title in titles:
+                        directors_index.setdefault(title,[]).append(director)
+
             except StopIteration:
                 finished = True
-    return directors
+
+    print "parse_directors done"
+    return directors_index
 
 #============================== RATINGS ======================================#
 
@@ -276,7 +312,7 @@ def parse_title(title):
     If successful, returns a dict of various stuff:
           series : the title of the TV series, if it's a TV series
            movie : the title of the movie, if it's a movie
-            year : the year of the title's release
+            year : the year of the title's release, possibly ????
        yearextra : umm...
     episodetitle : episode title, if it's a TV series
           season : season number (TV)
@@ -299,12 +335,29 @@ def parse_title(title):
         if episode_title:
             title['episodetitle'] = episode_title.rstrip()
 
+        #guess the kind
+        kind = None
+        # if it has movie, then it is a movie
+        if title['movie']:
+            kind = models.KIND_MOVIE
+        # if it has series, then it is a tv episode or tv series
+        elif title['series']:
+            # if it has an episode and season, then it is a tv episode
+            if not title['episode'] is None and not title['season'] is None:
+                kind = models.KIND_TV
+            else: # otherwise it is probably a series
+                kind = models.KIND_SERIES
+        if kind is None:
+            kind = models.KIND_UNKNOWN
+        title['kind'] = kind
+        
         return title
     return None
 
 def parse_ratings(filename):
     """
-    Parses ratings out of IMDB's ratings.list
+    Parses ratings out of IMDB's ratings.list. Returns a map of IMDB
+    titles to ratings.
     """
     matcher = re.compile(RATINGS_RE)
     title_matcher = re.compile(TITLE_RE)
@@ -317,39 +370,228 @@ def parse_ratings(filename):
                 title = match.group('title')
                 rating = match.group('rating')
                 ratings_index[title] = rating
+
+    print "parse_ratings done"
     return ratings_index
 
-def merge_ratings(ratings,contents):
-    """
-    Takes ratings that have been parsed out of ratings.list, and
-    merges them with the various ContentNodes in the database.
-    """
-    
-    for content in contents:
-        meta = content.metadata
-        imdb = meta.imdb
-        if imdb is None:
-            imdb = models.IMDBMetadata()
-            imdb.save()
-            meta.imdb = imdb
-            meta.save()
-            
-        imdb = meta.imdb
+def load_imdb_database(imdb_path):
+    movies_file = "%s/movies.list" % imdb_path
+    ratings_file = "%s/ratings.list" % imdb_path
+    directors_file = "%s/directors.list" % imdb_path
+    genres_file = "%s/genres.list" % imdb_path
+    plots_file = "%s/plot.list" % imdb_path
 
-        # see if we have imdb ratings for this title
-        # update them in imdb
-        # save imdb
+    movies = parse_movies(movies_file)
+    ratings = parse_ratings(ratings_file)
+    directors = parse_directors(directors_file)
+    genres = parse_genres(genres_file)
+    plots = parse_plots(plots_file)
+
+    titles = []
+    title_index = {}
+    
+    for title in movies:
+        title_dict = {}
+
+        rating = ratings.get(title,None)
+        if not rating is None:
+            title_dict['rating'] = rating
+
+        genres_list = genres.get(title,None)
+        if not genres_list is None:
+            title_dict['genres'] = genres_list
+
+        plots_list = plots.get(title,None)
+        if not plots_list is None:
+            title_dict['plots'] = plots_list
+
+        directors_list = directors.get(title,None)
+        if not directors_list is None:
+            title_dict['directors'] = directors_list
+
+        title_dict['title'] = title
+        title_dict['title_parse'] = parse_title(title)
+
+        titles.append(title_dict)
+        title_index[title] = title_dict
+
+    imdb = {'titles': titles,
+            'index': title_index}
+
+    return imdb
+
+def update_imdb_metadata(imdb_path):
+
+    imdb = load_imdb_database(imdb_path)
+    
+    contents = ContentNode.objects.all()
+
+    for content in contents:
+        update_content_metadata(content, imdb)
+
+def find_content_title(content, imdb):
+
+    kind = content.kind
+    titles = imdb['titles']
+
+    to_match = None
+
+    if kind == models.KIND_MOVIE:
+        title = utils.canonicalTitle(content.title)
+        year = content.release_date.year if content.release_date else None
+
+        to_match = {'movie': title,
+                    'kind': models.KIND_MOVIE}
+
+        if not year is None:
+            to_match['year'] = year
+
+    elif kind == models.KIND_SERIES:
+        title = utils.canonicalTitle(content.title)
+        year = content.release_date.year if content.release_date else None
+
+        to_match = {'series': title,
+                    'kind': models.KIND_SERIES,
+                    'episodetitle': None,
+                    'season': None,
+                    'episode': None,
+                    'date': None}
+        
+        if not year is None:
+            to_match['year'] = year
+
+    elif kind == models.KIND_TV:
+        series = utils.canonicalTitle(content.parent.title)
+        episode_title = content.title
+        season = content.season
+        episode = content.episode
+        year = content.release_date.year if content.release_date else None
+
+        to_match = {'series': series,
+                    'kind': models.KIND_TV}
+        
+        if not year is None:
+            to_match['year'] = year
+
+        if season is None and episode is None:
+            to_match['episodetitle'] = episode_title
+
+        if not season is None:
+            to_match['season'] = season
+
+        if not episode is None:
+            to_match['episode'] = episode
+
+    print "Searching for a match for %s" % to_match
+
+    found = None
+    for title in titles:
+        from_match = title['title_parse']
+
+        all_match = True
+        for key in to_match.keys():
+            m1 = from_match[key]
+            m2 = to_match[key]
+
+            if from_match['movie'] == 'Coffee':
+                print "'%s' versus '%s'" % (m1,m2)
+
+            # so fug. replace!
+            if not str(m1).lower() == str(m2).lower():
+                all_match = False
+                break
+        if all_match:
+            found = title
+            break
+
+    return found['title']
+
+def update_content_metadata(content, imdb):
+    kind = content.kind
+
+    imdb = content.metadata.imdb
+
+    if imdb is None:
+        imdb = ContentMetadata()
+
+    if imdb.imdb_canonical_title is None:
+        imdb.imdb_canonical_title = find_content_title(content, imdb)
+
+    canonical_title = imdb.imdb_canonical_title
+    if canonical_title is None:
+        print "No title for %s" % content
+        return
+    
+    title_dict = imdb['index'].get(canonical_title, None)
+    parse = title_dict['title_parse']
+
+    # can't happen?
+    if not title_dict:
+        print "No dict for title %s" % canonical_title
+        return
+
+    year = content.release_date.year if content.release_date else None
+    if not year:
+        content.release_date = datetime.datetime(parse['year'],1,1)
+
+    # rating
+    if 'rating' in title_dict:
+        imdb.rating = title_dict['rating']
+
+    # genres
+    if 'genres' in title_dict:
+        pass
+
+    # plots
+    if 'plots' in title_dict:
+        pass
+
+    # directors
+    if 'directors' in title_dict:
+        pass
+
+    if kind == models.KIND_MOVIE:
+        pass # nothing to do here
+    elif kind == models.KIND_SERIES:
+        pass # nothing to do here
+    elif kind == models.KIND_TV:
+        # tv episode
+        
+        # merge missing data
+        if content.title is None and not parse['episodetitle'] is None:
+            content.title = parse['episodetitle']
+        if content.episode is None and not parse['episode'] is None:
+            content.episode = int(parse['episode'])
+        if content.season is None and not parse['season'] is None:
+            content.season = int(parse['season'])
+
+    # save changes
+    imdb.save()
+    content.metadata.imdb = imdb
+    content.save()
 
 if __name__ == "__main__":
     from sys import argv
     imdb_root = argv[1]
-    ratings_file = "%s/ratings.list" % imdb_root
-    directors_file = "%s/directors.list" % imdb_root
-    genres_file = "%s/genres.list" % imdb_root
-    plots_file = "%s/plot.list" % imdb_root
+    
+    #ratings_file = "%s/ratings.list" % imdb_root
+    #directors_file = "%s/directors.list" % imdb_root
+    #genres_file = "%s/genres.list" % imdb_root
+    #plots_file = "%s/plot.list" % imdb_root
     #ratings = parse_ratings(ratings_file)
     #directors = parse_directors(directors_file)
     #genres = parse_genres(genres_file)
-    plots = parse_plots(plots_file)
+    #plots = parse_plots(plots_file)
+
+    imdb = load_imdb_database(imdb_root)
+    from menclave.venclave import models
+    cn = models.ContentNode()
+    cn.title = 'Coffee'
+    import datetime
+    cn.release_date = datetime.datetime(1999,1,1)
+    cn.kind = models.KIND_MOVIE
+
+    find_content_title(cn, imdb)
+    
     import pdb
     pdb.set_trace()

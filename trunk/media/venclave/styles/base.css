@@ -1,0 +1,173 @@
+@charset "utf-8";
+
+body {
+    font-family: "Georgia", "Times New Roman", "Times", serif;
+    
+}
+
+div.message {
+    font-family: "Trebuchet Ms",Helvetica,Tahoma,Verdana,Arial,sans-serif;
+    text-align:center;
+    padding-top:5px;
+    padding-bottom: 5px;
+}
+
+div.searchkind {
+    font-family: "Trebuchet Ms",Helvetica,Tahoma,Verdana,Arial,sans-serif;
+    border-bottom:1px solid; 
+    font-size: 12pt;
+    font-weight: bold;
+    width:250px;
+    margin-left: 250px;
+    text-align:left; 
+    padding-top:5px;
+    padding-bottom: 5px;
+    
+}
+
+#search {
+    background-color: #FFFFFF;
+    color: #333333;
+    border-style: none
+    font-family: "Trebuchet Ms",Helvetica,Tahoma,Verdana,Arial,sans-serif;
+    font-size: 18pt;
+
+}
+
+#login {
+    font-size: 12px;
+    position: absolute;
+    right: 20px;
+    top: 11px;
+    text-align: right;
+}
+
+#copyright {
+    font-size: 12px;
+    margin: 10px;
+    text-align: center;
+}
+
+
+#header {
+	display: block;
+	color: #222;
+	height: 20px;
+	padding: 0px 0px 0px 90px;
+	margin: 50px 100px 0px 100px;
+	font-size: 12pt;
+}
+
+#header a:first-child
+{
+	font-size: 20pt;
+	margin: 0 5px 0 0;
+}
+
+#header a
+{
+	margin: 0 5px;
+	font-size: 12pt;
+}
+
+#header2 {
+	display: block;
+	height: 20px;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 100px 0px 100px;
+	border-bottom: solid #e52 5px;
+	border-right: solid #e52 50px;
+}
+
+#footer {
+	display: block;
+	height: 10px;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 100px 75px 100px;
+	border-bottom: solid #e52 5px;
+}
+
+#comment {
+	display: block;
+	margin: 6px 100px 0px 100px;
+	text-align: right;
+	font-size: small;
+	color: #e52;
+}
+
+DIV.title {
+    font-family: "Georgia", "Times New Roman", "Times", serif;
+    font-size: 15px;
+}
+
+DIV.subtitle {
+    font-size: 12px;
+}
+
+
+a {
+	text-decoration: none;
+	color: black;
+}
+
+ul {
+	margin: 75px 0px 50px 125px;
+	list-style-type: square;
+	color: #222; /*#e50;*/
+	line-height: 30px;
+}
+
+table {
+	margin: 25px 188px 25px 159px;
+	width: 70%;
+	line-height: 20px;
+	border-spacing: 0;
+}
+
+#password {
+	width: 50%;
+}
+
+th, td {
+	padding: 2px;
+//	text-align: left;
+	vertical-align: top;
+}
+
+th {
+	text-align: left;
+}
+
+img {
+	margin-top: 1px;
+	border: 0;
+}
+
+.pass {
+	color: #d41;
+	text-decoration: underline;
+	font-size: small;
+}
+
+.free td {
+	padding-top: 30px;
+	padding-bottom: 20px;
+}
+
+.parent td {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.select
+{
+        display: block;
+        margin: 20px 100px 0px 190px;
+	font-size: small;
+}
+
+.select a
+{
+	margin: 0 0 0 10px;
+}
+

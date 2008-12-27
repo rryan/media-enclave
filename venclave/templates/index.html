@@ -30,12 +30,16 @@
 
 <div class="message">
   <div class="searchkind">By Genre</div>
-  Comedy Drama Sci-Fi Fiction Short Family ... (show all)
+  {% for genre in genres %} 
+  <a href="{% url venclave-genre genre.id %}">{{ genre.name }}</a>
+  ({{ genre.imdbmetadata_set.all.count}})
+  {% endfor %}
+
 </div>
 
 <div class="message">
   <div class="searchkind">By Year</div>
-  1942 1956 <em>1992</em> 2001 2002 2003 2004 2005 2006
+  {% for year in years %} {{year}} {% endfor %}
 </div>
 
  

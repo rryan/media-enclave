@@ -87,7 +87,7 @@ class IMDBMetadata(ContentMetadataSource):
 
     imdb_id = models.CharField(max_length=255, null=True)
     imdb_canonical_title = models.CharField(max_length=1024, null=True)
-    genre = models.ManyToManyField("Genre")
+    genre = models.ManyToManyField("Genre") # TODO - rename to genres
     directors = models.ManyToManyField("Director")
     plot_summary = models.TextField()
     rating = models.FloatField()
@@ -178,8 +178,10 @@ class ContentNode(models.Model):
         return self.title
 
     def full_name(self):
-        if self.kind == 'tv':
+        if self.kind == KIND_TV:
             return "%s Season %2d Episode %2d" % (self.title, self.season, self.episode)
+        elif self.kind == KIND_MOVIE:
+            return "%s (%d)" % (self.title, self.release_date.year)
         return self.title
 
     def fully_qualified_name(self):

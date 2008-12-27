@@ -24,7 +24,8 @@
     </div>
 
     {% block preheader %}{% endblock %}
-    <div id="header">{% block header %}{% endblock %}</div>
+    <div id="header">{% block header %}
+      <a href="{% url venclave-home %}">VEncl&auml;ve :: amnesia 2.0</a> &gt;&gt; {% endblock %}</div>
     <div id="header2"></div>
 
     {% block body %}{% endblock %}

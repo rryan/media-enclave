@@ -6,15 +6,33 @@ urlpatterns = patterns(
     '',
 
     url(r'^$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'index.html'},
+        'menclave.venclave.views.home',
         name='venclave-home'),
 
-    url(r'^$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'index.html'},
+    # Search
+
+    url(r'^search/$',
+        'menclave.venclave.views.simple_search',
         name='venclave-search'),
 
+    # Genre -- just ids for now, support names when we know more about
+    # how genres will work
+    
+    url(r'^genre/(?P<ids>[0-9,]+)$',
+        'menclave.venclave.views.genres_view',
+        name='venclave-genre'),
+
+    # Content -- slugs in the future -- ids for now
+    
+    url(r'^content/(?P<id>\d+)$',
+        'menclave.venclave.views.content_view',
+        name='venclave-content'),
+
+    # People -- is it too generic? maybe just directors? 
+
+    url(r'^director/(?P<id>\d+)$',
+        'menclave.venclave.views.director_view',
+        name='venclave-director'),
 
     # Static content
 
@@ -33,5 +51,9 @@ urlpatterns = patterns(
         {'document_root': 'media/venclave/images/'},
         name='venclave-images'),
 
+    url(r'^data/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'media/venclave/content/'},
+        name='venclave-data'),
 
 )

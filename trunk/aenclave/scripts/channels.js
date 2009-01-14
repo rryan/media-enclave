@@ -5,9 +5,9 @@ var channels = {
   /********************************* ACTIONS *********************************/
 
   dequeue: function() {
-    var indices = songlist.gather_indices();
-    if (indices.length > 0) {
-      document.forms.dequeueform.indices.value = indices;
+    var playids = songlist.gather_playids();
+    if (playids.length > 0) {
+      document.forms.dequeueform.playids.value = playids;
       document.forms.dequeueform.submit();
     }
   },

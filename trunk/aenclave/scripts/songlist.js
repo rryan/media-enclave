@@ -141,6 +141,13 @@ var songlist = {
     return selected.join(' ');
   },
 
+  gather_playids: function() {
+    var boxen = jQuery("#songlist .song_selected:checked");
+    return jQuery.makeArray(boxen.map(function (i, box) {
+      return box.getAttribute('playid');  // Custom attrs require this.
+    })).join(' ');
+  },
+
   /********************************* ACTIONS *********************************/
 
   // Queues a single song with an XHR.
@@ -315,7 +322,7 @@ var songlist = {
           songlist.recolor_rows();
           // Call this if the caller provided it.
           if (opt_onDrop) {
-            opt_onDrop();
+            opt_onDrop(table, row);
           }
         },
         dragHandle: 'drag'

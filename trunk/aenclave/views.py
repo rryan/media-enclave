@@ -5,7 +5,8 @@ import re
 from django.core.mail import send_mail
 from django.template import RequestContext
 
-from menclave import settings
+from menclave import settings  # TODO(rnk): Switch to the below.
+#from aenclave import settings
 from menclave.aenclave.json import json_error, json_success
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.models import Song

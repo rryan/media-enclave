@@ -1,6 +1,5 @@
 # menclave/venclave/models.py
 
-from calendar import timegm
 import datetime
 
 from django.db import models
@@ -53,10 +52,11 @@ class ContentMetadata(models.Model):
     """
     Content metadata container
     """
-    imdb = models.OneToOneField("IMDBMetadata", null=True)
-    rotten_tomatoes = models.OneToOneField("RottenTomatoesMetadata", null=True)
-    manual = models.OneToOneField("ManualMetadata", null=True)
-    file = models.OneToOneField("FileMetadata", null=True)
+    imdb = models.OneToOneField("IMDBMetadata", blank=True, null=True)
+    rotten_tomatoes = models.OneToOneField("RottenTomatoesMetadata",
+                                           blank=True, null=True)
+    manual = models.OneToOneField("ManualMetadata", blank=True, null=True)
+    file = models.OneToOneField("FileMetadata", blank=True, null=True)
 
 #-----------------------------------------------------------------------------#
 
@@ -80,7 +80,7 @@ class IMDBMetadata(ContentMetadataSource):
     """
     IMDB sourced metadata
     """
-    
+
     @classmethod
     def source_name(cls):
         return "IMDB"
@@ -135,7 +135,7 @@ class ManualMetadata(ContentMetadataSource):
         return "Manual"
 
     description = models.TextField()
-    
+
 #-----------------------------------------------------------------------------#
 
 
@@ -150,7 +150,7 @@ class ContentNode(models.Model):
     def __unicode__(self): return self.full_name()
 
     #--------------------------------- Kind ----------------------------------#
-    
+
     # Nodes can have different kinds.
     KIND_CHOICES = ((KIND_MOVIE, 'movie'),
                     (KIND_TV, 'TV episode'),
@@ -166,8 +166,8 @@ class ContentNode(models.Model):
     title = models.CharField(max_length=1024, null=True)
 
     # only applicable for kind=='tv', null if not applicable
-    season = models.IntegerField(null=True)
-    episode = models.IntegerField(null=True)
+    season = models.IntegerField(blank=True, null=True)
+    episode = models.IntegerField(blank=True, null=True)
 
     def simple_name(self):
         return self.title
@@ -190,14 +190,13 @@ class ContentNode(models.Model):
         else:
             return self.compact_name()
 
-
     #--------------------------------- Release Date --------------------------#
 
-    release_date = models.DateTimeField(null=True)
+    release_date = models.DateTimeField(blank=True, null=True)
 
     #--------------------------------- Parent Node ---------------------------#
 
-    parent = models.ForeignKey("ContentNode", null=True)
+    parent = models.ForeignKey("ContentNode", blank=True, null=True)
 
     #--------------------------------- Content Metadata ----------------------#
 
@@ -211,17 +210,20 @@ class ContentNode(models.Model):
                                 max_length=512)
 
     #------------------------------ Content File------------------------------#
-        
-    content = models.FileField(upload_to='venclave/content/')
+
+    content = models.FileField(upload_to='venclave/content/',
+                               blank=True,
+                               null=True)
 
     #------------------------------- Cover Art -------------------------------#
 
     cover_art = models.ImageField(upload_to='venclave/cover_art/%Y/%m/%d',
-                                  blank=True, null=True)
+                                  blank=True,
+                                  null=True)
 
     #------------------------------ Download Count ---------------------------#
-    
-    downloads = models.IntegerField(editable=False)
+
+    downloads = models.IntegerField(default=0, editable=False)
 
     #--------------------------------- Tags ----------------------------------#
 
@@ -272,46 +274,5 @@ class Chapter(models.Model):
     class Meta:
         ordering = ('content', 'time',)
         unique_together = (('content', 'name'),)
-
-#-----------------------------------------------------------------------------#
-
-class Channel(models.Model):
-    def __unicode__(self): return self.name
-
-    #-------------------------------- Fields ---------------------------------#
-
-    # For channels, we want the id to be editable, because the channel with
-    # id=1 is the default channel.
-    id = models.PositiveSmallIntegerField('ID', primary_key=True, help_text=
-                                          "The channel with ID=1 will be the"
-                                          " default channel.")
-
-    name = models.CharField(max_length=32, unique=True)
-
-    pipe = models.FilePathField(path='/tmp', match="xmms.*", recursive=True,
-                                help_text="The path to the XMMS2 control pipe"
-                                " for this channel.")
-
-    last_touched = models.DateTimeField(auto_now=True, editable=False)
-    def last_touched_timestamp(self):
-        return timegm(self.last_touched.timetuple())
-
-    #------------------------------ Other Stuff ------------------------------#
-
-    class Meta:
-        get_latest_by = 'last_touched'
-        ordering = ('id',)
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('menclave.venclave.views.channel_detail', (str(self.id),))
-
-    @classmethod
-    def default(cls): return cls.objects.get(pk=1)
-
-    def touch(self):
-        self.save()  # `self.last_touched` will auto-update.
-
-    def controller(self): return Controller(self)
 
 #=============================================================================#

@@ -28,6 +28,7 @@ class VisibleManager(models.Manager):
         return super(VisibleManager, self).get_query_set().filter(visible=True)
 
 #-----------------------------------------------------------------------------#
+
 SONGS_ROOT = 'aenclave/songs/'
 SONG_AUDIO_UPLOAD_TO = SONGS_ROOT + '%Y/%m/%d/'
 
@@ -120,7 +121,7 @@ class Song(models.Model):
     visible = models.BooleanField(default=True, help_text="Non-visible songs"
                                   " do not appear in search results.")
 
-    #-------------------------------- File Checksum---------------------------#
+    #----------------------------- File Checksum -----------------------------#
 
     filechecksum = models.TextField(help_text="A checksum for the file.")
 

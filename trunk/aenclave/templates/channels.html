@@ -10,8 +10,17 @@
   <script type="text/javascript">
     // This is here so we can use the url templatetag.
     jQuery(document).ready(function() {
-      songlist.enable_dnd(function() {
-        songlist.update_songlist('{% url aenclave-channel-reorder channel.id %}');
+      songlist.enable_dnd(function(table, row) {
+        row = jQuery(row);
+        var prev_row = row.prev("tr");
+        var playid = jQuery(".song_selected", row).attr('playid');
+        var after_playid = jQuery(".song_selected", prev_row).attr('playid');
+        jQuery.ajax({
+          url: '{% url aenclave-channel-reorder channel.id %}',
+          type: 'get',
+          data: {'playid': playid, 'after_playid': after_playid}
+          // TODO(rnk): Let the user know in case of error.
+        });
       });
     });
   </script>
@@ -42,7 +51,7 @@
 {% block postcopyright %}{{block.super}}
   {% if song_list %}
     <form name="dequeueform" action="{% url aenclave-dequeue-songs %}" method="POST">
-      <input type="hidden" name="indices">
+      <input type="hidden" name="playids">
     </form>
   {% endif %}
 {% endblock %}

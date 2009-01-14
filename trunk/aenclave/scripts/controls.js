@@ -17,10 +17,10 @@ function shallow_array_equals(a1, a2) {
 function pluralize(num, opt_plural, opt_singular) {
   var plural = opt_plural || 's';
   var singular = opt_singular || '';
-  if (num > 1) {
-    return plural;
-  } else {
+  if (num == 1) {
     return singular;
+  } else {
+    return plural;
   }
 }
 
@@ -201,8 +201,9 @@ var controls = {
       }
       var length = playlist_info.playlist_length;
       var duration = playlist_info.playlist_duration;
+      // TODO(rnk): Use the HH:MM:SS format for duration.
       var msg = length + ' song' + pluralize(length) + ' total, ';
-      msg += duration + ' playing time.';
+      msg += duration.toFixed(0) + ' playing time.';
       if (playlist_info.playlist_length > 3) {
         msg = '... ' + msg;
       }

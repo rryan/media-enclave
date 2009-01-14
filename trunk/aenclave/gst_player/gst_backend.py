@@ -125,8 +125,8 @@ class GstPlayer(object):
     """
     A simple playlist audio player that wraps GStreamer.
 
-    NOTE: All methods of this class are synchronized on this instance with
-    re-entrant locks.
+    NOTE: All public methods of this class should be synchronized on this
+    instance with a re-entrant lock.
 
     TODO(rnk): Use Python magic to synchronize all method calls with the
     synchronized decorator.
@@ -258,7 +258,6 @@ class GstPlayer(object):
             self.player.set_property("uri", "file://" + song.audio.path)
             self.player.set_state(gst.STATE_PLAYING)
 
-    @synchronized
     @logged
     def _stop(self):
         """Stop the player."""
@@ -267,17 +266,20 @@ class GstPlayer(object):
         self.player.set_state(gst.STATE_NULL)
 
     @synchronized
+    @logged
     def stop(self):
         """Stop the player and clear the queue."""
         self._stop()
         self.song_queue.clear()
 
     @synchronized
+    @logged
     def pause(self):
         """Pause the player."""
         self.player.set_state(gst.STATE_PAUSED)
 
     @synchronized
+    @logged
     def unpause(self):
         """Unpause the player."""
         if self._get_status() == "paused":
@@ -313,6 +315,7 @@ class GstPlayer(object):
         self.add_songs([song])
 
     @synchronized
+    @logged
     def add_songs(self, songs):
         """Queue some songs."""
         logging.info("Queuing songs: %r" % songs)
@@ -338,30 +341,29 @@ class GstPlayer(object):
     @logged
     def move_song(self, playid, after_playid):
         logging.info('playid: %i, after_playid: %i', playid, after_playid)
-        # TODO(rnk): Clean this shit up.
-        the_song = None
-        for (i, song) in enumerate(self.song_queue):
+        # The below is messy but satisfactory.  If someone has a better idea,
+        # that'd be great.
+        songs = list(self.song_queue)
+        for (start_index, song) in enumerate(songs):
             if song.playid == playid:
-                the_song = song  # Can't mutate deque during iteration.
-        if the_song:
-            del self.song_queue[i]
+                break  # Can't mutate the deque during iteration.
         else:
-            return
+            return  # If we can't find the playid, cancel.
+        the_song = song
+        del songs[start_index]
         if after_playid == -1:
-            self.song_queue.appendleft(song)
+            after_index = -1  # Put the song at the beginning of the queue.
         else:
-            for (i, song) in enumerate(self.song_queue):
+            for (after_index, song) in enumerate(songs):
                 if song.playid == after_playid:
                     break  # Can't mutate the deque during iteration.
             else:
-                return
-            # Put the song we want to go after at the end of the list,
-            # append, then rotate back into position.
-            self.song_queue.rotate(-i - 1)
-            self.song_queue.appendleft(the_song)
-            self.song_queue.rotate(i + 1)
+                return  # If we can't find the playid, cancel.
+        songs.insert(after_index + 1, the_song)
+        self.song_queue = deque(songs)
 
     @synchronized
+    @logged
     def shuffle(self):
         """Shuffle the songs in the queue."""
         random.shuffle(self.song_queue)

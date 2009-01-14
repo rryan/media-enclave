@@ -3,7 +3,7 @@
   {% spaceless %}
     {% if current %}
       <img src="{% url aenclave-images "speaker.png" %}"
-          id="currentsong" name="{{song.id}}" playid="{{song.playid}}"/>
+          id="currentsong" name="{{song.id}}"/>
     {% else %}
       <input class="song_selected" type="checkbox" name="{{song.id}}"
           playid="{{song.playid}}"/>

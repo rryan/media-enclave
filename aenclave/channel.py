@@ -15,9 +15,6 @@ from menclave.aenclave.models import Channel
 
 #--------------------------------- Channels ----------------------------------#
 
-# TODO(rnk): Switch to doing a single RPC to get a "channel view" instead of
-# getting channel info piece by piece. 
-
 def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404

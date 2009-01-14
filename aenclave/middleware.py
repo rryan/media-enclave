@@ -10,4 +10,4 @@ class LoggingMiddleware(object):
     """Logs exceptions with tracebacks with the standard logging module."""
 
     def process_exception(self, request, exception):
-        logging.exception(exception.message)
+        logging.exception('Logging request handler error.')

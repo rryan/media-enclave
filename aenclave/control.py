@@ -3,7 +3,6 @@
 """Music player control functions."""
 
 import logging
-import traceback
 
 import Pyro.core
 
@@ -13,17 +12,26 @@ from menclave.aenclave.models import Channel
 
 #=============================================================================#
 
-# TODO(rnk): Wrap all RPCs (in a nice way) to rethrow errors as ControlErrors.
-
 class ControlError(Exception):
 
     """The exception class for music control-related errors."""
 
     pass
 
-def _catch():
-    """Call from within an except-block to record the error."""
-    logging.error(traceback.format_exc())
+def delegate_rpc(method):
+    """Delegate a method to the instance player proxy, and then call it."""
+    def new_method(self, *args, **kwargs):
+        try:
+            retval = getattr(self.player, method.__name__)(*args, **kwargs)
+        except Exception, e:
+            # This will be a pyro remote error.  Log the remote trace.
+            logging.exception('RPC raised exception; remote traceback:\n' +
+                              ''.join(Pyro.util.getPyroTraceback(e)))
+            raise ControlError(e.message)
+        else:
+            kwargs['rpc_retval'] = retval
+            return method(self, *args, **kwargs)
+    return new_method
 
 #=============================================================================#
 
@@ -55,57 +63,59 @@ class Controller(object):
 
     #---------------------------- STATUS METHODS -----------------------------#
 
-    def get_channel_snapshot(self):
+    @delegate_rpc
+    def get_channel_snapshot(self, rpc_retval=None):
         """Return a snapshot of the current channel state."""
-        return self.player.get_channel_snapshot()
+        return rpc_retval
 
     #--------------------------- PLAYBACK CONTROL ----------------------------#
 
-    def stop(self):
+    @delegate_rpc
+    def stop(self, rpc_retval=None):
         """Stops the music and clears the queue."""
-        self.player.stop()
         self.channel.touch()
 
-    def pause(self):
+    @delegate_rpc
+    def pause(self, rpc_retval=None):
         """Pause the music."""
-        self.player.pause()
         self.channel.touch()
 
-    def unpause(self):
+    @delegate_rpc
+    def unpause(self, rpc_retval=None):
         """Unpause the music."""
-        self.player.unpause()
         self.channel.touch()
 
-    def skip(self):
+    @delegate_rpc
+    def skip(self, rpc_retval=None):
         """Skip the current song and play a dequeue noise."""
-        self.player.skip()
         self.channel.touch()
 
     #----------------------------- QUEUE CONTROL -----------------------------#
 
-    def add_song(self, song):
+    def add_song(self, song, rpc_retval=None):
         """Add a song to the queue."""
         self.add_songs([song])
 
-    def add_songs(self, songs):
+    @delegate_rpc
+    def add_songs(self, songs, rpc_retval=None):
         """Add songs to the queue."""
-        self.player.add_songs(songs)
         self.channel.touch()
 
-    def remove_song(self, playid):
+    def remove_song(self, playid, rpc_retval=None):
         self.remove_songs([playid])
 
-    def remove_songs(self, playids):
-        self.player.remove_songs(playids)
+    @delegate_rpc
+    def remove_songs(self, playids, rpc_retval=None):
         self.channel.touch()
 
-    def move_song(self, playid, after_playid):
-        self.player.move_song(playid, after_playid)
+    @delegate_rpc
+    def move_song(self, playid, after_playid, rpc_retval=None):
+        """Move the first song after the second song in the queue."""
         self.channel.touch()
 
-    def shuffle(self):
+    @delegate_rpc
+    def shuffle(self, rpc_retval=None):
         """Shuffle the songs in the queue."""
-        self.player.shuffle()
         self.channel.touch()
 
 #=============================================================================#

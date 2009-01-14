@@ -44,7 +44,7 @@
       </thead>
 
       <tbody>
-        {% if skipping %}
+        {% if current_song.noise %}
           <tr class="c">
             <td class="c"><img src="{% url aenclave-images "speaker.png" %}"/></td>
             <td class="c" colspan="7">(Dequeuing current song...)</td>

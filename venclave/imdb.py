@@ -25,7 +25,7 @@ def parse_movies(filename):
     """
     movie_matcher = re.compile(MOVIE_RE)
     movie_index = []
-    
+
     with open(filename,"r") as f:
         for line in f:
             match = movie_matcher.match(line)
@@ -72,7 +72,7 @@ def parse_plots(filename):
     re_author = re.compile(PLOT_AUTHOR_RE)
 
     plot_index = {}
-    
+
     with open(filename,"r") as f:
         current_title = None
         current_plot = []
@@ -99,10 +99,10 @@ def parse_plots(filename):
                     plot = {'author': author, 'plot': ' '.join(current_plot)}
                     current_plot = []
                     current_plots.append(plot)
-                
+
             except StopIteration:
                 break
-            
+
     print "parse_plots done"
     return plot_index
 
@@ -130,13 +130,13 @@ def parse_genres(filename):
     genre_matcher = re.compile(GENRE_RE)
     genre_index = {}
     valid = False
-    
+
     with open(filename,"r") as f:
         for line in f:
             if not valid:
                 # HACK(rryan): There is noise at the beginning of
                 # the file which hits our filter. So I skip everything
-                # until we hit this. 
+                # until we hit this.
                 if line == "8: THE GENRES LIST\n":
                     valid = True
                 continue
@@ -182,7 +182,7 @@ def parse_directors(filename):
     start = re.compile(DIRECTOR_START_RE)
     continue_ = re.compile(DIRECTOR_CONTINUE_RE)
     directors_index = {}
-    
+
     with open(filename,"r") as f:
         finished = False
         valid = False
@@ -211,10 +211,10 @@ def parse_directors(filename):
                     while True:
                         line = f.next()
                         continue_match = continue_.match(line)
-                        
+
                         if not continue_match:
                             break
-                        
+
                         titles.append(continue_match.group('title'))
 
                     # add the director to each title
@@ -265,15 +265,15 @@ RATINGS_RE = r"""(?x)                          # turn on verbose mode
 #'"Zomergasten" (1988) {(#19.4)}'
 
 # Movie Title/Series Title (year) (V) (TV) {Episode Title (release date) (#season.episode)}
-# 
+#
 
 # from directors.list -- stupid docs are littered everywhere
 #"xxxxx"        = a television series
 #"xxxxx" (mini) = a television mini-series
 #(TV)           = TV movie, or made for cable movie
-#(V)            = made for video movie (this category does NOT include TV 
-#                 episodes repackaged for video, guest appearances in 
-#                 variety/comedy specials released on video, or 
+#(V)            = made for video movie (this category does NOT include TV
+#                 episodes repackaged for video, guest appearances in
+#                 variety/comedy specials released on video, or
 #                 self-help/physical fitness videos)
 #(VG)           = videro game
 
@@ -284,7 +284,7 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 "(?P<series>.*?)"           #   quoted series title
                 |                           #     OR
                 (?P<movie>.*?)              #   movie name
-                )                           # 
+                )                           #
                 \s+                         # needs to be at least 1
                 \(                          # in parens
                 (?P<year>(?:\d{4}|\?{4}))   # grab the year
@@ -321,9 +321,9 @@ def parse_title(title):
           extras : extra crap hanging off the end of the title
 
           TODO(rryan)
-            kind : a guess at the 'kind' of the title 
+            kind : a guess at the 'kind' of the title
     Otherwise, returns None
-    
+
     """
     m = re.compile(TITLE_RE).match(title)
     if m:
@@ -350,7 +350,7 @@ def parse_title(title):
         if kind is None:
             kind = models.KIND_UNKNOWN
         title['kind'] = kind
-        
+
         return title
     return None
 
@@ -362,7 +362,7 @@ def parse_ratings(filename):
     matcher = re.compile(RATINGS_RE)
     title_matcher = re.compile(TITLE_RE)
     ratings_index = {}
-    
+
     with open(filename,"r") as f:
         for line in f:
             match = matcher.match(line)
@@ -389,7 +389,7 @@ def load_imdb_database(imdb_path):
 
     titles = []
     title_index = {}
-    
+
     for title in movies:
         title_dict = {}
 
@@ -423,7 +423,7 @@ def load_imdb_database(imdb_path):
 def update_imdb_metadata(imdb_path):
 
     imdb = load_imdb_database(imdb_path)
-    
+
     contents = ContentNode.objects.all()
 
     for content in contents:
@@ -456,7 +456,7 @@ def find_content_title(content, imdb):
                     'season': None,
                     'episode': None,
                     'date': None}
-        
+
         if not year is None:
             to_match['year'] = year
 
@@ -469,7 +469,7 @@ def find_content_title(content, imdb):
 
         to_match = {'series': series,
                     'kind': models.KIND_TV}
-        
+
         if not year is None:
             to_match['year'] = year
 
@@ -521,7 +521,7 @@ def update_content_metadata(content, imdb):
     if canonical_title is None:
         print "No title for %s" % content
         return
-    
+
     title_dict = imdb['index'].get(canonical_title, None)
     parse = title_dict['title_parse']
 
@@ -556,7 +556,7 @@ def update_content_metadata(content, imdb):
         pass # nothing to do here
     elif kind == models.KIND_TV:
         # tv episode
-        
+
         # merge missing data
         if content.title is None and not parse['episodetitle'] is None:
             content.title = parse['episodetitle']
@@ -573,7 +573,7 @@ def update_content_metadata(content, imdb):
 if __name__ == "__main__":
     from sys import argv
     imdb_root = argv[1]
-    
+
     #ratings_file = "%s/ratings.list" % imdb_root
     #directors_file = "%s/directors.list" % imdb_root
     #genres_file = "%s/genres.list" % imdb_root
@@ -592,6 +592,6 @@ if __name__ == "__main__":
     cn.kind = models.KIND_MOVIE
 
     find_content_title(cn, imdb)
-    
+
     import pdb
     pdb.set_trace()

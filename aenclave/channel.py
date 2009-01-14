@@ -15,19 +15,21 @@ from menclave.aenclave.models import Channel
 
 #--------------------------------- Channels ----------------------------------#
 
+# TODO(rnk): Switch to doing a single RPC to get a "channel view" instead of
+# getting channel info piece by piece. 
+
 def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
     ctrl = channel.controller()
-    current_song = ctrl.get_current_song()
+    snapshot = ctrl.get_channel_snapshot()
     return render_html_template('channels.html', request,
                                 {'channel': channel,
-                                 'current_song': current_song,
-                                 'song_list': ctrl.get_queue_songs(),
+                                 'current_song': snapshot.current_song,
+                                 'song_list': snapshot.song_queue,
                                  'force_actions_bar': True,
-                                 'elapsed_time': ctrl.get_elapsed_time(),
-                                 'skipping': (current_song == 'DQ'),
-                                 'playing': ctrl.is_playing(),
+                                 'elapsed_time': snapshot.time_elapsed,
+                                 'playing': snapshot.status == 'playing',
                                  'no_queuing': True},
                                 context_instance=RequestContext(request))
 
@@ -35,44 +37,42 @@ def channel_reorder(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
     ctrl = channel.controller()
-    form = request.POST
-    songs = get_song_list(form)
-    # FIXME(rnk): This is the stupidest, most non-threadsafe way possible to do
-    #             this.  I should probably be shot for it.  Please, for the
-    #             love of all that is holy, consider fixing this.
-    ctrl.clear_queued_songs()
-    ctrl.add_songs(songs)
+    form = request.GET
+    ctrl.move_song(int(form['playid']), int(form['after_playid']))
     return json_success('Successfully reordered channel.')
 
 def json_channel_info(channel_id=1):
     channel = Channel.objects.get(pk=channel_id)
     data = {}
     ctrl = channel.controller()
-    songs = ctrl.get_queue_songs()
-    current_song = ctrl.get_current_song()
+    snapshot = ctrl.get_channel_snapshot()
+    songs = snapshot.song_queue
+    current_song = snapshot.current_song
+    queue_length = len(songs) + int(bool(current_song))
+    # Take the first three songs.
     if current_song:
-        songs.insert(0, current_song)
-    # Provide data for the first three songs.
+        songs = [current_song] + songs[:min(2, len(songs))]
+    else:
+        songs = songs[:min(3, len(songs))]
     data['songs'] = []
     for song in songs:
-        if len(data['songs']) >= 3:
-            break
-        if song is 'DQ':
-            # Skip dequeue noises.
-            continue
-        # Strip the metadata of extra spaces, or we'll truncate too much.
-        info_str = '%s - %s' % (song.title.strip(), song.artist.strip())
-        if len(info_str) > 30:
-            info_str = info_str[:27] + '...'
+        if song.noise:
+            info_str = 'Dequeing...'
+        else:
+            # Strip the metadata of extra spaces, or we'll truncate too much.
+            info_str = '%s - %s' % (song.title.strip(), song.artist.strip())
+            if len(info_str) > 30:
+                info_str = info_str[:27] + '...'
         data['songs'].append(info_str)
-    data['elapsed_time'] = ctrl.get_elapsed_time()
-    data['song_duration'] = songs[0].time if (songs and songs[0] != 'DQ') else 0
-    data['playlist_length'] = len(songs)
-    data['playlist_duration'] = ctrl.get_queue_duration()
-    data['playing'] = ctrl.is_playing()
+    data['elapsed_time'] = snapshot.time_elapsed
+    data['song_duration'] = current_song.time if current_song else 0
+    data['playlist_length'] = queue_length
+    data['playlist_duration'] = snapshot.queue_duration
+    data['playing'] = snapshot.status == 'playing'
     return cjson.encode(data)
 
 def xml_update(request):
+    # TODO(rnk): This code is dead and untested.
     form = request.POST
     channel_id = get_integer(form, 'channel', 1)
     try: channel = Channel.objects.get(pk=channel_id)
@@ -83,15 +83,17 @@ def xml_update(request):
     elif timestamp >= channel.last_touched_timestamp():  # up-to-date timestamp
         try:
             ctrl = channel.controller()
-            if not ctrl.is_playing: return simple_xml_response('continue')
-            elapsed_time = ctrl.get_elapsed_time()
-            total_time = ctrl.get_current_song().time
+            snapshot = ctrl.get_channel_snapshot()
+            if snapshot.status != "playing":
+                return simple_xml_response('continue')
+            elapsed_time = snapshot.time_elapsed
+            total_time = snapshot.current_song.time
             return render_xml_to_response('update.xml',
                                           {'elapsed_time':elapsed_time,
                                            'total_time':total_time})
         except ControlError, err: return xml_error(str(err))
-    else: return simple_xml_response('reload')  # old timestamp
-
+    else:
+        return simple_xml_response('reload')  # old timestamp
 
 #---------------------------------- Queuing ----------------------------------#
 
@@ -135,10 +137,10 @@ def queue_songs(request):
 @permission_required('aenclave.can_queue', 'Dequeue Song')
 def dequeue_songs(request):
     form = request.POST
-    # Get the selected indices.
-    indices = get_int_list(form, 'indices')
+    # Get the selected playids.
+    playids = get_int_list(form, 'playids')
     # Dequeue the songs.
-    Controller().remove_songs(indices)
+    Controller().remove_songs(playids)
     # Redirect to the channels page.
     return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
@@ -156,9 +158,9 @@ def xml_queue(request):
 def xml_dequeue(request):
     form = request.POST
     # Get the selected songs.
-    indices = get_int_list(form, 'indices')
+    playids = get_int_list(form, 'playids')
     # Dequeue the songs.
-    try: Controller().remove_songs(indices)
+    try: Controller().remove_songs(playids)
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')
 
@@ -174,5 +176,3 @@ def xml_control(request):
         else: return xml_error('invalid action: ' + action)
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')
-
-    

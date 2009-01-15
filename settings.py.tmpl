@@ -32,19 +32,6 @@ EMAIL_PORT = 25
 # written here, though.
 LOGIN_URL = "/audio/login"
 
-### CUSTOMIZE ME
-AENCLAVE_SFTP_UPLOAD_DIR = "/path/to/sftp-upload"
-
-### CUSTOMIZE ME
-AENCLAVE_DEQUEUE_NOISES_DIR = "/path/to/dequeue-noise"
-
-### CUSTOMIZE ME
-### At the moment, only "mp3" and "m4a"
-SUPPORTED_AUDIO = ("mp3", "m4a")
-
-# The authentication uses this user's perms as Anonymous
-ANONYMOUS_USER = "ANONYMOUS_USER"
-
 #================================= SESSIONS ==================================#
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 3  # three days (in seconds)
@@ -87,6 +74,22 @@ MEDIA_ROOT = '/path/to/media'
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
 MEDIA_URL = '/media/'
+
+### CUSTOMIZE ME
+AENCLAVE_SFTP_UPLOAD_DIR = "/path/to/sftp-upload"
+
+### CUSTOMIZE ME
+AENCLAVE_DEQUEUE_NOISES_DIR = "/path/to/dequeue-noise"
+
+### CUSTOMIZE ME
+### At the moment, only "mp3" and "m4a"
+SUPPORTED_AUDIO = ("mp3", "m4a")
+
+# The port that the gst player will be running on.
+GST_PLAYER_PORT = 7890
+
+# The authentication uses this user's perms as Anonymous
+ANONYMOUS_USER = "ANONYMOUS_USER"
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -139,9 +142,9 @@ INSTALLED_APPS = (
     'django.contrib.humanize',  # lets us use a few extra template filters
     'django.contrib.sessions',  # handles user logins
     'menclave.aenclave',  # Audio Enclave
-    'menclave.genclave',  # Gaming Enclave
-    #'menclave.penclave',  # Pyrotechnics Enclave
     'menclave.venclave',  # Video Enclave
+    #'menclave.genclave',  # Gaming Enclave
+    #'menclave.penclave',  # Pyrotechnics Enclave
 )
 
 #=========================== DATE/TIME FORMATTING ============================#

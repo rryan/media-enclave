@@ -19,7 +19,7 @@ class PlaylistAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 class ChannelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'pipe', 'last_touched')
+    list_display = ('id', 'name', 'last_touched')
     list_display_links = ('name',)
 
 admin.site.register(Channel,ChannelAdmin)

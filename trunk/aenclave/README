@@ -1,0 +1,36 @@
+Audio Enclave Install Instructions:
+
+
+First, make sure the following dependencies are installed:
+
+- Django (>= 1.0)
+- GStreamer (>= 0.10)
+- pygst (spelled 'python-gst' by Ubuntu/Debian)
+- Pyro (python remote objects)
+- cjson (spelled 'python-cjson' by Ubuntu/Debian)
+- A database that Django supports.  To start, we recommend sqlite3 because it
+  does not require a daemon running in the background.
+
+Next, copy settings.py.tmpl to settings.py.  Edit settings.py and supply values
+for all variables tagged with 'CUSTOMIZE ME'.  More info on the Django specific
+settings and this process in general can be found on the Django web site.
+
+Run the manage.py script in the project root like so:
+  python manage.py syncdb
+This will populate the database that you just configured with the model tables
+and a default channel.
+
+For development, you should use Django's own HTTP server, but for production
+you now need to configure Apache/mod_python for the aenclave Django project.
+To run the Django server, run the management script with the argument
+'runserver'.  You should be able to go to http://localhost:8000/admin/ and see
+the Django admin page without any errors now.
+
+The last thing we need to do is to run aenclave/gst_player/gst_server.py.  Make
+sure the project root is in your PYTHONPATH and that Pyro is installed, or you
+will get errors at this step.
+
+To test that everything worked, click 'Upload', upload a song, and queue it by
+clicking the link.  If playback does not start, look for tracebacks in both the
+Django server process and the gst_server process to try and diagnose the
+problem.

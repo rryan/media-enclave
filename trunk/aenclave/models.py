@@ -256,10 +256,6 @@ class Channel(models.Model):
 
     name = models.CharField(max_length=32, unique=True)
 
-    pipe = models.FilePathField(path='/tmp', match="xmms.*", recursive=True,
-                                help_text="The path to the XMMS2 control pipe"
-                                " for this channel.")
-
     last_touched = models.DateTimeField(auto_now=True, editable=False)
     def last_touched_timestamp(self):
         return timegm(self.last_touched.timetuple())

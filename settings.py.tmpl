@@ -32,6 +32,10 @@ EMAIL_PORT = 25
 # written here, though.
 LOGIN_URL = "/audio/login"
 
+# Turn on standard logging.
+import logging
+logging.basicConfig(level=logging.INFO)
+
 #================================= SESSIONS ==================================#
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 3  # three days (in seconds)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import auth as django_auth
 import re
 
@@ -50,9 +51,8 @@ def get_kerb_group():
     Returns or creates the default kerberos group.
     """
     try:
-        # Coding Horror! hardcoded group.
-        return django_auth.models.Group.objects.get(name='MIT Generic')
+        return django_auth.models.Group.objects.get(name=settings.DEFAULT_GROUP)
     except django_auth.models.Group.DoesNotExist:
-        g = django_auth.models.Group(name='MIT Generic')
+        g = django_auth.models.Group(name=settings.DEFAULT_GROUP)
         g.save()
         return g

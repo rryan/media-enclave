@@ -8,7 +8,7 @@ import Pyro.core
 
 from menclave import settings  # TODO(rnk): Switch to the below.
 #from aenclave import settings
-from menclave.aenclave.models import Channel
+from menclave.aenclave.models import Channel, Song
 
 #=============================================================================#
 
@@ -63,9 +63,28 @@ class Controller(object):
 
     #---------------------------- STATUS METHODS -----------------------------#
 
+    def _refresh_songs(self, songs):
+        """
+        Refresh song models, preserving the player-added attributes.
+
+        We do this so that we can have the most up-to-date tags if the user
+        editted the tags while the song was on the queue.
+        """
+        pks = [song.pk for song in songs]
+        fresh_dict = Song.objects.in_bulk(pks)
+        fresh_songs = []
+        for song in songs:
+            fresh_song = fresh_dict[song.pk]
+            fresh_song.noise = song.noise
+            fresh_song.playid = song.playid
+            fresh_songs.append(fresh_song)
+        return fresh_songs
+
     @delegate_rpc
     def get_channel_snapshot(self, rpc_retval=None):
         """Return a snapshot of the current channel state."""
+        rpc_retval.song_queue = self._refresh_songs(rpc_retval.song_queue)
+        rpc_retval.song_history = self._refresh_songs(rpc_retval.song_history)
         return rpc_retval
 
     #--------------------------- PLAYBACK CONTROL ----------------------------#
@@ -98,19 +117,21 @@ class Controller(object):
 
     @delegate_rpc
     def add_songs(self, songs, rpc_retval=None):
-        """Add songs to the queue."""
+        """Add some songs to the queue."""
         self.channel.touch()
 
     def remove_song(self, playid, rpc_retval=None):
+        """Remove the song with playid from the queue."""
         self.remove_songs([playid])
 
     @delegate_rpc
     def remove_songs(self, playids, rpc_retval=None):
+        """Remove the songs with playids in playids from the queue."""
         self.channel.touch()
 
     @delegate_rpc
     def move_song(self, playid, after_playid, rpc_retval=None):
-        """Move the first song after the second song in the queue."""
+        """Move the first song to after the second song in the queue."""
         self.channel.touch()
 
     @delegate_rpc

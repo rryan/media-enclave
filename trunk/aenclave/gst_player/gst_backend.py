@@ -37,6 +37,7 @@ from collections import deque
 import logging
 import threading
 import random
+from django.db import transaction
 from menclave import settings  # TODO(rnk): Switch to the below.
 #from aenclave import settings
 from menclave.aenclave.models import Song
@@ -128,6 +129,9 @@ class GstPlayer(object):
     NOTE: All public methods of this class should be synchronized on this
     instance with a re-entrant lock.
 
+    NOTE: All methods that save data to the db need to be wrapped in Django
+    transactions and make sure that their model is the most current.
+
     TODO(rnk): Use Python magic to synchronize all method calls with the
     synchronized decorator.
 
@@ -152,7 +156,7 @@ class GstPlayer(object):
         # elegant/efficient way to do it where we don't catch all messages ever.
         bus = self.player.get_bus()
         bus.add_signal_watch()
-        bus.connect("message", self._on_message)
+        bus.connect("message", self.on_message)
         # The lock for the instance.
         self.lock = threading.RLock()
         self.next_playid = 0
@@ -167,7 +171,7 @@ class GstPlayer(object):
         return playid
 
     @synchronized
-    def _on_message(self, bus, message):
+    def on_message(self, bus, message):
         """Handle messages from GStreamer."""
         t = message.type
         # Ignore these messages, there are too many.
@@ -179,23 +183,34 @@ class GstPlayer(object):
             logging.info(message)
             self.start()
         elif t == gst.MESSAGE_EOS:
-            # Play the next song by stopping and starting playback.
-            last_song = self.current_song
-            self._stop()
-            if self.song_queue:
-                self.start()
-            if last_song and not last_song.noise:
+            self._song_transition()
+
+    @transaction.autocommit
+    def _song_transition(self):
+        """Transition from one completed song to the next."""
+        # Play the next song by stopping and starting playback.
+        last_song = self.current_song
+        self._stop()
+        if self.song_queue:
+            self.start()
+        if last_song and not last_song.noise:
+            try:
+                # We refetch the song from the db in case its tags have been
+                # editted while the song has been on the playlist.
+                last_song = Song.objects.get(pk=last_song.pk)
                 last_song.play_count += 1
-                try:
-                    last_song.save()
-                except Exception, e:
-                    logging.exception(e.message)
+                last_song.save()
+            except Exception:
+                # Not worth propagating error, especially if it stops the main
+                # loop.
+                logging.exception("Unable to save song model to db.")
 
     #---------------------------- STATUS METHODS -----------------------------#
 
     @synchronized
     @logged
     def get_channel_snapshot(self):
+        """Get a snapshot of the channel state."""
         song_queue = list(self.song_queue)
         duration = sum(song.time for song in song_queue)
         status = self._get_status()
@@ -286,17 +301,19 @@ class GstPlayer(object):
             self.start()
 
     def _pick_noise(self):
-        """Returns a fake song model annotated as a noise."""
+        """Return a fake song model annotated as a noise."""
         dir_list = os.listdir(settings.AENCLAVE_DEQUEUE_NOISES_DIR)
-        if(len(dir_list) == 0):
+        if len(dir_list) == 0:
             raise OSError("No deque files")
         deq = random.choice(dir_list)
         return Noise(os.path.join(settings.AENCLAVE_DEQUEUE_NOISES_DIR, deq))
 
     @synchronized
     @logged
+    @transaction.autocommit
     def skip(self):
-        """Play a dequeue noise and skip to the next song."""
+        """Skip the current song and play a dequeue noise."""
+        last_song = self.current_song
         self._stop()
         try:
             noise = self._pick_noise()
@@ -306,32 +323,53 @@ class GstPlayer(object):
             self.song_queue.appendleft(noise)
         if self.song_queue:
             self.start()
+        if last_song and not last_song.noise:
+            try:
+                # We refetch the song from the db in case its tags have been
+                # editted while the song has been on the playlist.
+                last_song = Song.objects.get(pk=last_song.pk)
+                last_song.skip_count += 1
+                last_song.save()
+            except Exception:
+                # Not worth propagating error.
+                logging.exception("Unable to save song model to db.")
 
     #----------------------------- QUEUE CONTROL -----------------------------#
 
     @synchronized
     def add_song(self, song):
-        """Queue a single song."""
+        """Add a song to the queue."""
         self.add_songs([song])
 
     @synchronized
     @logged
+    @transaction.autocommit
     def add_songs(self, songs):
-        """Queue some songs."""
+        """Add some songs to the queue."""
         logging.info("Queuing songs: %r" % songs)
         for song in songs:
             song.playid = self._get_next_playid()
             song.noise = False
         self.song_queue.extend(songs)
         self.start()
+        try:
+            # We don't refetch the songs from the db because we should be inside
+            # a transaction on the other side of the RPC.
+            for song in songs:
+                song.queue_touch()
+        except Exception:
+            # Not worth propagating error.
+            logging.exception("Unable to save song model to db.")
 
     @synchronized
     def remove_song(self, playid):
+        """Remove the song with playid from the queue."""
         self.remove_songs([playid])
 
     @synchronized
     @logged
     def remove_songs(self, playids):
+        """Remove the songs with playids in playids from the queue."""
         playids = set(playids)
         logging.info(playids)
         self.song_queue = deque(song for song in self.song_queue
@@ -340,9 +378,9 @@ class GstPlayer(object):
     @synchronized
     @logged
     def move_song(self, playid, after_playid):
+        """Move the first song to after the second song in the queue."""
         logging.info('playid: %i, after_playid: %i', playid, after_playid)
-        # The below is messy but satisfactory.  If someone has a better idea,
-        # that'd be great.
+        # TODO(rnk): Clean this shit up.
         songs = list(self.song_queue)
         for (start_index, song) in enumerate(songs):
             if song.playid == playid:

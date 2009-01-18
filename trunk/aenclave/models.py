@@ -85,9 +85,11 @@ class Song(models.Model):
     def last_queued_string(self): return datetime_string(self.last_queued)
     last_queued_string.short_description = 'last queued'
 
-    #------------------------------ Play Count -------------------------------#
+    #-------------------------------- Counts ---------------------------------#
 
     play_count = models.PositiveIntegerField(default=0, editable=False)
+
+    skip_count = models.PositiveIntegerField(default=0, editable=False)
 
     #------------------------------ Audio Path -------------------------------#
 
@@ -141,10 +143,6 @@ class Song(models.Model):
     def queue_touch(self):
         self.last_queued = datetime.datetime.now()
         self.score = self.adjusted_score() + 100
-        # This is slightly incorrect, because not all queued songs are played.
-        # Currently we have no way of being alerted of track changes, so we
-        # fudge the meaning of "play_count".
-        self.play_count += 1
         self.save()
 
     objects = models.Manager()

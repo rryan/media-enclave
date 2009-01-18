@@ -2,36 +2,34 @@
 {% load humanize %}
 
 {% block styles %}{{block.super}}
-<link rel="stylesheet" type="text/css" href="{% url aenclave-styles "videolist.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "videolist.css" %}"/>
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-<script type="text/javascript" src="{% url aenclave-scripts "videolist.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "videolist.js" %}"></script>
 {% endblock %}
 
 {% block body %}
 
-<p>Listing {{ videos | length }} items.</p>
+  <p>Listing {{ videos | length }} items.</p>
 
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Size</th>
-    </tr>
-  </thead>
-  <tbody>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Size</th>
+      </tr>
+    </thead>
+    <tbody>
 
-    {% for video in videos %}
-    <tr>
-      <td>{{ video.title }}</td>
-      <td>{{ video.size }}</td>
-    </tr>
-    {% endfor %}
+      {% for video in videos %}
+        <tr>
+          <td>{{ video.title }}</td>
+          <td>{{ video.size }}</td>
+        </tr>
+      {% endfor %}
 
-  </tbody>
-</table>
-
-
+    </tbody>
+  </table>
 
 {% endblock %}

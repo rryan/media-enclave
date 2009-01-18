@@ -6,13 +6,13 @@ from django.shortcuts import render_to_response
 from menclave.venclave.models import ContentNode, Director, Genre
 
 def home(request):
-    years = [x.year for x in ContentNode.objects.all().order_by('release_date').values_list('release_date',flat=True).distinct()]
+    nodes = ContentNode.objects.all().order_by('release_date')
+    nodes = nodes.values_list('release_date',flat=True).distinct()
+    years = [x.year for x in nodes]
 
     return render_to_response("index.html",
                               {'genres': Genre.objects.all(),
                                'years': years})
-
-
 
 def simple_search(request):
     raise Http404()

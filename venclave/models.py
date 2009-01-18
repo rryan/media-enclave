@@ -179,14 +179,16 @@ class ContentNode(models.Model):
 
     def full_name(self):
         if self.kind == KIND_TV:
-            return "%s Season %2d Episode %2d" % (self.title, self.season, self.episode)
+            return ("%s Season %2d Episode %2d" %
+                    (self.title, self.season, self.episode))
         elif self.kind == KIND_MOVIE:
             return "%s (%d)" % (self.title, self.release_date.year)
         return self.title
 
     def fully_qualified_name(self):
         if self.parent:
-            return "%s > %s" % (self.parent.fully_qualified_name(), self.compact_name())
+            return "%s > %s" % (self.parent.fully_qualified_name(),
+                                self.compact_name())
         else:
             return self.compact_name()
 

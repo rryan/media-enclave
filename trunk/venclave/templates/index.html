@@ -4,48 +4,43 @@
 {% block preheader %}
 
 {% endblock %}
+
+{# XXX(rnk): What's this for?  It's not displayed anywhere. #}
 <div class="title">VEncl&auml;ve <div class="subtitle">&Pi;&Tau;&Zeta; Video Network</div></div>
 
-
-
 {% block body %}
-<div class="message">
-  <h3>Hi. What are you looking for?<h3>
-</div>
+  <div class="message">
+    <h3>Hi. What are you looking for?</h3>
+  </div>
 
-<div class="message">
-  <em>Search for movies, TV series, episodes, directors, and genres</em>
-  <form method="GET" action="{% url venclave-search %}">
-    <input type="text" id="search" name="q" size="30">
-    <input type="submit" value="Go">
-  </form>
-</div>
+  <div class="message">
+    <em>Search for movies, TV series, episodes, directors, and genres</em>
+    <form method="GET" action="{% url venclave-search %}">
+      <input type="text" id="search" name="q" size="30"/>
+      <input type="submit" value="Go"/>
+    </form>
+  </div>
 
-<div class="message">
-  <div class="searchkind">By Type</div>
-  <a href="#">Movies</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#">TV Shows</a>
-</div>
+  <div class="message">
+    <div class="searchkind">By Type</div>
+    <a href="#">Movies</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#">TV Shows</a>
+  </div>
 
+  <div class="message">
+    <div class="searchkind">By Genre</div>
+    {% for genre in genres %} 
+      <a href="{% url venclave-genre genre.id %}">{{ genre.name }}</a>
+      ({{ genre.imdbmetadata_set.all.count}})
+    {% endfor %}
+  </div>
 
+  <div class="message">
+    <div class="searchkind">By Year</div>
+    {% for year in years %} {{year}} {% endfor %}
+  </div>
 
-<div class="message">
-  <div class="searchkind">By Genre</div>
-  {% for genre in genres %} 
-  <a href="{% url venclave-genre genre.id %}">{{ genre.name }}</a>
-  ({{ genre.imdbmetadata_set.all.count}})
-  {% endfor %}
-
-</div>
-
-<div class="message">
-  <div class="searchkind">By Year</div>
-  {% for year in years %} {{year}} {% endfor %}
-</div>
-
- 
-<div class="message" style="display:none;">
-  Now searching through {{total_video_count|intcomma}}
-  video{{total_video_count|pluralize}}.
-</div>  
-
+  <div class="message" style="display:none;">
+    Now searching through {{total_video_count|intcomma}}
+    video{{total_video_count|pluralize}}.
+  </div>  
 {% endblock %}

@@ -7,10 +7,10 @@
     <meta name="copyright" content="&copy; 1999&ndash;2007 by Putz Inc."/>
     <meta name="robots" content="NONE"/>
     {% block styles %}
-    <link rel="stylesheet" type="text/css" href="{% url venclave-styles "base.css" %}"/>
+      <link rel="stylesheet" type="text/css" href="{% url venclave-styles "base.css" %}"/>
     {% endblock %}
     {% block scripts %}
-    <script type="text/javascript" src="{% url venclave-scripts "jquery-1.2.6.min.js" %}"></script>
+      <script type="text/javascript" src="{% url venclave-scripts "jquery-1.2.6.min.js" %}"></script>
     {% endblock %}
   </head>
 
@@ -24,8 +24,14 @@
     </div>
 
     {% block preheader %}{% endblock %}
-    <div id="header">{% block header %}
-      <a href="{% url venclave-home %}">VEncl&auml;ve :: amnesia 2.0</a> &gt;&gt; {% endblock %}</div>
+
+    <div id="header">
+      {% block header %}
+        <a href="{% url venclave-home %}">VEncl&auml;ve :: amnesia 2.0</a> &gt;&gt;
+      {% endblock %}
+    </div>
+
+    {# This is a spacer. #}
     <div id="header2"></div>
 
     {% block body %}{% endblock %}
@@ -34,7 +40,7 @@
 
     <div id="copyright">&copy; 1999&ndash;2007 by Putz Inc.</div>
     {% block postcopyright %}{% endblock %}
-    
+
   </body>
 
 </html>

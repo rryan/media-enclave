@@ -17,6 +17,6 @@ def render_html_template(template, request, options=None, *args, **kwargs):
     return render_to_response(template, options, *args, **kwargs)
 
 def html_error(request, message=None, title=None):
-    return render_html_template('error.html', request,
+    return render_html_template('aenclave/error.html', request,
                                 {'error_message':message, 'error_title':title},
                                 context_instance=RequestContext(request))

@@ -6,7 +6,12 @@ from django.http import HttpResponse
 from django.conf import settings
 
 def render_json_template(*args, **kwargs):
-    """Renders a JSON template, and then calls render_json_response()."""
+    """
+    Renders a JSON template, and then calls render_json_response().
+
+    Deprecated.  Don't use Django templates to send JSON, just use
+    cjson.encode().  It's faster and easier.
+    """
     data = loader.render_to_string(*args, **kwargs)
     return render_json_response(data)
 

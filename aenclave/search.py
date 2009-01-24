@@ -44,7 +44,7 @@ def normal_search(request):
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
     # Otherwise, display the search results.
-    return render_html_template('search_results.html', request,
+    return render_html_template('aenclave/search_results.html', request,
                                 {'song_list':queryset,
                                  'search_query':query_string},
                                 context_instance=RequestContext(request))
@@ -188,7 +188,7 @@ def filter_search(request):
         return html_error(request, message=str(errors))
     if total == 0: queryset = ()
     else: queryset = Song.visibles.filter(_build_filter_query(tree))
-    return render_html_template('filter_results.html', request,
+    return render_html_template('aenclave/filter_results.html', request,
                                 {'song_list':queryset,
                                  'criterion_count':total},
                               context_instance=RequestContext(request))

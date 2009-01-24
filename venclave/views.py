@@ -10,7 +10,7 @@ def home(request):
     nodes = nodes.values_list('release_date',flat=True).distinct()
     years = [x.year for x in nodes]
 
-    return render_to_response("index.html",
+    return render_to_response("venclave/index.html",
                               {'genres': Genre.objects.all(),
                                'years': years})
 
@@ -23,7 +23,7 @@ def content_view(request, id):
     except ContentNode.DoesNotExist:
         raise Http404()
 
-    return render_to_response("content_view.html",
+    return render_to_response("venclave/content_view.html",
                               {'content': content})
 
 def genres_view(request, ids):
@@ -33,7 +33,7 @@ def genres_view(request, ids):
     except Genre.DoesNotExist:
         raise Http404()
 
-    return render_to_response("genres_view.html",
+    return render_to_response("venclave/genres_view.html",
                               {'genres': genres})
 
 def genre_view(request, id):
@@ -42,7 +42,7 @@ def genre_view(request, id):
     except Genre.DoesNotExist:
         raise Http404()
 
-    return render_to_response("genre_view.html",
+    return render_to_response("venclave/genre_view.html",
                               {'genre': genre})
 
 def director_view(request, id):
@@ -51,5 +51,5 @@ def director_view(request, id):
     except Director.DoesNotExist:
         raise Http404()
 
-    return render_to_response("director_view.html",
+    return render_to_response("venclave/director_view.html",
                               {'director': director})

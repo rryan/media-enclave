@@ -9,6 +9,25 @@ urlpatterns = patterns(
         'menclave.venclave.views.home',
         name='venclave-home'),
 
+    # Static content -- These exist only for the test server.  In production,
+    # they should not be served using Django, but with appropriate server
+    # voodoo.
+
+    url(r'^scripts/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'venclave/scripts/'},
+        name='venclave-scripts'),
+
+    url(r'^styles/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'venclave/styles/'},
+        name='venclave-styles'),
+
+    url(r'^images/(?P<path>.*)$',
+        'django.views.static.serve',
+        {'document_root': 'venclave/images/'},
+        name='venclave-images'),
+
     # Search
 
     url(r'^search/$',

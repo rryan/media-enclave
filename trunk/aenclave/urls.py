@@ -165,7 +165,7 @@ urlpatterns = patterns(
 
     url(r'^upload/fancy/receive/$',
         'menclave.aenclave.upload.upload_http_fancy_receiver',
-            name='aenclave-http-upload-fancy-receiver'),
+        name='aenclave-http-upload-fancy-receiver'),
 
 
     url(r'^upload/sftp/$',
@@ -173,8 +173,7 @@ urlpatterns = patterns(
         name='aenclave-sftp-upload'),
 
     url(r'^upload/sftp-info/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'aenclave/sftp_info.html'},
+        'menclave.aenclave.upload.sftp_info',
         name='aenclave-sftp-info'),
 
     # DL

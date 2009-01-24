@@ -1,4 +1,5 @@
 {% extends "aenclave/header_base.html" %}
+{% load aenclave %}
 
 {% block title %}{{block.super}} SFTP Upload{% endblock %}
 
@@ -16,22 +17,20 @@
     page</a> instead.</p>
   <p class="how">How to upload songs using SFTP</p>
   <ol>
-    <li>Install a working SFTP client.&nbsp; You can download SecureFX or Fetch
-      from the <a href="http://web.mit.edu/software/">IS&amp;T software
-      page</a>.</li>
-    <li>Connect to Nice-Rack with these settings:
+    <li>Install a working SFTP client.&nbsp; Try
+      <a href="http://filezilla-project.org/">FileZilla</a>.</li>
+    <li>Connect to Audio-Enclave with these settings:
       <ul>
-        <li>Host: <tt>nice-rack.mit.edu</tt></li>
+        <li>Host: <tt>{{ GST_PLAYER_HOST }}</tt></li>
         <li>Username: <tt>upload</tt></li>
         <li>Port: <tt>22</tt></li>
         <li>Protocol: <tt>SFTP</tt></li>
       </ul>
-      Ask RJ, Femtomatt, Mart&iacute;, or some other Putz resident for the
-      password.
+      Ask an administrator for the upload password.
     </li>
     <li>Upload the songs; it&rsquo;s okay to have files in
-      subdirectories.&nbsp; You may only upload MP3 files.&nbsp;  Please do not
-      upload songs that are already in the database.</li>
+      subdirectories.&nbsp; You may only upload MP3 or M4A files.&nbsp; Please
+      do not upload songs that are already in the database.</li>
     <li>
       After you have uploaded everything, click the button below
       {% if not user.is_authenticated %}

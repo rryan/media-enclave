@@ -58,7 +58,8 @@ class Controller(object):
         # TODO(rnk): Change the naming to make one remote object per channel.
         #subs = (settings.HOST_NAME, settings.GST_PLAYER_PORT, channel.id)
         #uri = "PYROLOC://%s:%i/gst_player/%i" % subs
-        uri = "PYROLOC://localhost:%i/gst_player" % (settings.GST_PLAYER_PORT)
+        uri = "PYROLOC://%s:%i/gst_player" % (settings.GST_PLAYER_HOST,
+                                              settings.GST_PLAYER_PORT)
         self.player = Pyro.core.getProxyForURI(uri)
 
     #---------------------------- STATUS METHODS -----------------------------#

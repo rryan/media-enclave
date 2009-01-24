@@ -9,24 +9,24 @@ P.how {
   font-weight: bold;
 }
 
-OL {
+OL.instruction-list {
   margin: 22px auto;
   width: 80%;
 }
 
-OL LI {
+OL.instruction-list LI {
   margin: 15px 0px;
 }
 
-OL UL {
+OL.instruction-list UL {
   list-style-type: square;
   margin: 6px 0px;
 }
 
-OL UL LI {
+OL.instruction-list UL LI {
   margin: 2px 0px;
 }
 
-OL UL TT {
+OL.instruction-list UL TT {
   font-size: 12px;
 }

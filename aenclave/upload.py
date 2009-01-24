@@ -30,6 +30,11 @@ def upload_http(request):
                                  'sketchy_upload': audio.info.sketchy},
                                 context_instance=RequestContext(request))
 
+def sftp_info(request):
+    return render_html_template('aenclave/sftp_info.html', request,
+                                {'GST_PLAYER_HOST': settings.GST_PLAYER_HOST},
+                                context_instance=RequestContext(request))
+
 @permission_required_redirect('aenclave.add_song', 'goto')
 def upload_sftp(request):
     song_list = []

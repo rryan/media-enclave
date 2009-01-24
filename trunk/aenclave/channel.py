@@ -20,7 +20,7 @@ def channel_detail(request, channel_id=1):
     except Channel.DoesNotExist: raise Http404
     ctrl = channel.controller()
     snapshot = ctrl.get_channel_snapshot()
-    return render_html_template('channels.html', request,
+    return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
                                  'current_song': snapshot.current_song,
                                  'song_list': snapshot.song_queue,
@@ -85,7 +85,7 @@ def xml_update(request):
                 return simple_xml_response('continue')
             elapsed_time = snapshot.time_elapsed
             total_time = snapshot.current_song.time
-            return render_xml_to_response('update.xml',
+            return render_xml_to_response('aenclave/update.xml',
                                           {'elapsed_time':elapsed_time,
                                            'total_time':total_time})
         except ControlError, err: return xml_error(str(err))

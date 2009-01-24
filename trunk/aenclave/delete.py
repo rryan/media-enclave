@@ -42,8 +42,7 @@ def delete_songs(request):
     for song in songs:
         song.delete()
 
-    return render_html_template('delete_performed.html', request,
-                                {},
+    return render_html_template('aenclave/delete_performed.html', request, {},
                                 context_instance=RequestContext(request))
 
 @permission_required('aenclave.request_delete_song', 'Request Delete')
@@ -76,6 +75,6 @@ def submit_delete_requests(request):
 
     mail_admins(subject,message,False)
 
-    return render_html_template('delete_requested.html', request,
+    return render_html_template('aenclave/delete_requested.html', request,
                                 {'song_list': song_list},
                                 context_instance=RequestContext(request))

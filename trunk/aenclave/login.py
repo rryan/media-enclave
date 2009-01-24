@@ -80,7 +80,7 @@ def permission_required_json(perm):
 #------------------------------- Login/Logout --------------------------------#
 
 def user_debug(request):
-    return render_html_template('user_debug.html', request,
+    return render_html_template('aenclave/user_debug.html', request,
                                 context_instance=RequestContext(request))
 
 def login(request):
@@ -97,7 +97,7 @@ def login(request):
         if not form.get('login', False):
             goto = request.GET.get('goto', None)
             context = RequestContext(request)
-            return render_html_template('login.html', request,
+            return render_html_template('aenclave/login.html', request,
                                         {'redirect_to': goto},
                                         context_instance=context)
         # Check if the username and password are correct.
@@ -115,7 +115,7 @@ def login(request):
         error_message = ('The user account for <tt>%s</tt> has been disabled.' %
                          user.username)
     if error_message:
-        return render_html_template('login.html', request,
+        return render_html_template('aenclave/login.html', request,
                                     {'error_message': error_message,
                                      'redirect_to': form.get('goto', None)},
                                     context_instance=RequestContext(request))

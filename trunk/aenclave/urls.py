@@ -9,11 +9,13 @@ urlpatterns = patterns(
 
     url(r'^$',
         'django.views.generic.simple.direct_to_template',
-        {'template': 'index.html',
+        {'template': 'aenclave/index.html',
          'extra_context': {'total_song_count': Song.visibles.count}},
         name='aenclave-home'),
 
-    # Static content
+    # Static content -- These exist only for the test server.  In production,
+    # they should not be served using Django, but with appropriate server
+    # voodoo.
 
     url(r'^scripts/(?P<path>.*)$',
         'django.views.static.serve',
@@ -62,7 +64,7 @@ urlpatterns = patterns(
 
     url(r'^filter/$',
         'django.views.generic.simple.direct_to_template',
-        {'template': 'filter.html'},
+        {'template': 'aenclave/filter.html'},
         name='aenclave-filter-home'),
 
     url(r'^filter/search/$',
@@ -150,7 +152,7 @@ urlpatterns = patterns(
 
     url(r'^upload/$',
         'django.views.generic.simple.direct_to_template',
-        {'template': 'upload.html'},
+        {'template': 'aenclave/upload.html'},
         name='aenclave-upload-home'),
 
     url(r'^upload/http/$',
@@ -172,7 +174,7 @@ urlpatterns = patterns(
 
     url(r'^upload/sftp-info/$',
         'django.views.generic.simple.direct_to_template',
-        {'template': 'sftp_info.html'},
+        {'template': 'aenclave/sftp_info.html'},
         name='aenclave-sftp-info'),
 
     # DL

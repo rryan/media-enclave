@@ -25,7 +25,7 @@ def upload_http(request):
         return html_error(request, "You may only upload audio files.",
                           "HTTP Upload")
 
-    return render_html_template('upload_http.html', request,
+    return render_html_template('aenclave/upload_http.html', request,
                                 {'song_list': [song],
                                  'sketchy_upload': audio.info.sketchy},
                                 context_instance=RequestContext(request))
@@ -54,7 +54,7 @@ def upload_sftp(request):
                 #remove the file from the sftp-upload directory
                 os.unlink(full_path)
 
-    return render_html_template('upload_sftp.html', request,
+    return render_html_template('aenclave/upload_sftp.html', request,
                                 {'song_list': song_list,
                                  'sketchy_upload': sketchy},
                                 context_instance=RequestContext(request))
@@ -68,7 +68,7 @@ def upload_http_fancy(request):
                                     reverse("aenclave-http-upload-fancy"))
 
     file_types = map(lambda s: "*.%s" % s, settings.SUPPORTED_AUDIO)
-    return render_html_template('upload_http_fancy.html', request,
+    return render_html_template('aenclave/upload_http_fancy.html', request,
                                 {'song_list': [],
                                  'show_songlist': True,
                                  'file_types': file_types,
@@ -116,6 +116,6 @@ def upload_http_fancy_receiver(request):
     # Save the song into the database -- we'll fix the tags in a moment.
     song, audio = processing.process_song(audio.name, audio)
 
-    return render_html_template('songlist_song_row.html', request,
+    return render_html_template('aenclave/songlist_song_row.html', request,
                                 {'song': song},
                                 context_instance=RequestContext(request))

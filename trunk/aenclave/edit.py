@@ -80,4 +80,4 @@ def json_edit(request):
     # Save and report success.
     song.save()
     audio.save()
-    return render_json_template('done_editing.json', {'song':song})
+    return render_json_template('aenclave/done_editing.json', {'song':song})

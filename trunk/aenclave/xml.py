@@ -15,4 +15,5 @@ def simple_xml_response(tagname):
                                   settings.DEFAULT_CHARSET))
 
 def xml_error(message):
-    return render_xml_to_response('error.xml', {'error_message':message})
+    return render_xml_to_response('aenclave/error.xml',
+                                  {'error_message':message})

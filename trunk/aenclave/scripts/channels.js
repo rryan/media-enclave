@@ -24,7 +24,7 @@ jQuery(document).ready(function() {
 var channels = {
 
   // This value is set in the template via an inline script.  It will be set 
-  channel_id = null;
+  channel_id: null,
 
   /********************************* ACTIONS *********************************/
 

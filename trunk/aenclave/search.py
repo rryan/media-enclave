@@ -191,4 +191,4 @@ def filter_search(request):
     return render_html_template('aenclave/filter_results.html', request,
                                 {'song_list':queryset,
                                  'criterion_count':total},
-                              context_instance=RequestContext(request))
+                                context_instance=RequestContext(request))

@@ -171,7 +171,8 @@ var controls = {
   // Updates the controls widget with new playlist information.
   update_playlist_info: function(playlist_info) {
     // If we're on channels, and the playlist changed, reload the page.
-    var on_channels = window.location.pathname.indexOf('channels/') > -1;
+    var regex = /^\/audio\/channels\/(\d+\/)?$/;
+    var on_channels = regex.test(window.location.pathname);
     if (on_channels && controls.playlist_changed(playlist_info)) {
       controls.updater.stop();
       window.location.reload();
@@ -216,7 +217,7 @@ var controls = {
 
   update_elapsed_time: function(time) {
     var tbar = jQuery('#timebar');
-    if (tbar.length == 0) return;
+    if (tbar.length == 0 || !controls.playlist_info) return;
     controls.playlist_info.elapsed_time = time;
     var width = Math.min(controls.TIME_BAR_WIDTH, controls.TIME_BAR_WIDTH *
                          time / controls.playlist_info.song_duration);

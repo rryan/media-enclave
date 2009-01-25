@@ -10,8 +10,7 @@ import Pyro.core
 import threading
 import os
 os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"
-from menclave import settings  # TODO(rnk): Switch to the below.
-#from aenclave import settings
+from menclave import settings
 from menclave.aenclave.gst_player import gst_backend
 from django.core import management
 

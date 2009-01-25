@@ -110,6 +110,10 @@ urlpatterns = patterns(
         'menclave.aenclave.channel.channel_detail',
         name='aenclave-channel'),
 
+    url(r'^channels/(?P<channel_id>\d+)/history/$',
+        'menclave.aenclave.channel.channel_history',
+        name='aenclave-channel-history'),
+
     url(r'^channels/(?P<channel_id>\d+)/reorder/$',
         'menclave.aenclave.channel.channel_reorder',
         name='aenclave-channel-reorder'),

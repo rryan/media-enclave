@@ -80,10 +80,20 @@ class Song(models.Model):
 
     #------------------------------ Last Queued ------------------------------#
 
+    # This property is useful to have in conjunction with the "is_recent" filter
+    # to style recently queued songs as purple or "visited".
+
     last_queued = models.DateTimeField(default=None, blank=True, null=True,
                                        editable=False)
     def last_queued_string(self): return datetime_string(self.last_queued)
     last_queued_string.short_description = 'last queued'
+
+    #------------------------------ Last Played ------------------------------#
+
+    last_played = models.DateTimeField(default=None, blank=True, null=True,
+                                       editable=False)
+    def last_played_string(self): return datetime_string(self.last_played)
+    last_played_string.short_description = 'last played'
 
     #-------------------------------- Counts ---------------------------------#
 
@@ -111,8 +121,8 @@ class Song(models.Model):
 
     score = models.PositiveIntegerField(default=0, editable=False)
     def adjusted_score(self):
-        if self.last_queued is None: return 0
-        delta = datetime.datetime.now() - self.last_queued
+        if self.last_played is None: return 0
+        delta = datetime.datetime.now() - self.last_played
         # 1.1574074074074073e-05 == 1.0 / (60 * 60 * 24)
         days = delta.days + delta.seconds * 1.1574074074074073e-05
         return int(self.score * exp(-0.05 * days))
@@ -142,7 +152,16 @@ class Song(models.Model):
 
     def queue_touch(self):
         self.last_queued = datetime.datetime.now()
+        self.save()
+
+    def play_touch(self):
+        self.last_played = datetime.datetime.now()
         self.score = self.adjusted_score() + 100
+        self.play_count += 1
+        self.save()
+
+    def skip_touch(self):
+        self.skip_count += 1
         self.save()
 
     objects = models.Manager()

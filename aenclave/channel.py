@@ -1,13 +1,15 @@
 import cjson
 
-
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 
-from menclave.aenclave.login import permission_required_json, permission_required, permission_required_xml
+from menclave.aenclave.login import (permission_required_json,
+                                     permission_required,
+                                     permission_required_xml)
 from menclave.aenclave.utils import get_int_list, get_song_list, get_integer
-from menclave.aenclave.xml import simple_xml_response, xml_error, render_xml_to_response
+from menclave.aenclave.xml import (simple_xml_response, xml_error,
+                                   render_xml_to_response)
 from menclave.aenclave.json import render_json_response, json_success, json_error
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.control import Controller, ControlError
@@ -28,6 +30,14 @@ def channel_detail(request, channel_id=1):
                                  'elapsed_time': snapshot.time_elapsed,
                                  'playing': snapshot.status == 'playing',
                                  'no_queuing': True},
+                                context_instance=RequestContext(request))
+
+def channel_history(request, channel_id):
+    ctrl = Controller(channel_id)
+    snapshot = ctrl.get_channel_snapshot()
+    return render_html_template("aenclave/list_songs.html", request,
+                                {'song_list': snapshot.song_history,
+                                 'title': 'Channel History'},
                                 context_instance=RequestContext(request))
 
 def channel_reorder(request, channel_id=1):

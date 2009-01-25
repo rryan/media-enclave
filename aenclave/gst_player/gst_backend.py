@@ -38,8 +38,7 @@ import logging
 import threading
 import random
 from django.db import transaction
-from menclave import settings  # TODO(rnk): Switch to the below.
-#from aenclave import settings
+from menclave import settings
 from menclave.aenclave.models import Song
 
 
@@ -198,8 +197,7 @@ class GstPlayer(object):
                 # We refetch the song from the db in case its tags have been
                 # editted while the song has been on the playlist.
                 last_song = Song.objects.get(pk=last_song.pk)
-                last_song.play_count += 1
-                last_song.save()
+                last_song.play_touch()
             except Exception:
                 # Not worth propagating error, especially if it stops the main
                 # loop.
@@ -328,8 +326,7 @@ class GstPlayer(object):
                 # We refetch the song from the db in case its tags have been
                 # editted while the song has been on the playlist.
                 last_song = Song.objects.get(pk=last_song.pk)
-                last_song.skip_count += 1
-                last_song.save()
+                last_song.skip_touch()
             except Exception:
                 # Not worth propagating error.
                 logging.exception("Unable to save song model to db.")
@@ -343,7 +340,6 @@ class GstPlayer(object):
 
     @synchronized
     @logged
-    @transaction.autocommit
     def add_songs(self, songs):
         """Add some songs to the queue."""
         logging.info("Queuing songs: %r" % songs)
@@ -352,14 +348,14 @@ class GstPlayer(object):
             song.noise = False
         self.song_queue.extend(songs)
         self.start()
-        try:
-            # We don't refetch the songs from the db because we should be inside
-            # a transaction on the other side of the RPC.
-            for song in songs:
+        # We don't refetch the songs from the db because we should be inside
+        # a transaction on the other side of the RPC.
+        for song in songs:
+            try:
                 song.queue_touch()
-        except Exception:
-            # Not worth propagating error.
-            logging.exception("Unable to save song model to db.")
+            except Exception:
+                # Not worth propagating error.
+                logging.exception("Unable to save song model to db.")
 
     @synchronized
     def remove_song(self, playid):

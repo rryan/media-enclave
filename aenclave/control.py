@@ -6,8 +6,7 @@ import logging
 
 import Pyro.core
 
-from menclave import settings  # TODO(rnk): Switch to the below.
-#from aenclave import settings
+from menclave import settings
 from menclave.aenclave.models import Channel, Song
 
 #=============================================================================#

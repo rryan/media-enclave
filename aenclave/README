@@ -34,3 +34,6 @@ To test that everything worked, click 'Upload', upload a song, and queue it by
 clicking the link.  If playback does not start, look for tracebacks in both the
 Django server process and the gst_server process to try and diagnose the
 problem.
+
+To make SFTP uploading work, you should run an SFTP server on the same host as
+the gst_player process.  TODO(rnk): Document this process more thoroughly.

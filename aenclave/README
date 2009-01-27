@@ -26,9 +26,17 @@ To run the Django server, run the management script with the argument
 'runserver'.  You should be able to go to http://localhost:8000/admin/ and see
 the Django admin page without any errors now.
 
-The last thing we need to do is to run aenclave/gst_player/gst_server.py.  Make
-sure the project root is in your PYTHONPATH and that Pyro is installed, or you
-will get errors at this step.
+The last step is to configure the audio enclave player daemon to start on boot.
+If you are on Ubuntu/Debian, do the following:
+  sudo cp MENCLAVE/aenclave/gst_player/ae-player-init.sh /etc/init.d/ae-player
+  sudo chmod +x /etc/init.d/ae-player
+  # Edit the vars labelled 'CUSTOMIZE ME'
+  sudo vi /etc/init.d/ae-player
+  sudo update-rc.d ae-player defaults
+  # Start the player now.
+  sudo /etc/init.d/ae-player start
+If you are using another distro, there should be similar mechanisms in place for
+your distro.
 
 To test that everything worked, click 'Upload', upload a song, and queue it by
 clicking the link.  If playback does not start, look for tracebacks in both the

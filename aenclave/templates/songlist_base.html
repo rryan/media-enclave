@@ -3,10 +3,14 @@
 
 {% block styles %}{{block.super}}
   <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "clickmenu.css" %}"/>
 {% endblock %}
 
 {% block scripts %}{{block.super}}
   <script type="text/javascript" src="{% url aenclave-scripts "jquery.tablednd_0_5.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "jquery.clickmenu.pack.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "jquery.columnmanager.pack.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "tablesort.js" %}"></script>
   <script type="text/javascript" src="{% url aenclave-scripts "songlist.js" %}"></script>
 {% endblock %}
 
@@ -20,19 +24,25 @@
             <input type="checkbox" onclick="songlist.select_all(this);"/>
           </th>
           {% if current_song %}
-            <th class="track">Track</th>
+            <th class="track">#</th>
             <th class="title">Title</th>
             <th class="album">Album</th>
             <th class="artist">Artist</th>
             <th class="time">Time</th>
+            <th class="play-count">Plays</th>
+            <th class="skip-count">Skips</th>
+            <th class="last-played">Last played</th>
             <th class="date-added">Date added</th>
           {% else %}
-            <th class="sort song-track" sorttype="int" onclick="songlist.sorta(this);">Track</th>
-            <th class="sort title" sorttype="text" onclick="songlist.sorta(this);">Title</th>
-            <th class="sort album" sorttype="text" onclick="songlist.sorta(this);">Album</th>
-            <th class="sort artist" sorttype="text" onclick="songlist.sorta(this);">Artist</th>
-            <th class="sort time" sorttype="time" onclick="songlist.sorta(this);">Time</th>
-            <th class="sort date-added" sorttype="date" onclick="songlist.sorta(this);">Date added</th>
+            <th class="sort track" sorttype="int" onclick="tablesort.sorta(this);">#</th>
+            <th class="sort title" sorttype="text" onclick="tablesort.sorta(this);">Title</th>
+            <th class="sort album" sorttype="text" onclick="tablesort.sorta(this);">Album</th>
+            <th class="sort artist" sorttype="text" onclick="tablesort.sorta(this);">Artist</th>
+            <th class="sort time" sorttype="time" onclick="tablesort.sorta(this);">Time</th>
+            <th class="sort play-count" sorttype="int" onclick="tablesort.sorta(this);">Plays</th>
+            <th class="sort skip-count" sorttype="int" onclick="tablesort.sorta(this);">Skips</th>
+            <th class="sort last-played" sorttype="date" onclick="tablesort.sorta(this);">Last played</th>
+            <th class="sort date-added" sorttype="date" onclick="tablesort.sorta(this);">Date added</th>
           {% endif %}
           {% if user.is_authenticated %}
             <th class="edit"></th>
@@ -40,6 +50,18 @@
 	  {% if dl %}
             <th class="dl"></th>
           {% endif %}
+          {% if allow_dragging %}
+            <th class="drag"></th>
+          {% endif %}
+          <th class="col-picker">
+            <ul id="ul-select-col">
+              <li>
+                <img alt="select columns" title="select columns"
+                    src="{% url aenclave-images "selectcol.png" %}"/>
+                <ul id="col-list"></ul>
+              </li>
+            </ul>
+          </th>
         </tr>
       </thead>
 
@@ -47,7 +69,7 @@
         {% if current_song.noise %}
           <tr class="c">
             <td class="c"><img src="{% url aenclave-images "speaker.png" %}"/></td>
-            <td class="c" colspan="7">(Dequeuing current song...)</td>
+            <td class="c" colspan="11">(Dequeuing current song...)</td>
           </tr>
         {% else %}
           {% if current_song %}
@@ -110,7 +132,7 @@
       <form name="dlform" action="{% url aenclave-dl %}" method="POST">
         <input type="hidden" name="ids"/>
       </form>
-    {% if user.is_authenticated %}      
+    {% if user.is_authenticated %}
       <form name="createform" action="{% url aenclave-playlist-create %}" method="POST">
         <input type="hidden" name="name"/>
         <input type="hidden" name="ids"/>

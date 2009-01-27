@@ -10,9 +10,7 @@
     {% endif %}
   {% endspaceless %}
 </td>
-<td name="track" class="track editable r">
-  {{song.track_string}}
-</td>
+<td name="track" class="track editable r">{{song.track_string}}</td>
 <td name="title" class="title editable{% if song.date_added|is_recent %} new{% endif %}">
   {% if no_queuing %}
     {{song.title|escape}}
@@ -35,6 +33,9 @@
   {% endif %}
 </td>
 <td class="r time">{{song.time_string}}</td>
+<td class="r play-count">{{song.play_count}}</td>
+<td class="r skip-count">{{song.skip_count}}</td>
+<td class="r last-played">{{song.last_played_string}}</td>
 <td class="r date-added">{{song.date_added_string}}</td>
 {% if user.is_authenticated %}
   <td class="edit" onclick="songlist.edit_song(this);"></td>
@@ -46,3 +47,7 @@
     </a>
   </td>
 {% endif %}
+{% if allow_dragging %}
+  <td class="drag"></td>
+{% endif %}
+<td>-</td>

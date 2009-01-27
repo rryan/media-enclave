@@ -29,7 +29,8 @@ def channel_detail(request, channel_id=1):
                                  'force_actions_bar': True,
                                  'elapsed_time': snapshot.time_elapsed,
                                  'playing': snapshot.status == 'playing',
-                                 'no_queuing': True},
+                                 'no_queuing': True,
+                                 'allow_dragging': True},
                                 context_instance=RequestContext(request))
 
 def channel_history(request, channel_id):

@@ -1,5 +1,6 @@
 # venclave/views.py
 
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render_to_response
 
@@ -14,8 +15,31 @@ def home(request):
                               {'genres': Genre.objects.all(),
                                'years': years})
 
+def Qu(field, op, value):
+    return Q(**{(str(field) + '__' + str(op)): str(value)})
+
 def simple_search(request):
-    raise Http404()
+    form = request.GET
+    # Get the query.
+    query_string = form.get('q','')
+    query_words = query_string.split()
+    if not query_words:
+        queryset = ()
+        query_string = ''
+    else:
+        full_query = Q()
+        for word in query_words:
+            word_query = Q()
+            for field in ContentNode.searchable_fields():
+                # WTF Each word may appear in any field, so we use OR here.
+                word_query |= Qu(field, 'icontains', word)
+            # WTF Each match must contain every word, so we use AND here.
+            full_query &= word_query
+        queryset = ContentNode.visibles.filter(full_query)
+    return render_to_response('venclave/search_results.html',
+                              {'videos':queryset,
+                               'search_query':query_string})
+
 
 def content_view(request, id):
     try:

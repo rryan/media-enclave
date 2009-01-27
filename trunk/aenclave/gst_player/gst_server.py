@@ -6,9 +6,14 @@ The server that allows communication with a GstPlayer via Pyro.
 
 import gobject
 import logging
+import os
+# Pyro needs this variable before we import it, so we add it to the environment
+# like this.
+os.environ["PYRO_STORAGE"] = "/tmp/"
+os.environ["PYRO_STDLOGGING"] = "1"
+os.environ["PYRO_TRACELEVEL"] = "2"
 import Pyro.core
 import threading
-import os
 os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"
 from menclave import settings
 from menclave.aenclave.gst_player import gst_backend
@@ -30,8 +35,6 @@ class RemotePlayer(Pyro.core.ObjBase, gst_backend.GstPlayer):
 
 def main():
     # Setup the Pyro daemon.
-    Pyro.config.PYRO_TRACELEVEL = 3
-    Pyro.config.PYRO_STDLOGGING = True
     Pyro.core.initServer()
     daemon = Pyro.core.Daemon(port=settings.GST_PLAYER_PORT)
     # Setup Django.
@@ -54,6 +57,7 @@ def main():
     finally:
         logging.info("exiting main thread.")
         daemon.shutdown()
+
 
 if __name__ == "__main__":
     main()

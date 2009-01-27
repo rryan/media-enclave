@@ -22,10 +22,16 @@ def datetime_string(dt):
 
 class VisibleManager(models.Manager):
 
-    """VisibleManager -- manager for getting only visible songs"""
+    """
+    VisibleManager -- manager for getting only visible songs
+
+    NOTE: Also limits queries to 500 results.  This is useful for queries going
+    to the web.  To bypass this restriciton, use [model].objects.
+    """
 
     def get_query_set(self):
-        return super(VisibleManager, self).get_query_set().filter(visible=True)
+        q = super(VisibleManager, self).get_query_set().filter(visible=True)
+        return q[:500]  # Limit any query through visibles to 500 songs.
 
 #-----------------------------------------------------------------------------#
 

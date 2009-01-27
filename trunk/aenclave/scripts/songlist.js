@@ -1,11 +1,28 @@
 // songlist -- functions for all pages with a songlist on them
-// BTW This module assumes that both the Prototype and the jQuery library have
-//     been loaded.  Refer to www.prototypejs.org and www.jquery.com for
-//     documentation.
+// This module assumes that the jQuery library has been loaded.  Refer to
+// www.jquery.com for documentation.
 
-String.prototype.strip = function() {
-  return this.replace(/^\s+/, '').replace(/\s+$/, '');
-};
+$(document).ready(function() {
+  var allowToHide = ['play-count', 'skip-count', 'last-played', 'date-added'];
+  var visibleColumns = $.makeArray($('#songlist thead th').map(function (col) {
+    $th = $(this);
+    for (var i = 0; i < allowToHide.length; i++) {
+      if ($th.hasClass(allowToHide[i])) {
+        return null;
+      }
+    }
+    return col + 1;  // columnmanager uses 1-indexed column numbers.
+  }));
+  $('#songlist').columnManager({
+      listTargetID: 'col-list',
+      onClass: 'col-on',
+      offClass: 'col-off',
+      saveState: true,
+      hideInList: visibleColumns
+  });
+  // Create a click menu (not sure what the function is for...).
+  $('#ul-select-col').clickMenu({onClick: function() {}});
+});
 
 var songlist = {
 
@@ -313,13 +330,11 @@ var songlist = {
   /******************************* DRAG & DROP *******************************/
 
   enable_dnd: function(opt_onDrop) {
-    jQuery('#songlist thead tr').append('<th class="drag"></th>');
-    jQuery('#songlist tbody tr').append('<td class="drag"></td>');
     // Make the current song undraggable.
     jQuery('#songlist tr.c .drag').removeClass('drag');
     jQuery('#songlist').tableDnD({
         onDrop: function(table, row) {
-          songlist.recolor_rows();
+          tablesort.recolor_rows();
           // Call this if the caller provided it.
           if (opt_onDrop) {
             opt_onDrop(table, row);
@@ -463,181 +478,9 @@ var songlist = {
     });
   },
 
-  /***************************** SORTABLE TABLES *****************************/
-
-  // WTF These functions may not work properly for the songlist on the Channels
-  //     page.  That's okay -- that songlist doesn't need to be sortable.
-
   insert_row: function(row) {
     jQuery('#songlist tbody').append(row);
-    this.recolor_rows();
+    tablesort.recolor_rows();
   },
-
-  // Recolor the rows of the songlist table so that they alternate properly.
-  // This should be called at the end of functions that reorder the rows.
-  recolor_rows: function() {
-    jQuery('#songlist tbody tr').each(function (i) {
-      var row = jQuery(this);
-      if (row.hasClass('c')) return;  // Skip the currently playing song.
-      row.removeClass('a');
-      row.removeClass('b');
-      row.addClass(!(i % 2) ? 'a' : 'b');  // Odd is 'a', even is 'b'.
-    });
-  },
-
-  // Reverse the rows in the songlist.
-  reverse_rows: function() {
-    // We do this with raw DOM nodes because it's easier.
-    var tbody = jQuery('#songlist tbody').get(0);
-    for (var i = tbody.rows.length - 1; i >= 0; i--) {
-      var row = tbody.rows[i];
-      tbody.removeChild(row);
-      tbody.appendChild(row);
-    }
-    songlist.recolor_rows();
-  },
-
-  // Get and return the text of a table cell.  This tries to be smart about
-  // links and textboxes.
-  get_cell_text: function(cell) {
-    var text = "";
-    for (var i = 0; i < cell.childNodes.length; i++) {
-      var child = cell.childNodes[i];
-      if (child.nodeType == Node.TEXT_NODE) {
-        text = child.nodeValue.strip();
-      } else if (child.nodeType == Node.ELEMENT_NODE) {
-        if (child.tagName == "INPUT") {
-          return String(child.value).strip();
-        } else return songlist.get_cell_text(child);
-      }
-    }
-    return text;
-  },
-
-  // The various functions for computing sort keys.
-  sort_keys: {
-
-    'int': function(text) {
-      var value = parseInt(text, 10);
-      if (isNaN(value)) return "";
-      else return value;
-    },
-
-    'date': function(text) {
-      var date = new Date();
-      var dateparts = text.split(" ");
-      var timeparts;
-      if (dateparts.length == 2) {
-        timeparts = dateparts[1].split(":");
-        date.setHours(parseInt(timeparts[0], 10));
-        date.setMinutes(parseInt(timeparts[1], 10));
-        date.setSeconds(parseInt(timeparts[2], 10));
-        if (dateparts[0] == "Today");
-        else if (dateparts[0] == "Yesterday") {
-          date = new Date(date - 24 * 60 * 60 * 1000);
-        }
-      } else {
-        date.setDate(parseInt(dateparts[0], 10));
-        date.setMonth({Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6,
-            Aug:7, Sep:8, Oct:9, Nov:10, Dec:11}[dateparts[1]]);
-        date.setYear(parseInt(dateparts[2], 10));
-        timeparts = dateparts[3].split(":");
-      }
-      date.setHours(parseInt(timeparts[0], 10));
-      date.setMinutes(parseInt(timeparts[1], 10));
-      date.setSeconds(parseInt(timeparts[2], 10));
-      return date;
-    },
-
-    'time': function(text) {
-      var parts = text.split(":");
-      var total = 0;
-      for (var i = 0; i < parts.length; i++) {
-        total = 60 * total + parseInt(parts[i], 10);
-      }
-      return total;
-    },
-
-    'text': function(text) {
-      return text;
-    }
-
-  },
-
-  sort_rows_by: function(col, type, reversed) {
-    // Step 1: Pick a key function.
-    var key = songlist.sort_keys[type];
-    if (!key) throw "Invalid sort key:" + type;
-    // Step 2: Pull all the rows out of the table body.
-    var tbody = jQuery('#songlist tbody').get(0);
-    var rows = [];
-    for (var i = tbody.rows.length - 1; i >= 0; i--) {
-      var row = tbody.rows[i];
-      tbody.removeChild(row);
-      var text = songlist.get_cell_text(row.getElementsByTagName('td')[col]);
-      // Sort first by key, then by index (to force sorting stability), then
-      // include the row itself so we can pull it out later.
-      rows.push([key(text), i, row]);
-    }
-    // Step 3: Sort the rows.
-    if (reversed) {
-      rows.sort(function(a, b) {
-        if (a[0] == "") return 1;
-        else if (b[0] == "") return -1;
-        else if (a[0] < b[0]) return 1;
-        else if (a[0] > b[0]) return -1;
-        else return a[1] - b[1];
-      });
-    } else {
-      rows.sort(function(a, b) {
-        if (a[0] == "") return 1;
-        else if (b[0] == "") return -1;
-        else if (a[0] < b[0]) return -1;
-        else if (a[0] > b[0]) return 1;
-        else return a[1] - b[1];
-      });
-    }
-    // Step 4: Put the rows back into the table body and recolor the rows.
-    for (var i = 0; i < rows.length; i++) tbody.appendChild(rows[i][2]);
-    songlist.recolor_rows();
-  },
-
-  sorta: function(cell) {
-    // Use getAttribute because this is a non-standard attr.
-    var type = cell.getAttribute('sorttype');
-    var col = 0;
-    jQuery('#songlist thead th').each(function (i) {
-      var child = this;
-      if (child == cell) {
-        col = i;
-        child.onclick = function() { songlist.sortd(child); };
-        child.className = "sorta";
-      } else if (child.className == "sorta" || child.className == "sortd") {
-        child.onclick = function() { songlist.sorta(child); };
-        child.className = "sort";
-      }
-    });
-    songlist.sort_rows_by(col, type, false);
-  },
-
-  sortd: function(cell) {
-    // Use getAttribute because this is a non-standard attr.
-    var type = cell.getAttribute('sorttype');
-    var col = 0;
-    jQuery('#songlist thead th').each(function (i) {
-      var child = this;
-      if (child == cell) {
-        col = i;
-        child.onclick = function() { songlist.sorta(child); };
-        child.className = "sortd";
-      } else if (child.className == "sorta" || child.className == "sortd") {
-        child.onclick = function() { songlist.sorta(child); };
-        child.className = "sort";
-      }
-    });
-    songlist.sort_rows_by(col, type, true);
-  }
 
 };
-
-/*****************************************************************************/

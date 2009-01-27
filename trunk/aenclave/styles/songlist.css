@@ -147,7 +147,54 @@ TABLE.data TBODY TD INPUT.text {
     border: 0px;
 }
 
-/******************************** SONGLIST COLUMNS ***************************/
+/******************************** COLPICKER **********************************/
+
+table.data thead th.col-picker {
+    margin: 2px;
+    padding: 2px;
+    border-spacing: 2px;
+}
+
+th.col-picker div.cmDiv {
+    margin: 0;
+    padding: 0;
+    border-spacing: 0;
+    background: none;
+    border: 0;
+}
+
+th.col-picker ul {
+    margin: 0;
+    padding: 0;
+    border-spacing: 0;
+    list-style: none;
+    color: black;
+    font-size: 11pt;
+}
+
+th.col-picker ul li.main {
+    padding: 2px;
+    background: none;
+}
+
+table.data .clickMenu div.inner {
+    left: -92px;
+}
+
+th.col-picker ul#col-list li {
+    padding-left: 20px;
+    background-repeat: no-repeat;
+}
+
+.col-on {
+    background: url(/audio/images/tick.png) 0 50%;
+}
+
+.col-off {
+    background: url(/audio/images/cross.png) 0 50%;
+}
+
+/***************************** SONGLIST COLUMNS ******************************/
 
 .select {
     width: 1px;
@@ -158,7 +205,7 @@ TABLE.data TBODY TD INPUT.text {
 }
 
 .track {
-    width: 40px;
+    /*width: 40px;*/
 }
 
 .title {
@@ -179,6 +226,9 @@ TABLE.data TBODY TD INPUT.text {
     width: 130px;
 }
 
+.col-picker {
+    width: 10px;
+}
 
 /******************************** ACTIONS BAR ********************************/
 

@@ -9,19 +9,20 @@
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "songlist.js" %}"></script>
+  <script type="text/javascript" src="{% url aenclave-scripts "tablesort.js" %}"></script>
 {% endblock %}
 
 {% block content %}
   {% if playlist_list %}
+    {# TODO(rnk): Make this not a songlist table. #}
     <table class="data" id="songlist">
       <thead>
         <tr>
-          <th class="sort" sorttype="text" onclick="songlist.sorta(this);">Name</th>
-          <th class="sort" sorttype="text" onclick="songlist.sorta(this);">Owner</th>
-          <th class="sort" sorttype="int" onclick="songlist.sorta(this);"># Songs</th>
-          <th class="sort" sorttype="date" onclick="songlist.sorta(this);">Last modified</th>
-          <th class="sort" sorttype="date" onclick="songlist.sorta(this);">Date created</th>
+          <th class="sort" sorttype="text" onclick="tablesort.sorta(this);">Name</th>
+          <th class="sort" sorttype="text" onclick="tablesort.sorta(this);">Owner</th>
+          <th class="sort" sorttype="int" onclick="tablesort.sorta(this);"># Songs</th>
+          <th class="sort" sorttype="date" onclick="tablesort.sorta(this);">Last modified</th>
+          <th class="sort" sorttype="date" onclick="tablesort.sorta(this);">Date created</th>
         </tr>
       </thead>
       <tbody>

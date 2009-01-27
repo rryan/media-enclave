@@ -108,7 +108,7 @@ var controls = {
     //     because we'll think that the playlist has changed.
     controls.playlist_info = playlist_info;
     controls.update_playlist_info(playlist_info);
-    if (Boolean(cookies.read('controls_minimized'))) {
+    if (Boolean($.cookie('controls_minimized'))) {
       controls.minimize();
     } else {
       controls.updater.start();
@@ -249,14 +249,16 @@ var controls = {
     jQuery('#controls').hide();
     jQuery('#controls-restore').show();
     controls.updater.stop();
-    cookies.save('controls_minimized', '1', 365);
+    // Store a cookie to remember that we're minimized.
+    $.cookie('controls_minimized', '1', {path: '/', expires: 7});
   },
 
   restore: function() {
     jQuery('#controls-restore').hide();
     jQuery('#controls').show();
     controls.updater.start();
-    cookies.delete_('controls_minimized');
+    // Delete the cookie.
+    $.cookie('controls_minimized', '', {path: '/', expires: -1});
   },
 
   play: function() {

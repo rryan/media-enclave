@@ -30,7 +30,8 @@ def playlist_detail(request, playlist_id):
                                  'song_list': songs,
                                  'force_actions_bar': can_cede,
                                  'allow_cede': can_cede,
-                                 'allow_edit': playlist.can_edit(request.user)},
+                                 'allow_edit': playlist.can_edit(request.user),
+                                 'allow_dragging': True},
                                 context_instance=RequestContext(request))
 
 def user_playlists(request, username):

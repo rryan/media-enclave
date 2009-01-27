@@ -1,6 +1,6 @@
 // channels -- functions for the Channels page
 
-jQuery(document).ready(function() {
+$(document).ready(function() {
   songlist.enable_dnd(function(table, row) {
     row = jQuery(row);
     var prev_row = row.prev("tr");

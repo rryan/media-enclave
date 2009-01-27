@@ -12,11 +12,14 @@
     {% block scripts %}
       <script type="text/javascript" src="{% url aenclave-scripts "jquery-1.2.6.min.js" %}"></script>
       <script type="text/javascript" src="{% url aenclave-scripts "controls.js" %}"></script>
-      <script type="text/javascript" src="{% url aenclave-scripts "cookies.js" %}"></script>
-      <script>
+      <script type="text/javascript" src="{% url aenclave-scripts "jquery.cookie.min.js" %}"></script>
+      <script type="text/javascript">
         jQuery(document).ready(function(e) {
 	  controls.initialize({{playlist_info|safe}});
 	});
+        String.prototype.strip = function() {
+          return this.replace(/^\s+/, '').replace(/\s+$/, '');
+        };
       </script>
     {% endblock %}
   </head>
@@ -35,7 +38,7 @@
 
 
     <div id="copyright">Powered by <a href="http://audioenclave.sourceforge.net/">Media-Enclave</a></div>
-    <div id="copyright">&copy; 1999&ndash;2008 by <a href="http://web.mit.edu/2ndwest/www">Putz Inc.</a></div>
+    <div id="copyright">&copy; 1999&ndash;2009 by <a href="http://web.mit.edu/2ndwest/www">Putz Inc.</a></div>
 
     {% block postcopyright %}{% endblock %}
 

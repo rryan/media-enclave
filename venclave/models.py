@@ -147,6 +147,7 @@ KIND_RANDOMCLIP = 'rc'
 KIND_UNKNOWN = 'uk'
 
 class ContentNode(models.Model):
+
     def __unicode__(self): return self.full_name()
 
     #--------------------------------- Kind ----------------------------------#
@@ -258,6 +259,11 @@ class ContentNode(models.Model):
         return ('django.views.generic.list_detail.object_detail',
                 (str(self.id),), {'queryset': ContentNode.objects,
                                   'template_name': 'content_detail.html'})
+
+    @classmethod
+    def searchable_fields(cls):
+        # TODO(rnk): Expand this to include the rest of the metadata.
+        return ('title', 'season', 'episode')
 
 
 #-----------------------------------------------------------------------------#

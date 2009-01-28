@@ -44,7 +44,6 @@ public class MyApplication implements IWamiApplication,
 	@Override
 	public void onClosed() {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -119,6 +118,9 @@ public class MyApplication implements IWamiApplication,
 					sendPlaylistRequest(pid);
 				}
 			}
+			if ("tellsongname".equals(command)) {
+				tellSongName();
+			}
 		}
 	}
 
@@ -169,6 +171,16 @@ public class MyApplication implements IWamiApplication,
 		Document doc = XmlUtils.newXMLDocument();
 		Element root = doc.createElement("reply");
 		root.setAttribute("type", "resume");
+		doc.appendChild(root);
+		appController.sendMessage(doc);
+	}
+	
+	private void tellSongName() {
+		String songName = "the current song is "; //TODO get from player
+		Document doc = XmlUtils.newXMLDocument();
+		Element root = doc.createElement("reply");
+		root.setAttribute("type", "tellsongname");
+		root.setAttribute("songname", songName);
 		doc.appendChild(root);
 		appController.sendMessage(doc);
 	}

@@ -48,6 +48,9 @@ function handleResponse(replyNode) {
 		if (replyType == "playlist") {
 			playlist(replyNode);
 		}
+		if (replyType == "tellsongname") {
+			tellsongname(replyNode);
+		}
 	} catch (e) {
 		alert(e);
 	}
@@ -120,6 +123,21 @@ function pause(replyNode) {
 
 function resume(replyNode) {
 	window.frames["aenclave"].window.controls.play();
+}
+
+function tellsongname(replyNode) {
+	var tts = document.getElementById("tts");
+	var url = "http://wami.csail.mit.edu:8080/synthesizers/synthesize?language=english&synth_string=";
+	text = replyNode.getAttribute("songname");
+	info = window.frames["aenclave"].window.controls.playlist_info.songs[0];
+	if (info != null) {
+		//replace hyphen with 'by'
+		info = info.replace(" - ", " by ").toLowerCase();
+		//and append to tts
+		text += info;
+	}
+	url = url + text;
+	tts.setAttribute("src", url);
 }
 
 function layoutHandler(frameWidth, frameHeight, top, left) {

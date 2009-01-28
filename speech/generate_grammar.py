@@ -14,15 +14,29 @@ grammar NiceRack;
 
 public <top> = <msg> ;
 
-<msg> = <queuecmd> {[command=queue]} | <dequeuecmd> {[command = dequeue]}  ;
+<msg> = <queuecmd> {[command=queue]} | <dequeuecmd> {[command=dequeue]}  |
+ <dequeueall> {[command=dequeueall]} | <pausecmd> {[command=pause]} | 
+ <resumecmd> {[command=resume]} | <playlist> {[command=playlist]} ;
 
 <dequeuecmd> = dequeue this song ;
+
+<dequeueall> = dequeue everything ;
 
 <queuecmd> = [computer] <queueword> [me] <request> ;
 
 <queueword> = queue | play ;
 
+<pausecmd> = pause | pause this song ;
+
+<resumecmd> = resume this song | play this song | play | resume ; 
+
+<playlist> = [computer] <queueword> [me] the playlist <playlistname> ;
+
+<playlistname> = three songs {[pid=1]} | ten songs {[pid=2]} ;
+
 <request> = '''
+
+# TODO automate playlistname generation
 
 
 # clean up a request:

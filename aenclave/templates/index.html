@@ -15,16 +15,22 @@
     <a href="{% url aenclave-roulette %}">Roulette</a>
   </div>
   <form method="get" action="{% url aenclave-normal-search %}">
-    <p><input type="text" name="q" size="60"></p>
+    <p><input type="text" name="q" size="60"/></p>
     <p>
-      <input type="submit" value="Search library">
-      <input type="submit" name="lucky" value="I'm feeling lucky">
+      Search from: 
+      <input type="radio" name="from" value="all_songs" checked="checked"/> all songs
+      <input type="radio" name="from" value="play_count"/> play count &gt; 0
+      <input type="radio" name="from" value="playlists"/> in a playlist
+      <input type="radio" name="from" value="my_playlists"/> in my playlists
+    </p>
+    <p>
+      <input type="submit" value="Search library"/>
+      <input type="submit" name="lucky" value="I'm feeling lucky"/>
     </p>
   </form>
   <p>Now searching through {{total_song_count|intcomma}} song{{total_song_count|pluralize}}.</p>
   <p>
     <a href="{% url aenclave-filter-search %}?k=and&k_0=date_added&k_0_r=last&k_0_f0=2&k_0_f1=week">Recently uploaded songs</a> |
-    <a href="{% url aenclave-channel-history 1 %}">Recently played songs</a> |
-    <a href="{% url aenclave-filter-search %}?k=and&k_0=last_queued&k_0_r=last&k_0_f0=24&k_0_f1=hour">Recently queued songs</a>
+    <a href="{% url aenclave-filter-search %}?k=and&k_0=last_played&k_0_r=last&k_0_f0=24&k_0_f1=hour">Recently played songs</a>
   </p>
 {% endblock %}

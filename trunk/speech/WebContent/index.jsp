@@ -1,7 +1,15 @@
-<!--  we just forward to the generic, note that the generic has several callbacks we implement in jsp_includes-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:v="urn:schemas-microsoft-com:vml">
 
-<jsp:forward page="generic/main.jsp">
-	<jsp:param name="originalRequestUrl" value="<%=request.getRequestURL().toString()%>" />
-	<jsp:param name="contactEmail" value="youremailhere@domain.com" />
-</jsp:forward>
+  <head>
+    <title>&AElig;ncl&auml;ve Speech</title>
+    <script type="text/javascript">
+      document.domain = "localhost";
+    </script>
+  </head>
 
+  <frameset rows="100,*">
+    <frame name="wami" src="audio_applet_frame.jsp"/>
+    <frame id="aenclave" name="aenclave" src="http://localhost:8000/audio/"/>
+  </frameset>
+</html>

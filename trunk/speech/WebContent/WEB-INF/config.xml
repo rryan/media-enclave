@@ -12,7 +12,7 @@
 	<relay>
 		<settings maxRelays="100" relayTimeout="30" />
 	</relay>
-	
+
 	<application class="edu.mit.csail.sls.samples.project.MyApplication" />
 
 	<synthesizer class="edu.mit.csail.sls.wami.synthesis.URLSynthesizer">

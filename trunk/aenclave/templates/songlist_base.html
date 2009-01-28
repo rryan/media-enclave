@@ -7,11 +7,11 @@
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "jquery.tablednd_0_5.js" %}"></script>
-  <script type="text/javascript" src="{% url aenclave-scripts "jquery.clickmenu.pack.js" %}"></script>
-  <script type="text/javascript" src="{% url aenclave-scripts "jquery.columnmanager.pack.js" %}"></script>
-  <script type="text/javascript" src="{% url aenclave-scripts "tablesort.js" %}"></script>
-  <script type="text/javascript" src="{% url aenclave-scripts "songlist.js" %}"></script>
+  {% javascript "jquery.tablednd_0_5.js" %}
+  {% javascript "jquery.clickmenu.pack.js" %}
+  {% javascript "jquery.columnmanager.pack.js" %}
+  {% javascript "tablesort.js" %}
+  {% javascript "songlist.js" %}
 {% endblock %}
 
 {% block content %}

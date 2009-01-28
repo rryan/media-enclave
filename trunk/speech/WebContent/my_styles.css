@@ -1,0 +1,16 @@
+.GridCell {
+	text-align: center;
+	width: 85px;
+	height: 85px;
+	border: solid;	
+	border-color: black;
+}
+
+.GridCellHighlighted {
+	text-align: center;
+	width: 85px;
+	height: 85px;
+	border: solid;	
+	border-color: black;
+	background-color: aqua;
+}

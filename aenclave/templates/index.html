@@ -18,10 +18,16 @@
     <p><input type="text" name="q" size="60"/></p>
     <p>
       Search from: 
-      <input type="radio" name="from" value="all_songs" checked="checked"/> all songs
-      <input type="radio" name="from" value="play_count"/> play count &gt; 0
-      <input type="radio" name="from" value="playlists"/> in a playlist
-      <input type="radio" name="from" value="my_playlists"/> in my playlists
+      <input type="radio" name="from" value="all_songs" id="from_all_songs"
+          checked="checked"/>
+      <label for="from_all_songs">all songs</label>
+      <input type="radio" name="from" value="play_count" id="from_play_count"/>
+      <label for="from_play_count">play count &gt; 0</label>
+      <input type="radio" name="from" value="playlists" id="from_playlists"/>
+      <label for="from_playlists">in a playlist</label>
+      <input type="radio" name="from" value="my_playlists"
+          id="from_my_playlists"/>
+      <label for="from_my_playlists">in my playlists</label>
     </p>
     <p>
       <input type="submit" value="Search library"/>

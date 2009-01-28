@@ -38,7 +38,7 @@
 		<link>
 			<name>WebContent/generic</name>
 			<type>2</type>
-			<location>/home/ecooper/wami/wamicore/generic</location>
+			<locationURI>WAMICORE/generic</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

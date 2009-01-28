@@ -64,6 +64,7 @@ TABLE.data TBODY TR.b { background-color: #f2f2ff; }
 TABLE.data TBODY TR.c { border-bottom: 3px #ccf double; }
 
 TABLE.data TBODY TD {
+    font-size: 14px;  /* sometimes this gets overridden */
     text-align: left;
     padding: 3px 7px 4px;
     border-right: 1px #ddd solid;

@@ -4,7 +4,7 @@ import itertools
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from menclave.aenclave.control import Controller
 from menclave.aenclave.models import Song
@@ -23,18 +23,34 @@ def normal_search(request):
     query_string = form.get('q','')
     query_words = query_string.split()
     # If no query was provided, then yield no results.
-    if not query_words: queryset,query_string = (),''
+    if not query_words:
+        (queryset, query_string) = ((), '')
     # Otherwise, get matching songs.
     else:
         full_query = Q()
         for word in query_words:
             word_query = Q()
             for field in ('title', 'album', 'artist'):
-                # WTF Each word may appear in any field, so we use OR here.
+                # Each word may appear in any field, so we use OR here.
                 word_query |= Qu(field, 'icontains', word)
-            # WTF Each match must contain every word, so we use AND here.
+            # Each match must contain every word, so we use AND here.
             full_query &= word_query
         queryset = Song.visibles.filter(full_query)
+        select_from = form.get('from', 'all_songs')
+        if select_from == 'all_songs':
+            select_from = ''  # This makes template logic easier.
+        elif select_from == 'play_count':
+            queryset = queryset.filter(play_count__gt=0)
+        elif select_from == 'playlists':
+            queryset = queryset.annotate(playlist_count=Count('playlistentry'))
+            queryset = queryset.filter(playlist_count__gt=0)
+        elif select_from == 'my_playlists':
+            user = request.user
+            queryset = queryset.filter(playlistentry__playlist__owner=user)
+            queryset = queryset.annotate(playlist_count=Count('playlistentry'))
+            queryset = queryset.filter(playlist_count__gt=0)
+        else:
+            select_from = ''  # This makes template logic easier.
     # If we're feeling lucky, queue a random result.
     if form.get('lucky', False):
         if queryset is ():
@@ -45,8 +61,9 @@ def normal_search(request):
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
     # Otherwise, display the search results.
     return render_html_template('aenclave/search_results.html', request,
-                                {'song_list':queryset,
-                                 'search_query':query_string},
+                                {'song_list': queryset[:500],  # limit to 500
+                                 'search_query': query_string,
+                                 'select_from': select_from},
                                 context_instance=RequestContext(request))
 
 #------------------------------- Filter Search -------------------------------#
@@ -104,7 +121,7 @@ def _build_filter_tree(form, prefix):
             elif rule in ('is','notis','lte','gte'):
                 return (kind, rule, f0), 1, ()
             else: raise KeyError('bad integer rule: %r' % rule)
-        elif kind in ('date_added','last_queued'):
+        elif kind in ('date_added','last_played'):
             if rule in ('last','nolast'):
                 # Validate the number.  This is human provided, so give an
                 # error string if it's bad.
@@ -160,7 +177,7 @@ def _build_filter_query(tree):
         elif rule == 'inside': return Qu(kind, 'range', data)
         elif rule == 'outside':
             return Qu(kind, 'lt', data[0]) | Qu(kind, 'gt', data[1])
-    elif kind in ('date_added','last_queued'):
+    elif kind in ('date_added','last_played'):
         if rule in ('last','nolast'):
             number, unit = data
             if unit == 'hour': delta = datetime.timedelta(0, 3600)
@@ -189,6 +206,6 @@ def filter_search(request):
     if total == 0: queryset = ()
     else: queryset = Song.visibles.filter(_build_filter_query(tree))
     return render_html_template('aenclave/filter_results.html', request,
-                                {'song_list':queryset,
+                                {'song_list':queryset[:500],
                                  'criterion_count':total},
                                 context_instance=RequestContext(request))

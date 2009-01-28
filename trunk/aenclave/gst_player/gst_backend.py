@@ -136,8 +136,8 @@ class GstPlayer(object):
 
     Properties:
     song_queue -- A deque of songs that will be played.
-    song_history -- A deque of the last 20 songs played.  When playing, the tail
-                    of song_history is the currently playing song.
+    song_history -- A deque of the last 20 songs played.  The head is the most
+                    recently played song.
     player -- The gst player object that does the dirty work.
     """
 
@@ -266,7 +266,7 @@ class GstPlayer(object):
             song = self.song_queue.popleft()
             self.current_song = song
             while len(self.song_history) > 20:
-                self.song_history.popleft()
+                self.song_history.pop()
             # TODO(rnk): Does the path need to be escaped?
             self.player.set_property("uri", "file://" + song.audio.path)
             self.player.set_state(gst.STATE_PLAYING)
@@ -275,7 +275,7 @@ class GstPlayer(object):
     def _stop(self):
         """Stop the player."""
         if self.current_song and not self.current_song.noise:
-            self.song_history.append(self.current_song)
+            self.song_history.appendleft(self.current_song)
         self.player.set_state(gst.STATE_NULL)
 
     @synchronized

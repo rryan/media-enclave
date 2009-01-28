@@ -29,8 +29,9 @@ filter = {
     node.appendChild(filter.option("track", "Track number"));
     node.appendChild(filter.option("time", "Song duration"));
     node.appendChild(filter.option("date_added", "Date added"));
-    node.appendChild(filter.option("last_queued", "Last queued"));
+    node.appendChild(filter.option("last_played", "Last played"));
     node.appendChild(filter.option("play_count", "Play Count"));
+    node.appendChild(filter.option("skip_count", "Skip Count"));
     node.appendChild(filter.option("and", "Satisfies all"));
     node.appendChild(filter.option("nand", "Doesn't satisfy all"));
     node.appendChild(filter.option("or", "Satisfies any"));
@@ -140,9 +141,10 @@ filter = {
   category: function(kind) {
     if (kind == "title" || kind == "album" || kind == "artist") {
       return "str";
-    } else if (kind == "time" || kind == "track" || kind == "play_count") {
+    } else if (kind == "time" || kind == "track" || kind == "play_count" ||
+               kind == "skip_count") {
       return "int";
-    } else if (kind == "date_added" || kind == "last_queued") {
+    } else if (kind == "date_added" || kind == "last_played") {
       return "date";
     } else if (kind == "and" || kind == "or" || kind == "nand" ||
                kind == "nor") {

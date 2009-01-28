@@ -17,6 +17,20 @@
     <form method="get" action="{% url aenclave-normal-search %}">
       <input type="text" name="q" size="50" value="{{search_query|escape}}"/>
       <input type="submit" value="Search"/>
+      <br/>
+      Search from: 
+      <input type="radio" name="from" value="all_songs" id="from_all_songs"
+          {% if not select_from %}checked="checked"{% endif %}/>
+      <label for="from_all_songs">all songs</label>
+      <input type="radio" name="from" value="play_count" id="from_play_count"
+          {% ifequal select_from "play_count" %}checked="checked"{% endifequal %}/>
+      <label for="from_play_count">play count &gt; 0</label>
+      <input type="radio" name="from" value="playlists" id="from_playlists"
+          {% ifequal select_from "playlists" %}checked="checked"{% endifequal %}/>
+      <label for="from_playlists">in a playlist</label>
+      <input type="radio" name="from" value="my_playlists" id="from_my_playlists"
+          {% ifequal select_from "my_playlists" %}checked="checked"{% endifequal %}/>
+      <label for="from_my_playlists">in my playlists</label>
     </form>
   </div>
   <div id="headgap"></div>

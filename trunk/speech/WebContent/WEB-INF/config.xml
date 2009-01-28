@@ -6,7 +6,7 @@
 	<layout testBrowser="true">
 		<title>AEnclave WAMI</title>
 		<logo src="logo.GIF" width="412" height="80" />
-		<audio useSpeechDetector="true" />
+		<audio useSpeechDetector="false" />
 	</layout>
 
 	<relay>
@@ -14,6 +14,11 @@
 	</relay>
 	
 	<application class="edu.mit.csail.sls.samples.project.MyApplication" />
+
+	<synthesizer class="edu.mit.csail.sls.wami.synthesis.URLSynthesizer">
+        <param name="url" value="http://wami.csail.mit.edu:8080/synthesizers/synthesize" />
+        <param name="language" value="english" />
+    </synthesizer>
 
 	<recognizer
 		class="edu.mit.csail.sls.wami.portal.xmlrpc.XmlRpcPortalRecognizer">

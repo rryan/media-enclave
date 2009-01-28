@@ -5,6 +5,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = 'menclave.settings'
 import menclave
 import menclave.settings
 from menclave.aenclave.models import Song
+from menclave.aenclave.models import Playlist
 import re
 
 # start of grammar
@@ -16,7 +17,8 @@ public <top> = <msg> ;
 
 <msg> = <queuecmd> {[command=queue]} | <dequeuecmd> {[command=dequeue]}  |
  <dequeueall> {[command=dequeueall]} | <pausecmd> {[command=pause]} | 
- <resumecmd> {[command=resume]} | <playlist> {[command=playlist]} ;
+ <resumecmd> {[command=resume]} | <playlist> {[command=playlist]}  |
+ <tellsongname> {[command=tellsongname]} ;
 
 <dequeuecmd> = dequeue this song ;
 
@@ -32,7 +34,7 @@ public <top> = <msg> ;
 
 <playlist> = [computer] <queueword> [me] the playlist <playlistname> ;
 
-<playlistname> = three songs {[pid=1]} | ten songs {[pid=2]} ;
+<tellsongname> = what is the name of this song ;
 
 <request> = '''
 
@@ -75,5 +77,20 @@ for song in Song.objects.all():
     if i != l:
         title_from_album += ' | '
     print title_from_album
+
+print ' ; '
+
+
+# load playlist info and add it to the grammar.
+i = 0
+l = len(Playlist.objects.all())
+print '<playlistname> = '
+for p in Playlist.objects.all():
+    i += 1
+    plname = cleanup(str(p))
+    plname += ' {[pid=' + str(p.id) + ']}' 
+    if i != l:
+        plname += ' | '
+    print plname
 
 print ' ; '

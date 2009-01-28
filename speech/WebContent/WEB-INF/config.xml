@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wami:configuration xmlns:wami="http://wami.csail.mit.edu/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://wami.csail.mit.edu/ ../generic/config.xsd">
+
+	<layout testBrowser="true">
+		<title>AEnclave WAMI</title>
+		<logo src="logo.GIF" width="412" height="80" />
+		<audio useSpeechDetector="true" />
+	</layout>
+
+	<relay>
+		<settings maxRelays="100" relayTimeout="30" />
+	</relay>
+	
+	<application class="edu.mit.csail.sls.samples.project.MyApplication" />
+
+	<recognizer
+		class="edu.mit.csail.sls.wami.portal.xmlrpc.XmlRpcPortalRecognizer">
+		<param name="url" value="http://wami.csail.mit.edu:8080/portal/" />
+		<param name="developerEmail" value="ecooper@mit.edu" />
+		<param name="developerKey" value="dingolion" />
+		<param name="recordFormat" value="LIN16" />
+		<param name="recordSampleRate" value="8000" />
+		<param name="recordIsLittleEndian" value="true" />
+		<param name="jsgfGrammarPath" value="/WEB-INF/project.jsgf" />
+	</recognizer>
+</wami:configuration>

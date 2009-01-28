@@ -1,0 +1,174 @@
+#JSGF V1.0;
+grammar NiceRack;
+
+public <top> = <msg> ;
+
+<msg> = <queuecmd> {[command=queue]} | <dequeuecmd> {[command=dequeue]}  |
+ <dequeueall> {[command=dequeueall]} | <pausecmd> {[command=pause]} | 
+ <resumecmd> {[command=resume]} | <playlist> {[command=playlist]} ;
+
+<dequeuecmd> = dequeue this song ;
+
+<dequeueall> = dequeue everything ;
+
+<queuecmd> = [computer] <queueword> [me] <request> ;
+
+<queueword> = queue | play ;
+
+<pausecmd> = pause | pause this song ;
+
+<resumecmd> = resume this song | play this song | play | resume ; 
+
+<playlist> = [computer] <queueword> [me] the playlist <playlistname> ;
+
+<playlistname> = three songs {[pid=1]} | ten songs {[pid=2]} ;
+
+<request> = 
+opera singer {[id=45]} | 
+opera singer by cake {[id=45]} | 
+opera singer from [the album] comfort eagle {[id=45]}  | 
+meanwhile  rick james  {[id=44]} | 
+meanwhile  rick james  by cake {[id=44]} | 
+meanwhile  rick james  from [the album] comfort eagle {[id=44]}  | 
+shadow stabbing {[id=47]} | 
+shadow stabbing by cake {[id=47]} | 
+shadow stabbing from [the album] comfort eagle {[id=47]}  | 
+short skirt long jacket {[id=48]} | 
+short skirt long jacket by cake {[id=48]} | 
+short skirt long jacket from [the album] comfort eagle {[id=48]}  | 
+commissioning a symphony in c {[id=41]} | 
+commissioning a symphony in c by cake {[id=41]} | 
+commissioning a symphony in c from [the album] comfort eagle {[id=41]}  | 
+arco arena {[id=39]} | 
+arco arena by cake {[id=39]} | 
+arco arena from [the album] comfort eagle {[id=39]}  | 
+comfort eagle {[id=40]} | 
+comfort eagle by cake {[id=40]} | 
+comfort eagle from [the album] comfort eagle {[id=40]}  | 
+long line of cars {[id=42]} | 
+long line of cars by cake {[id=42]} | 
+long line of cars from [the album] comfort eagle {[id=42]}  | 
+love you madly {[id=43]} | 
+love you madly by cake {[id=43]} | 
+love you madly from [the album] comfort eagle {[id=43]}  | 
+pretty pink ribbon {[id=46]} | 
+pretty pink ribbon by cake {[id=46]} | 
+pretty pink ribbon from [the album] comfort eagle {[id=46]}  | 
+world of two {[id=49]} | 
+world of two by cake {[id=49]} | 
+world of two from [the album] comfort eagle {[id=49]}  | 
+apple {[id=1]} | 
+apple by cibo matto {[id=1]} | 
+apple from [the album] viva  la woman {[id=1]}  | 
+beef jerky {[id=2]} | 
+beef jerky by cibo matto {[id=2]} | 
+beef jerky from [the album] viva  la woman {[id=2]}  | 
+sugar water {[id=3]} | 
+sugar water by cibo matto {[id=3]} | 
+sugar water from [the album] viva  la woman {[id=3]}  | 
+white pepper ice cream {[id=4]} | 
+white pepper ice cream by cibo matto {[id=4]} | 
+white pepper ice cream from [the album] viva  la woman {[id=4]}  | 
+birthday cake {[id=5]} | 
+birthday cake by cibo matto {[id=5]} | 
+birthday cake from [the album] viva  la woman {[id=5]}  | 
+know your chicken {[id=6]} | 
+know your chicken by cibo matto {[id=6]} | 
+know your chicken from [the album] viva  la woman {[id=6]}  | 
+theme {[id=7]} | 
+theme by cibo matto {[id=7]} | 
+theme from [the album] viva  la woman {[id=7]}  | 
+ [the] candy man {[id=8]} | 
+ [the] candy man by cibo matto {[id=8]} | 
+ [the] candy man from [the album] viva  la woman {[id=8]}  | 
+le pain perdu {[id=9]} | 
+le pain perdu by cibo matto {[id=9]} | 
+le pain perdu from [the album] viva  la woman {[id=9]}  | 
+artichoke {[id=10]} | 
+artichoke by cibo matto {[id=10]} | 
+artichoke from [the album] viva  la woman {[id=10]}  | 
+lather {[id=11]} | 
+lather by jefferson airplane {[id=11]} | 
+lather from [the album] crown of creation {[id=11]}  | 
+triad {[id=12]} | 
+triad by jefferson airplane {[id=12]} | 
+triad from [the album] crown of creation {[id=12]}  | 
+share a little joke {[id=13]} | 
+share a little joke by jefferson airplane {[id=13]} | 
+share a little joke from [the album] crown of creation {[id=13]}  | 
+chushingura {[id=14]} | 
+chushingura by jefferson airplane {[id=14]} | 
+chushingura from [the album] crown of creation {[id=14]}  | 
+if you feel {[id=15]} | 
+if you feel by jefferson airplane {[id=15]} | 
+if you feel from [the album] crown of creation {[id=15]}  | 
+crown of creation {[id=16]} | 
+crown of creation by jefferson airplane {[id=16]} | 
+crown of creation from [the album] crown of creation {[id=16]}  | 
+ice cream phoenix {[id=17]} | 
+ice cream phoenix by jefferson airplane {[id=17]} | 
+ice cream phoenix from [the album] crown of creation {[id=17]}  | 
+greasy heart {[id=18]} | 
+greasy heart by jefferson airplane {[id=18]} | 
+greasy heart from [the album] crown of creation {[id=18]}  | 
+ [the] house at pooneil corners {[id=19]} | 
+ [the] house at pooneil corners by jefferson airplane {[id=19]} | 
+ [the] house at pooneil corners from [the album] crown of creation {[id=19]}  | 
+magical mystery tour {[id=29]} | 
+magical mystery tour by  [the] beatles {[id=29]} | 
+magical mystery tour from [the album] magical mystery tour {[id=29]}  | 
+ [the] fool on the hill {[id=30]} | 
+ [the] fool on the hill by  [the] beatles {[id=30]} | 
+ [the] fool on the hill from [the album] magical mystery tour {[id=30]}  | 
+flying {[id=31]} | 
+flying by  [the] beatles {[id=31]} | 
+flying from [the album] magical mystery tour {[id=31]}  | 
+blue jay way {[id=32]} | 
+blue jay way by  [the] beatles {[id=32]} | 
+blue jay way from [the album] magical mystery tour {[id=32]}  | 
+i am the walrus {[id=34]} | 
+i am the walrus by  [the] beatles {[id=34]} | 
+i am the walrus from [the album] magical mystery tour {[id=34]}  | 
+hello  goodbye {[id=35]} | 
+hello  goodbye by  [the] beatles {[id=35]} | 
+hello  goodbye from [the album] magical mystery tour {[id=35]}  | 
+baby you're a rich man {[id=37]} | 
+baby you're a rich man by  [the] beatles {[id=37]} | 
+baby you're a rich man from [the album] magical mystery tour {[id=37]}  | 
+all you need is love {[id=38]} | 
+all you need is love by  [the] beatles {[id=38]} | 
+all you need is love from [the album] magical mystery tour {[id=38]}  | 
+here  there and everywhere {[id=33]} | 
+here  there and everywhere by  [the] beatles {[id=33]} | 
+here  there and everywhere from [the album] revolver {[id=33]}  | 
+good day sunshine {[id=36]} | 
+good day sunshine by  [the] beatles {[id=36]} | 
+good day sunshine from [the album] revolver {[id=36]}  | 
+gimme shelter {[id=20]} | 
+gimme shelter by  [the] rolling stones {[id=20]} | 
+gimme shelter from [the album] let it bleed {[id=20]}  | 
+love in vain {[id=21]} | 
+love in vain by  [the] rolling stones {[id=21]} | 
+love in vain from [the album] let it bleed {[id=21]}  | 
+country honk {[id=22]} | 
+country honk by  [the] rolling stones {[id=22]} | 
+country honk from [the album] let it bleed {[id=22]}  | 
+live with me {[id=23]} | 
+live with me by  [the] rolling stones {[id=23]} | 
+live with me from [the album] let it bleed {[id=23]}  | 
+let it bleed {[id=24]} | 
+let it bleed by  [the] rolling stones {[id=24]} | 
+let it bleed from [the album] let it bleed {[id=24]}  | 
+midnight rambler {[id=25]} | 
+midnight rambler by  [the] rolling stones {[id=25]} | 
+midnight rambler from [the album] let it bleed {[id=25]}  | 
+you got the silver {[id=26]} | 
+you got the silver by  [the] rolling stones {[id=26]} | 
+you got the silver from [the album] let it bleed {[id=26]}  | 
+monkey man {[id=27]} | 
+monkey man by  [the] rolling stones {[id=27]} | 
+monkey man from [the album] let it bleed {[id=27]}  | 
+you can't always get what you want {[id=28]} | 
+you can't always get what you want by  [the] rolling stones {[id=28]} | 
+you can't always get what you want from [the album] let it bleed {[id=28]} 
+ ; 

@@ -76,7 +76,7 @@
             <tr class="c">
 	      {% with current_song as song %}
 	        {% with "true" as current %}
-	          {% include "songlist_song_row.html" %}
+	          {% include "aenclave/songlist_song_row.html" %}
 	        {% endwith %}
 	      {% endwith %}
             </tr>
@@ -84,7 +84,7 @@
         {% endif %}
         {% for song in song_list %}
           <tr class="{% cycle a,b %}">
-            {% include "songlist_song_row.html" %}
+            {% include "aenclave/songlist_song_row.html" %}
           </tr>
         {% endfor %}
       </tbody>

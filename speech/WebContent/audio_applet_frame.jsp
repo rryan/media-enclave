@@ -2,7 +2,16 @@
 	pageEncoding="UTF-8"%>
 <%@ page import="edu.mit.csail.sls.wami.WamiConfig"%>
 
-<jsp:include page="generic/components/initialize.jsp" />
+<jsp:include page="initialize.jsp" />
+
+<%
+	if (request.getAttribute("forward") != null) {
+		String forwardPage = (String) request.getAttribute("forward");
+%>
+<jsp:forward page="<%=forwardPage%>" />
+<%
+	}
+%>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:v="urn:schemas-microsoft-com:vml">
@@ -62,6 +71,8 @@
   <body onload="onLoad()" onresize="onResize()" onunload="onUnload()">
 
     <jsp:include flush="true" page="audio_applet.jsp" />
+
+    <%--<div id="reply-div"></div>--%>
 
     <iframe id="tts" name="tts" src="" width="1%" height="1%"
         style="position:absolute; left:-9999px;"> 

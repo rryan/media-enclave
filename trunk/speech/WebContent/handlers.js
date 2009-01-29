@@ -45,6 +45,10 @@ var responseHandlers = {
 function handleResponse(replyNode) {
 	try {
 		var replyType = replyNode.getAttribute("type");
+        // TODO(rnk): Tell the user what action we're taking, so they know if
+        // we heard them correctly.
+        var div = document.getElementById('reply-div');
+        if (div) div.innerHTML = replyType;
 		responseHandlers[replyType](replyNode);
 	} catch (e) {
 		alert(e);
@@ -89,8 +93,7 @@ function dequeueall(replyNode) {
 	if (aenclaveWindow().location.pathname != "/audio/channels/") {
 		setAenclaveSrc("http://localhost:8000/audio/channels/");
 		setTimeout('dequeueall_finish()', 2000);
-	}
-	else {
+	} else {
 		dequeueall_finish();
 	}
 }
@@ -123,9 +126,10 @@ function resume(replyNode) {
 
 function tellsongname(replyNode) {
 	var tts = document.getElementById("tts");
-	var url = "http://wami.csail.mit.edu:8080/synthesizers/synthesize?language=english&synth_string=";
-	text = replyNode.getAttribute("songname");
-	info = aenclaveWindow().controls.playlist_info.songs[0];
+	var url = ("http://wami.csail.mit.edu:8080/synthesizers/synthesize" +
+               "?language=english&synth_string=");
+	var text = replyNode.getAttribute("songname");
+	var info = aenclaveWindow().controls.playlist_info.songs[0];
 	if (info != null) {
 		//replace hyphen with 'by'
 		info = info.replace(" - ", " by ").toLowerCase();
@@ -133,5 +137,5 @@ function tellsongname(replyNode) {
 		text += info;
 	}
 	url = url + text;
-	tts.setAttribute("src", url);
+	tts.src = url;
 }

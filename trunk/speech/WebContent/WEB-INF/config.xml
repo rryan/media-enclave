@@ -9,7 +9,7 @@
 		<audio useSpeechDetector="false" />
 	</layout>
 
-	<relay>
+	<relay relayClass="edu.mit.csail.sls.wami.relay.WamiRelay">
 		<settings maxRelays="100" relayTimeout="30" />
 	</relay>
 

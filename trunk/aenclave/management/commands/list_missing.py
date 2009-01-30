@@ -13,7 +13,6 @@ class Command(NoArgsCommand):
     help = 'Checks through the Song database for missing files.'
 
     def handle_noargs(self, **options):
-
         verbose = options.get('verbose', False)
         missing = 0
         total = 0

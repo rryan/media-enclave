@@ -3,7 +3,6 @@
 import datetime
 
 from django import template
-from django.core import urlresolvers
 
 register = template.Library()
 
@@ -103,29 +102,3 @@ def groups_of(value, arg=1):
     return result_list
 
 #=============================================================================#
-
-@register.tag
-def javascript(parser, token):
-    try:
-        tag_name, script_name = token.split_contents()
-    except ValueError:
-        msg = "'javascript' tag requires the script name as the only argument."
-        raise template.TemplateSyntaxError(msg)
-    if not (script_name[0] == script_name[-1] and script_name[0] in ('"', "'")):
-        msg = "%r tag's argument should be in quotes" % tag_name
-        raise template.TemplateSyntaxError(msg)
-    return JavascriptNode(script_name[1:-1])
-
-class JavascriptNode(template.Node):
-
-    def __init__(self, script_name):
-        super(JavascriptNode, self).__init__()
-        self.script_name = script_name
-
-    def render(self, context):
-        # TODO(rnk): Move scripts to bottom.
-        # TODO(rnk): Minify all js into one file.
-        # Return a simple script tag in the head.
-        url = urlresolvers.reverse("aenclave-scripts",
-                                   args=[self.script_name])
-        return '<script type="text/javascript" src="%s"></script>' % url

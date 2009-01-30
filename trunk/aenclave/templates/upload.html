@@ -1,15 +1,16 @@
 {% extends "aenclave/header_base.html" %}
+{% load bundler_tags %}
 
 {% block title %}{{block.super}} Upload Songs{% endblock %}
 
 {% block header %}Upload Songs{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "upload.css" %}"/>
+  {% css "aenclave-styles" "upload.css" %}
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "upload.js" %}"></script>
+  {% javascript "aenclave-scripts" "upload.js" %}
 {% endblock %}
 
 {% block content %}

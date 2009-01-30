@@ -1,20 +1,23 @@
 {% extends "aenclave/songlist_base.html" %}
 {% load humanize %}
+{% load bundler_tags %}
 
 {% block title %}{{block.super}} Channels{% endblock %}
 
 {% block header %}Channels{% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "channels.js" %}"></script>
-  <script type="text/javascript">
-    channels.channel_id = {{ channel.id }};
-  </script>
+  {% javascript "aenclave-scripts" "channels.js" %}
+  {% defer %}
+    <script type="text/javascript">
+      channels.channel_id = {{ channel.id }};
+    </script>
+  {% enddefer %}
 {% endblock %}
 
 {% block presonglist %}
   <div id="debugz"></div>
-  <p>
+  <p style="text-align:center;">
     {% if song_list %}
       There {{song_list|length|pluralize:"is,are"}}
       {{song_list|length|apnumber|intcomma}}

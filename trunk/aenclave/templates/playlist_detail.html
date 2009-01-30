@@ -6,11 +6,11 @@
 {% block header %}Playlist Detail{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "playlist.css" %}"/>
+  {% css "aenclave-styles" "playlist.css" %}
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "playlist.js" %}"></script>
+  {% "aenclave-scripts" "playlist.js" %}
 {% endblock %}
 
 {% block presonglist %}

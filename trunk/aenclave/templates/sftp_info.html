@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-  <p>You can use SFTP to upload many songs to Audio Enclave at once.&nbsp; This
+  <p class"justified">You can use SFTP to upload many songs to Audio Enclave at once.&nbsp; This
     is much more efficient if you want to upload a large collection, for
     instance.&nbsp; If you just have a single song to upload, it will probably
     be easier to use the <a href="{% url aenclave-upload-home %}">HTTP upload
@@ -41,7 +41,7 @@
     <li>Rock out.</li>
   </ol>
   <form method="post" action="{% url aenclave-sftp-upload %}">
-    <p>
+    <p class"justified">
       {% if user.is_authenticated %}
         <input type="submit" value="Add uploaded songs"/>
       {% else %}

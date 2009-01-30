@@ -3,8 +3,8 @@
 {% load bundler_tags %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "clickmenu.css" %}"/>
+  {% css "aenclave-styles" "songlist.css" %}
+  {% css "aenclave-styles" "clickmenu.css" %}
 {% endblock %}
 
 {% block scripts %}{{block.super}}

@@ -1,11 +1,12 @@
 {% extends "aenclave/header_base.html" %}
+{% load bundler_tags %}
 
 {% block title %}{{block.super}} Login{% endblock %}
 
 {% block header %}Login{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "login.css" %}"/>
+  {% css "aenclave-styles" "login.css" %}
 {% endblock %}
 
 {% block content %}

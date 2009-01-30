@@ -150,11 +150,68 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',  # here by default; don't know what it's for
     'django.contrib.humanize',  # lets us use a few extra template filters
     'django.contrib.sessions',  # handles user logins
+    'media_bundler',  # bundles js and css
     # The below are the applications included in Media-Enclave.  Usually you
     # will pick one to leave uncommented.
     'menclave.aenclave',  # Audio Enclave
     'menclave.venclave',  # Video Enclave
     #'menclave.genclave',  # Gaming Enclave
+)
+
+# Enable these both to improve performance and hurt debugging.
+DEFER_JAVASCRIPT = False
+USE_BUNDLES = False
+
+# Bundles for media-enclave.
+MEDIA_BUNDLES = (
+    {"type": "javascript",
+     "name": "aenclave-scripts",
+     "path": "/home/reid/menclave/aenclave/scripts/",
+     "url": "/audio/scripts/",
+     "minify": True,
+     "files": (
+         "jquery-1.2.6.min.js",
+         "jquery.clickmenu.pack.js",
+         "jquery.columnmanager.pack.js",
+         "jquery.cookie.min.js",
+         "jquery.tablednd_0_5.js",
+         "controls.js",
+         "channels.js",
+         "fancyupload.js",
+         "fileprogress.js",
+         "filter.js",
+         "playlist.js",
+         "songlist.js",
+         "swfupload.js",
+         "swfupload.cookies.js",
+         "swfupload.queue.js",
+         "tablesort.js",
+         "upload.js",
+     )},
+
+    {"type": "css",
+     "name": "aenclave-styles",
+     "path": "/home/reid/menclave/aenclave/styles/",
+     "url": "/audio/styles/",
+     "minify": False,
+     "files": (
+         "base.css",
+         "browse.css",
+         "clickmenu.css",
+         "filter.css",
+         "login.css",
+         "playlist.css",
+         "sftp_info.css",
+         "songlist.css",
+         "upload.css",
+     )},
+
+    ## Image bundling is not implemented yet, but this is how it might look.
+    #{"type": "sprite",
+    # "name": "myapp_sprites",
+    # "path": MEDIA_ROOT + "/images/",
+    # "url": MEDIA_URL + "/images/",
+    # "files": ("foo.png", "bar.png", "baz.png")},
 )
 
 #=========================== DATE/TIME FORMATTING ============================#

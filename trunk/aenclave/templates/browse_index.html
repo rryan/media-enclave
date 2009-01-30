@@ -1,11 +1,12 @@
 {% extends "aenclave/header_base.html" %}
+{% load bundler_tags %}
 
 {% block title %}{{block.super}} Browser Index{% endblock %}
 
 {% block header %}Browser Index{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "browse.css" %}"/>
+  {% css "aenclave-styles" "browse.css" %}
 {% endblock %}
 
 {% block content %}

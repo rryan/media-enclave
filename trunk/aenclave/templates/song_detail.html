@@ -1,9 +1,10 @@
 {% extends "aenclave/header_base.html" %}
+{% load bundler_tags %}
 
 {% block styles %}
   {{ block.super }}
   {# We do this to get the recent and queue classes. #}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
+  {% css "aenclave-styles" "songlist.css" %}
 {% endblock %}
 
 {% block header %}Song Detail{% endblock %}

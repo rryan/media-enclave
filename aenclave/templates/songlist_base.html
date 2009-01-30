@@ -1,5 +1,6 @@
 {% extends "aenclave/header_base.html" %}
 {% load aenclave %}
+{% load bundler_tags %}
 
 {% block styles %}{{block.super}}
   <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
@@ -7,11 +8,11 @@
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  {% javascript "jquery.tablednd_0_5.js" %}
-  {% javascript "jquery.clickmenu.pack.js" %}
-  {% javascript "jquery.columnmanager.pack.js" %}
-  {% javascript "tablesort.js" %}
-  {% javascript "songlist.js" %}
+  {% javascript "aenclave-scripts" "jquery.tablednd_0_5.js" %}
+  {% javascript "aenclave-scripts" "jquery.clickmenu.pack.js" %}
+  {% javascript "aenclave-scripts" "jquery.columnmanager.pack.js" %}
+  {% javascript "aenclave-scripts" "tablesort.js" %}
+  {% javascript "aenclave-scripts" "songlist.js" %}
 {% endblock %}
 
 {% block content %}

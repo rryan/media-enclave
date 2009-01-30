@@ -1,15 +1,16 @@
 {% extends "aenclave/header_base.html" %}
+{% load bundler_tags %}
 
 {% block title %}{{block.super}} Playlists{% endblock %}
 
 {% block header %}Playlists{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "songlist.css" %}"/>
+  {% css "aenclave-styles" "songlist.css" %}
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "tablesort.js" %}"></script>
+  {% javascript "aenclave-scripts" "tablesort.js" %}
 {% endblock %}
 
 {% block content %}

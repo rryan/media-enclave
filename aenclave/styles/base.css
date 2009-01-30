@@ -8,7 +8,9 @@ BODY {
     margin: 11px 27px 0px;
 }
 
-P { text-align: center; }
+P {
+  text-align: center;
+}
 
 P.warning {
     margin: 40px auto 20px;
@@ -78,7 +80,7 @@ DIV.links A:hover {
 
 DIV.links A:active { color: #d99; }
 
-DIV#headgap { height: 90px; }
+DIV#headgap { height: 100px; }
 
 DIV#login {
     font-size: 12px;

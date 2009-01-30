@@ -4,6 +4,7 @@ Audio Enclave Install Instructions:
 First, make sure the following dependencies are installed:
 
 - Django (>= 1.0)
+- django-media-bundler (http://github.com/rnk/django-media-bundler/tree/master)
 - GStreamer (>= 0.10; this includes gstreamer-plugins-base/good/ugly)
 - pygst (spelled 'python-gst' by Ubuntu/Debian)
 - Pyro (python remote objects)

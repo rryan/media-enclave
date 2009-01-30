@@ -1,15 +1,16 @@
 {% extends "aenclave/header_base.html" %}
+{% load bundler_tags %}
 
 {% block title %}{{block.super}} Filter Search{% endblock %}
 
 {% block header %}Filter Search{% endblock %}
 
 {% block styles %}{{block.super}}
-  <link rel="stylesheet" type="text/css" href="{% url aenclave-styles "filter.css" %}"/>
+  {% css "aenclave-styles" "filter.css" %}
 {% endblock %}
 
 {% block scripts %}{{block.super}}
-  <script type="text/javascript" src="{% url aenclave-scripts "filter.js" %}"></script>
+  {% javascript "aenclave-scripts" "filter.js" %}
 {% endblock %}
 
 {# Note: The javascript is sensitive to some of the whitespace in the block #}

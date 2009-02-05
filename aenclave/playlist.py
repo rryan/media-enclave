@@ -53,8 +53,9 @@ def json_user_playlists(request):
         query = Q(owner=request.user) | Q(group__in=request.user.groups.all())
         playlists = Playlist.objects.filter(query)
     else: playlists = Playlist.objects.none()
-    playlist_data = [{'pid': pl.id, 'owner': pl.owner, 'name': pl.name}
+    playlist_data = [{'pid': pl.id, 'owner': pl.owner.username, 'name': pl.name}
                      for pl in playlists]
+    print playlist_data
     return render_json_response(cjson.encode(playlist_data))
 
 

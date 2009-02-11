@@ -142,11 +142,12 @@ class Song(models.Model):
     @staticmethod
     def annotate_favorited(songs, user):
         """Add a boolean attr for if the song is a favorite of the user."""
-        pl = Playlist.get_favorites(user)
-        favs = set(song.pk for song in pl.songs.all())
-        for song in songs:
-            if song.pk in favs:
-                song.favorited = True
+        if user.is_authenticated():
+            pl = Playlist.get_favorites(user)
+            favs = set(song.pk for song in pl.songs.all())
+            for song in songs:
+                if song.pk in favs:
+                    song.favorited = True
         return songs
 
     class Meta:
@@ -252,6 +253,8 @@ class Playlist(models.Model):
 
     @staticmethod
     def get_favorites(user):
+        errmsg = "User must be authenticated to have favorites."
+        assert user.is_authenticated(), errmsg
         pl_name = "%s's favorites" % user.username
         pl, _ = Playlist.objects.get_or_create(name=pl_name, owner=user)
         return pl

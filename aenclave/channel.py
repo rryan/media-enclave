@@ -1,4 +1,6 @@
-import cjson
+# menclave/aenclave/html.py
+
+"""Channel related views and functions."""
 
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
@@ -10,22 +12,23 @@ from menclave.aenclave.login import (permission_required_json,
 from menclave.aenclave.utils import get_int_list, get_song_list, get_integer
 from menclave.aenclave.xml import (simple_xml_response, xml_error,
                                    render_xml_to_response)
-from menclave.aenclave.json import render_json_response, json_success, json_error
+from menclave.aenclave.json import (render_json_response, json_success,
+                                    json_error, json_channel_info)
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.control import Controller, ControlError
-from menclave.aenclave.models import Channel
+from menclave.aenclave.models import Channel, Song
 
 #--------------------------------- Channels ----------------------------------#
 
 def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
-    ctrl = channel.controller()
-    snapshot = ctrl.get_channel_snapshot(user=request.user)
+    snapshot = request.channel_snapshots[channel_id]
+    songs = Song.annotate_favorited(snapshot.song_queue, request.user)
     return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
                                  'current_song': snapshot.current_song,
-                                 'song_list': snapshot.song_queue,
+                                 'song_list': songs,
                                  'force_actions_bar': True,
                                  'elapsed_time': snapshot.time_elapsed,
                                  'playing': snapshot.status == 'playing',
@@ -34,10 +37,10 @@ def channel_detail(request, channel_id=1):
                                 context_instance=RequestContext(request))
 
 def channel_history(request, channel_id):
-    ctrl = Controller(channel_id)
-    snapshot = ctrl.get_channel_snapshot(user=request.user)
+    snapshot = request.channel_snapshots[channel_id]
+    songs = Song.annotate_favorited(snapshot.song_history, request.user)
     return render_html_template("aenclave/list_songs.html", request,
-                                {'song_list': snapshot.song_history,
+                                {'song_list': songs,
                                  'title': 'Channel History'},
                                 context_instance=RequestContext(request))
 
@@ -48,36 +51,6 @@ def channel_reorder(request, channel_id=1):
     form = request.GET
     ctrl.move_song(int(form['playid']), int(form['after_playid']))
     return json_success('Successfully reordered channel.')
-
-def json_channel_info(channel_id=1):
-    channel = Channel.objects.get(pk=channel_id)
-    data = {}
-    ctrl = channel.controller()
-    snapshot = ctrl.get_channel_snapshot()
-    songs = snapshot.song_queue
-    current_song = snapshot.current_song
-    queue_length = len(songs) + int(bool(current_song))
-    # Take the first three songs.
-    if current_song:
-        songs = [current_song] + songs[:min(2, len(songs))]
-    else:
-        songs = songs[:min(3, len(songs))]
-    data['songs'] = []
-    for song in songs:
-        if song.noise:
-            info_str = 'Dequeing...'
-        else:
-            # Strip the metadata of extra spaces, or we'll truncate too much.
-            info_str = '%s - %s' % (song.title.strip(), song.artist.strip())
-            if len(info_str) > 30:
-                info_str = info_str[:27] + '...'
-        data['songs'].append(info_str)
-    data['elapsed_time'] = snapshot.time_elapsed
-    data['song_duration'] = current_song.time if current_song else 0
-    data['playlist_length'] = queue_length
-    data['playlist_duration'] = snapshot.queue_duration
-    data['playing'] = snapshot.status == 'playing'
-    return cjson.encode(data)
 
 def xml_update(request):
     # TODO(rnk): This code is dead and untested.
@@ -90,8 +63,7 @@ def xml_update(request):
     if timestamp is None: return xml_error('invalid timestamp')
     elif timestamp >= channel.last_touched_timestamp():  # up-to-date timestamp
         try:
-            ctrl = channel.controller()
-            snapshot = ctrl.get_channel_snapshot()
+            snapshot = request.channel_snapshots[channel_id]
             if snapshot.status != "playing":
                 return simple_xml_response('continue')
             elapsed_time = snapshot.time_elapsed
@@ -122,7 +94,7 @@ def json_control(request):
 
 def json_control_update(request, channel_id=1):
     try:
-        channel_info = json_channel_info(channel_id)
+        channel_info = json_channel_info(request, channel_id)
     except ControlError, err:
         return json_error(str(err))
     else:

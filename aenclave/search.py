@@ -22,11 +22,11 @@ def normal_search(request):
     # Get the query.
     query_string = form.get('q','')
     query_words = query_string.split()
-    # If no query was provided, then yield no results.
     if not query_words:
+        # If no query was provided, then yield no results.
         (queryset, query_string) = ((), '')
-    # Otherwise, get matching songs.
     else:
+        # Otherwise, get matching songs.
         full_query = Q()
         for word in query_words:
             word_query = Q()

@@ -207,10 +207,8 @@ class GstPlayer(object):
 
     @synchronized
     @logged
-    def get_channel_snapshot(self, user=None):
+    def get_channel_snapshot(self):
         """Get a snapshot of the channel state."""
-        # See menclave.aenclave.control.Controller.get_channel_snapshot for why
-        # we have to take user as a parameter.
         song_queue = list(self.song_queue)
         duration = sum(song.time for song in song_queue)
         status = self._get_status()

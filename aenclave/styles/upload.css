@@ -48,9 +48,9 @@ DIV.upload TABLE TD {
     padding-left:10px;
 }
 
-.red {
+.progressContainer.red {
     background-color: red;
 }
-.green {
+.progressContainer.green {
     background-color: green;
 }

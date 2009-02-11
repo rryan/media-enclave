@@ -9,7 +9,7 @@ from django.template import RequestContext
 from menclave import settings
 from menclave.aenclave.json import json_error, json_success
 from menclave.aenclave.html import render_html_template
-from menclave.aenclave.models import Song, FavoriteSong
+from menclave.aenclave.models import Song, Playlist, PlaylistEntry
 from menclave.aenclave.utils import get_song_list
 
 #--------------------------------- Roulette ----------------------------------#
@@ -61,10 +61,15 @@ def favorite_song(request, song_id):
         song = Song.objects.get(pk=int(song_id))
     except Song.DoesNotExist:
         raise Http404
-    if favorited:
-        FavoriteSong.objects.create(song=song, user=request.user)
-    else:
-        FavoriteSong.objects.filter(song=song, user=request.user).delete()
+    pl = Playlist.get_favorites(request.user)
+    try:
+        fav = PlaylistEntry.objects.get(song=song, playlist=pl)
+    except PlaylistEntry.DoesNotExist:
+        fav = None
+    if favorited and not fav:
+        pl.append_songs([song])
+    elif not favorited and fav:
+        fav.delete()
     return json_success("%s favorited: %r" % (song_id, favorited))
 
 #=============================================================================#

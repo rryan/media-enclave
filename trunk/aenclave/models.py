@@ -139,16 +139,15 @@ class Song(models.Model):
 
     #------------------------------ Other Stuff ------------------------------#
 
-    users_favorited = models.ManyToManyField(User, null=True, blank=True,
-                                             through='FavoriteSong')
-
     @staticmethod
-    def annotate_favorited(queryset, user):
+    def annotate_favorited(songs, user):
         """Add a boolean attr for if the song is a favorite of the user."""
-        query = ("(SELECT count(*) FROM aenclave_favoritesong"
-                 " WHERE aenclave_favoritesong.song_id = aenclave_song.id AND"
-                 " aenclave_favoritesong.user_id = %d)" % user.id)
-        return queryset.extra(select={'favorited': query})
+        pl = Playlist.get_favorites(user)
+        favs = set(song.pk for song in pl.songs.all())
+        for song in songs:
+            if song.pk in favs:
+                song.favorited = True
+        return songs
 
     class Meta:
         get_latest_by = 'date_added'
@@ -251,6 +250,12 @@ class Playlist(models.Model):
         except User.DoesNotExist: return (user == self.owner)
         else: return True
 
+    @staticmethod
+    def get_favorites(user):
+        pl_name = "%s's favorites" % user.username
+        pl, _ = Playlist.objects.get_or_create(name=pl_name, owner=user)
+        return pl
+
 #-----------------------------------------------------------------------------#
 
 class PlaylistEntry(models.Model):
@@ -265,21 +270,6 @@ class PlaylistEntry(models.Model):
 
     class Meta:
         ordering = ('playlist', 'position', 'song')
-
-#-----------------------------------------------------------------------------#
-
-class FavoriteSong(models.Model):
-
-    """The db model that links users to their favorite songs."""
-
-    user = models.ForeignKey(User)
-
-    song = models.ForeignKey(Song)
-
-    time_favorited = models.DateTimeField(auto_now=True, editable=False)
-
-    class Meta:
-        ordering = ('time_favorited',)
 
 #-----------------------------------------------------------------------------#
 

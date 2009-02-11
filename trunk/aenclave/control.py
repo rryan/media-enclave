@@ -28,7 +28,7 @@ def delegate_rpc(method):
                               ''.join(Pyro.util.getPyroTraceback(e)))
             raise ControlError(e.message)
         else:
-            kwargs['rpc_val'] = retval
+            kwargs['rpc_retval'] = retval
             return method(self, *args, **kwargs)
     return new_method
 
@@ -63,7 +63,7 @@ class Controller(object):
 
     #---------------------------- STATUS METHODS -----------------------------#
 
-    def _refresh_songs(self, songs, user=None):
+    def _refresh_songs(self, songs):
         """
         Refresh song models, preserving the player-added attributes.
 
@@ -71,80 +71,71 @@ class Controller(object):
         editted the tags while the song was on the queue.
         """
         pks = [song.pk for song in songs]
-        pk_dict = dict((song.pk, (i, song)) for (i, song) in enumerate(songs))
-        fresh_songs = Song.objects.filter(pk__in=pks)
-        # It would be nice to not have to iterate this queryset, but we have to
-        # annotate the models with playid and the noise.  We have to get the
-        # user passed all the way into here in order to do this annotation if
-        # the caller wants it before we force query evaluation.
-        if user is not None:
-            fresh_songs = Song.annotate_favorited(fresh_songs, user)
-        final_songs = []
-        for song in fresh_songs:
-            (i, stale_song) = pk_dict[song.pk]
-            song.noise = stale_song.noise
-            song.playid = stale_song.playid
-            final_songs.append([i, song])
-        final_songs.sort()
-        return [song for (_, song) in final_songs]
+        fresh_dict = Song.objects.in_bulk(pks)
+        fresh_songs = []
+        for song in songs:
+            fresh_song = fresh_dict[song.pk]
+            fresh_song.noise = song.noise
+            fresh_song.playid = song.playid
+            fresh_songs.append(fresh_song)
+        return fresh_songs
 
     @delegate_rpc
-    def get_channel_snapshot(self, user=None, rpc_val=None):
+    def get_channel_snapshot(self, rpc_retval=None):
         """Return a snapshot of the current channel state."""
-        rpc_val.song_queue = self._refresh_songs(rpc_val.song_queue, user=user)
-        rpc_val.song_history = self._refresh_songs(rpc_val.song_history,
-                                                   user=user)
-        return rpc_val
+        rpc_retval.song_queue = self._refresh_songs(rpc_retval.song_queue)
+        rpc_retval.song_history = self._refresh_songs(rpc_retval.song_history)
+        return rpc_retval
 
     #--------------------------- PLAYBACK CONTROL ----------------------------#
 
     @delegate_rpc
-    def stop(self, rpc_val=None):
+    def stop(self, rpc_retval=None):
         """Stops the music and clears the queue."""
         self.channel.touch()
 
     @delegate_rpc
-    def pause(self, rpc_val=None):
+    def pause(self, rpc_retval=None):
         """Pause the music."""
         self.channel.touch()
 
     @delegate_rpc
-    def unpause(self, rpc_val=None):
+    def unpause(self, rpc_retval=None):
         """Unpause the music."""
         self.channel.touch()
 
     @delegate_rpc
-    def skip(self, rpc_val=None):
+    def skip(self, rpc_retval=None):
         """Skip the current song and play a dequeue noise."""
         self.channel.touch()
 
     #----------------------------- QUEUE CONTROL -----------------------------#
 
-    def add_song(self, song, rpc_val=None):
+    def add_song(self, song, rpc_retval=None):
         """Add a song to the queue."""
         self.add_songs([song])
 
     @delegate_rpc
-    def add_songs(self, songs, rpc_val=None):
+    def add_songs(self, songs, rpc_retval=None):
         """Add some songs to the queue."""
         self.channel.touch()
 
-    def remove_song(self, playid, rpc_val=None):
+    def remove_song(self, playid, rpc_retval=None):
         """Remove the song with playid from the queue."""
         self.remove_songs([playid])
 
     @delegate_rpc
-    def remove_songs(self, playids, rpc_val=None):
+    def remove_songs(self, playids, rpc_retval=None):
         """Remove the songs with playids in playids from the queue."""
         self.channel.touch()
 
     @delegate_rpc
-    def move_song(self, playid, after_playid, rpc_val=None):
+    def move_song(self, playid, after_playid, rpc_retval=None):
         """Move the first song to after the second song in the queue."""
         self.channel.touch()
 
     @delegate_rpc
-    def shuffle(self, rpc_val=None):
+    def shuffle(self, rpc_retval=None):
         """Shuffle the songs in the queue."""
         self.channel.touch()
 

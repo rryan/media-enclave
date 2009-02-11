@@ -1,19 +1,19 @@
+# menclave/aenclave/html.py
+
+"""HTML rendering functions."""
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from menclave.aenclave.json import json_channel_info
+
 def render_html_template(template, request, options=None, *args, **kwargs):
     """Render a template response with some extra parameters."""
-    
-    # {} is an unsafe default value, so use use None instead.
-    if options is None:
-        options = {}
-
-    # The only reason this exists is so that if we need to, in the
-    # future, we can hook all of our render_html_template calls very
-    # easily. Right now, this is really no different than
-    # render_to_response.
-
+    # This exists so that if we need to, we can hook all of our template
+    # rendering calls very easily.
+    if options is None: options = {}
+    options['dl'] = 'dl' in request.REQUEST
+    options['playlist_info'] = json_channel_info(request)
     return render_to_response(template, options, *args, **kwargs)
 
 def html_error(request, message=None, title=None):

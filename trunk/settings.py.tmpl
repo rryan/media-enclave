@@ -116,12 +116,13 @@ TEMPLATE_LOADERS = (
 )
 
 # The only nonstandard template context processor is request.
-TEMPLATE_CONTEXT_PROCESSORS = ("django.core.context_processors.request",
-                               "django.core.context_processors.auth",
-                               "django.core.context_processors.debug",
-                               "django.core.context_processors.i18n",
-                               "django.core.context_processors.media",
-                               "menclave.aenclave.context_processors.aenclave",)
+TEMPLATE_CONTEXT_PROCESSORS = (
+	"django.core.context_processors.request",
+	"django.core.context_processors.auth",
+	"django.core.context_processors.debug",
+	"django.core.context_processors.i18n",
+	"django.core.context_processors.media",
+)
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',

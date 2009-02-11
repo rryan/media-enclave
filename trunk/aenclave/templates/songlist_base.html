@@ -24,6 +24,9 @@
           <th class="select">
             <input id="checkall" type="checkbox" onclick="songlist.select_all(this);"/>
           </th>
+          {% if user.is_authenticated %}
+            <th width="16"><img src="{% url aenclave-images "heart.png" %}"/></th>
+          {% endif %}
           {% if current_song %}
             <th class="track">#</th>
             <th class="title">Title</th>

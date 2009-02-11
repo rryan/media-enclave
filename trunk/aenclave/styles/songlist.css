@@ -148,6 +148,26 @@ TABLE.data TBODY TD INPUT.text {
     border: 0px;
 }
 
+div.fav-heart {
+	display: block;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+/* Note that the 'pink' rule must stay after gray and red to override it. */
+div.fav-heart.gray {
+	background-image: url(/audio/images/heart-gray.png);
+}
+
+div.fav-heart.red {
+	background-image: url(/audio/images/heart.png);
+}
+
+div.fav-heart.pink {
+	background-image: url(/audio/images/heart-pink.png);
+}
+
 /******************************** COLPICKER **********************************/
 
 table.data thead th.col-picker {

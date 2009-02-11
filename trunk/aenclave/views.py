@@ -3,12 +3,13 @@
 import re
 
 from django.core.mail import send_mail
+from django.http import Http404
 from django.template import RequestContext
 
 from menclave import settings
 from menclave.aenclave.json import json_error, json_success
 from menclave.aenclave.html import render_html_template
-from menclave.aenclave.models import Song
+from menclave.aenclave.models import Song, FavoriteSong
 from menclave.aenclave.utils import get_song_list
 
 #--------------------------------- Roulette ----------------------------------#
@@ -16,6 +17,7 @@ from menclave.aenclave.utils import get_song_list
 def roulette(request):
     # Choose six songs randomly.
     queryset = Song.visibles.order_by('?')[:6]
+    queryset = Song.annotate_favorited(queryset, request.user)
     return render_html_template('aenclave/roulette.html', request,
                                 {'song_list': queryset},
                                 context_instance=RequestContext(request))
@@ -50,5 +52,19 @@ def json_email_song_link(request):
                   settings.DEFAULT_FROM_EMAIL, (email_address,))
         return json_success("An email has been sent to %s." % email_address)
     else: return json_error("No matching songs were found.")
+
+def favorite_song(request, song_id):
+    if not request.user.is_authenticated():
+        return json_error('User not authenticated.')
+    favorited = request.POST['favorited'] == 'true'
+    try:
+        song = Song.objects.get(pk=int(song_id))
+    except Song.DoesNotExist:
+        raise Http404
+    if favorited:
+        FavoriteSong.objects.create(song=song, user=request.user)
+    else:
+        FavoriteSong.objects.filter(song=song, user=request.user).delete()
+    return json_success("%s favorited: %r" % (song_id, favorited))
 
 #=============================================================================#

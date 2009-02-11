@@ -10,6 +10,9 @@
     {% endif %}
   {% endspaceless %}
 </td>
+{% if user.is_authenticated %}
+  <td><div class="fav-heart {% if song.favorited %}red{% else %}gray{% endif %}" id="fav-heart-{{song.id}}">&nbsp;</div></td>
+{% endif %}
 <td name="track" class="track editable r">{{song.track_string}}</td>
 <td name="title" class="title editable{% if song.date_added|is_recent %} new{% endif %}">
   {% if no_queuing %}

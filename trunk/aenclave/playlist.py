@@ -9,7 +9,7 @@ from menclave.aenclave.login import permission_required
 from menclave.aenclave.html import render_html_template, html_error
 from menclave.aenclave.xml import render_xml_to_response
 from menclave.aenclave.json import render_json_response, json_error, json_success
-from menclave.aenclave.models import Playlist, PlaylistEntry
+from menclave.aenclave.models import Playlist, PlaylistEntry, Song
 from menclave.aenclave.utils import get_integer, get_unicode, get_song_list
 
 #----------------------------- Playlist Viewing ------------------------------#
@@ -25,6 +25,7 @@ def playlist_detail(request, playlist_id):
     can_cede = playlist.can_cede(request.user)
     # This order_by uses PlaylistEntry's Meta ordering, which is position.
     songs = playlist.songs.order_by('playlistentry')
+    songs = Song.annotate_favorited(songs, request.user)
     return render_html_template('aenclave/playlist_detail.html', request,
                                 {'playlist': playlist,
                                  'song_list': songs,

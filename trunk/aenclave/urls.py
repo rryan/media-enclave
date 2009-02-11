@@ -238,4 +238,7 @@ urlpatterns = patterns(
     (r'^json/controls_update/(?P<channel_id>\d+)/$',
      'menclave.aenclave.channel.json_control_update'),
 
+    (r'^json/favorite_song/(?P<song_id>\d+)/$',
+     'menclave.aenclave.views.favorite_song'),
+
 )

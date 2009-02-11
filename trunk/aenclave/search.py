@@ -59,6 +59,7 @@ def normal_search(request):
         Controller().add_song(song)
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
+    queryset = Song.annotate_favorited(queryset, request.user)
     # Otherwise, display the search results.
     return render_html_template('aenclave/search_results.html', request,
                                 {'song_list': queryset[:500],  # limit to 500
@@ -205,6 +206,7 @@ def filter_search(request):
         return html_error(request, message=str(errors))
     if total == 0: queryset = ()
     else: queryset = Song.visibles.filter(_build_filter_query(tree))
+    queryset = Song.annotate_favorited(queryset, request.user)
     return render_html_template('aenclave/filter_results.html', request,
                                 {'song_list':queryset[:500],
                                  'criterion_count':total},

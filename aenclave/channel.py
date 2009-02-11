@@ -21,7 +21,7 @@ def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
     ctrl = channel.controller()
-    snapshot = ctrl.get_channel_snapshot()
+    snapshot = ctrl.get_channel_snapshot(user=request.user)
     return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
                                  'current_song': snapshot.current_song,
@@ -35,7 +35,7 @@ def channel_detail(request, channel_id=1):
 
 def channel_history(request, channel_id):
     ctrl = Controller(channel_id)
-    snapshot = ctrl.get_channel_snapshot()
+    snapshot = ctrl.get_channel_snapshot(user=request.user)
     return render_html_template("aenclave/list_songs.html", request,
                                 {'song_list': snapshot.song_history,
                                  'title': 'Channel History'},

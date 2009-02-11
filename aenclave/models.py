@@ -139,6 +139,17 @@ class Song(models.Model):
 
     #------------------------------ Other Stuff ------------------------------#
 
+    users_favorited = models.ManyToManyField(User, null=True, blank=True,
+                                             through='FavoriteSong')
+
+    @staticmethod
+    def annotate_favorited(queryset, user):
+        """Add a boolean attr for if the song is a favorite of the user."""
+        query = ("(SELECT count(*) FROM aenclave_favoritesong"
+                 " WHERE aenclave_favoritesong.song_id = aenclave_song.id AND"
+                 " aenclave_favoritesong.user_id = %d)" % user.id)
+        return queryset.extra(select={'favorited': query})
+
     class Meta:
         get_latest_by = 'date_added'
         ordering = ('artist', 'album', 'track')
@@ -254,6 +265,21 @@ class PlaylistEntry(models.Model):
 
     class Meta:
         ordering = ('playlist', 'position', 'song')
+
+#-----------------------------------------------------------------------------#
+
+class FavoriteSong(models.Model):
+
+    """The db model that links users to their favorite songs."""
+
+    user = models.ForeignKey(User)
+
+    song = models.ForeignKey(Song)
+
+    time_favorited = models.DateTimeField(auto_now=True, editable=False)
+
+    class Meta:
+        ordering = ('time_favorited',)
 
 #-----------------------------------------------------------------------------#
 

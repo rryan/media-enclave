@@ -40,21 +40,24 @@ def browse_artists(request, letter):
                                 context_instance=RequestContext(request))
 
 def view_album(request, album_name):
-    album_songs = Song.visibles.filter(album__iexact=album_name)
+    songs = Song.visibles.filter(album__iexact=album_name)
+    songs = Song.annotate_favorited(songs, request.user)
     return render_html_template('aenclave/album_detail.html', request,
                                 {'album_name': album_name,
-                                 'song_list': album_songs},
+                                 'song_list': songs},
                                 context_instance=RequestContext(request))
 
 def view_artist(request, artist_name):
-    artist_songs = Song.visibles.filter(artist__iexact=artist_name)
+    songs = Song.visibles.filter(artist__iexact=artist_name)
+    songs = Song.annotate_favorited(songs, request.user)
     return render_html_template('aenclave/artist_detail.html', request,
                                 {'artist_name': artist_name,
-                                 'song_list': artist_songs},
+                                 'song_list': songs},
                                 context_instance=RequestContext(request))
 
 def list_songs(request):
     songs = get_song_list(request.REQUEST)
+    songs = Song.annotate_favorited(songs, request.user)
     return render_html_template('aenclave/list_songs.html', request,
                                 {'song_list': songs},
                                 context_instance=RequestContext(request))

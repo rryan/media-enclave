@@ -22,6 +22,14 @@ $(document).ready(function() {
   });
   // Create a click menu (not sure what the function is for...).
   $('#ul-select-col').clickMenu({onClick: function() {}});
+  // Add event handlers to the hearts.
+  var hearts = $('.fav-heart');
+  hearts.click(songlist.toggle_favorite);
+  hearts.hover(function() {
+    $(this).addClass('pink');
+  }, function() {
+    $(this).removeClass('pink');
+  });
 });
 
 var songlist = {
@@ -482,5 +490,22 @@ var songlist = {
     jQuery('#songlist tbody').append(row);
     tablesort.recolor_rows();
   },
+
+  /******************************* FAVORITES ********************************/
+
+  toggle_favorite: function() {
+    var heart = $(this);
+    var favorited;
+    if (heart.hasClass('gray')) {
+      heart.removeClass('pink gray').addClass('red');
+      favorited = 'true';
+    } else {
+      heart.removeClass('pink red').addClass('gray');
+      favorited = 'false';
+    }
+    var song_id = heart.attr('id').replace('fav-heart-', '');
+    $.post('/audio/json/favorite_song/' + song_id + '/',
+           {favorited: favorited});
+  }
 
 };

@@ -11,6 +11,7 @@ from menclave.aenclave.models import Song
 from menclave.aenclave.utils import (parse_date, parse_time, parse_integer,
                                      get_unicode)
 from menclave.aenclave.html import render_html_template, html_error
+from media_bundler.templatetags import bundler_tags
 
 def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): str(value)})
@@ -18,6 +19,7 @@ def Qu(field, op, value):
 #------------------------------- Normal Search -------------------------------#
 
 def normal_search(request):
+    print dir(bundler_tags)
     form = request.GET
     # Get the query.
     query_string = form.get('q','')

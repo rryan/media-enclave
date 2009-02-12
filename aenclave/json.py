@@ -41,7 +41,7 @@ def json_channel_info(request, channel_id=1):
     channel = Channel.objects.get(pk=channel_id)
     data = {}
     ctrl = channel.controller()
-    snapshot = request.channel_snapshots[channel_id]
+    snapshot = request.channel_snapshots[int(channel_id)]
     songs = snapshot.song_queue
     current_song = snapshot.current_song
     queue_length = len(songs) + int(bool(current_song))

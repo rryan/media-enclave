@@ -23,7 +23,7 @@ from menclave.aenclave.models import Channel, Song
 def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
-    snapshot = request.channel_snapshots[channel_id]
+    snapshot = request.channel_snapshots[int(channel_id)]
     songs = Song.annotate_favorited(snapshot.song_queue, request.user)
     return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
@@ -37,7 +37,7 @@ def channel_detail(request, channel_id=1):
                                 context_instance=RequestContext(request))
 
 def channel_history(request, channel_id):
-    snapshot = request.channel_snapshots[channel_id]
+    snapshot = request.channel_snapshots[int(channel_id)]
     songs = Song.annotate_favorited(snapshot.song_history, request.user)
     return render_html_template("aenclave/list_songs.html", request,
                                 {'song_list': songs,
@@ -94,7 +94,7 @@ def json_control(request):
 
 def json_control_update(request, channel_id=1):
     try:
-        channel_info = json_channel_info(request, channel_id)
+        channel_info = json_channel_info(request, int(channel_id))
     except ControlError, err:
         return json_error(str(err))
     else:

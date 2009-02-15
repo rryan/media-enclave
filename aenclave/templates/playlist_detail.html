@@ -12,6 +12,16 @@
 
 {% block scripts %}{{block.super}}
   {% javascript "aenclave-scripts" "playlist.js" %}
+  {% defer %}
+    <script type="text/javascript">
+      playlist.id = {{playlist.id}};
+      {% if allow_edit %}  {# Should be a better idiom. #}
+        playlist.allow_edit = true;
+      {% else %}
+        playlist.allow_edit = false;
+      {% endif %}
+    </script>
+  {% enddefer %}
 {% endblock %}
 
 {% block presonglist %}
@@ -20,8 +30,8 @@
     {{song_list|length|intcomma}} song{{song_list|length|pluralize}} &mdash;
     [<a href="{% url aenclave-user-playlist playlist.owner.username %}"><tt>{{playlist.owner.username}}</tt></a>{% if playlist.group %} / {{playlist.group.name}}{% endif %}]
     {% if allow_edit %}
-      <a id="edit-button" class="edit" href="javascript:playlist.edit();">Edit</a>
-      <a style="display: none" id="save-button" class="edit" href="javascript:playlist.save('{% url aenclave-playlist-edit playlist.id %}');">Save</a>
+      <br/>
+      You can reorder the playlist order by dragging the blue up/down triangles.
     {% endif %}
   </div>
   {% if not song_list %}
@@ -29,21 +39,30 @@
   {% endif %}
 {% endblock %}
 
-{% block actions %}{{block.super}}{% if allow_edit and song_list %}
-    <a href="javascript:playlist.remove();" class="remove">Remove selected songs</a>{% endif %}
+{% block actions %}{{block.super}}
+  {% if allow_edit and song_list %}
+    <a href="javascript:playlist.remove();">
+      <div class="aenclave-sprites aenclave-sprites-remove-png"></div>
+      Remove selected songs</a>
+  {% endif %}
   {% if allow_cede %}
-    <a href="javascript:playlist.askdel();" class="delete">Delete playlist&hellip;</a>{% endif %}
+    <a href="javascript:playlist.askdel();">
+      <div class="aenclave-sprites aenclave-sprites-delete-png"></div>
+      Delete playlist&hellip;</a>
+  {% endif %}
 {% endblock %}
 
 {% block postcopyright %}{{block.super}}
   {% if allow_edit %}
-    <form name="removeform" action="{% url aenclave-playlist-remove %}" method="POST">
+    <form name="removeform" action="{% url aenclave-playlist-remove %}"
+        method="POST">
       <input type="hidden" name="pid" value="{{playlist.id}}"/>
       <input type="hidden" name="ids"/>
     </form>
   {% endif %}
   {% if allow_cede %}
-    <form name="playlistdeleteform" action="{% url aenclave-playlist-delete %}" method="POST">
+    <form name="playlistdeleteform" action="{% url aenclave-playlist-delete %}"
+        method="POST">
       <input type="hidden" name="pid" value="{{playlist.id}}"/>
     </form>
   {% endif %}

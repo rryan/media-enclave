@@ -2,8 +2,8 @@
 <td class="select c">
   {% spaceless %}
     {% if current %}
-      <img src="{% url aenclave-images "speaker.png" %}"
-          id="currentsong" name="{{song.id}}"/>
+      <div class="aenclave-sprites aenclave-sprites-speaker-png"
+          id="currentsong" name="{{song.id}}">&nbsp;</div>
     {% else %}
       <input class="song_selected" type="checkbox" name="{{song.id}}"
           playid="{{song.playid}}"/>
@@ -11,7 +11,12 @@
   {% endspaceless %}
 </td>
 {% if user.is_authenticated %}
-  <td><div class="fav-heart {% if song.favorited %}red{% else %}gray{% endif %}" id="fav-heart-{{song.id}}">&nbsp;</div></td>
+  <td>
+    <div class="fav-heart aenclave-sprites aenclave-sprites-heart{% if not song.favorited %}-gray{% endif %}-png"
+        favorited="{% if song.favorited %}true{% else %}false{% endif %}"
+        id="fav-heart-{{song.id}}">
+      &nbsp;</div>
+  </td>
 {% endif %}
 <td name="track" class="track editable r">{{song.track_string}}</td>
 <td name="title" class="title editable{% if song.date_added|is_recent %} new{% endif %}">
@@ -41,16 +46,22 @@
 <td class="r last-played">{{song.last_played_string}}</td>
 <td class="r date-added">{{song.date_added_string}}</td>
 {% if user.is_authenticated %}
-  <td class="edit" onclick="songlist.edit_song(this);"></td>
+  <td class="edit" onclick="songlist.edit_song(this);">
+    <div class="aenclave-sprites aenclave-sprites-edit-png">&nbsp;</div>
+  </td>
 {% endif %}
 {% if dl %}
   <td class="c">
     <a class="dl-link" href="{% url aenclave-dl %}?ids={{song.id}}">
-      <img src="{% url aenclave-images "dl.png" %}"/>
+      <div class="aenclave-sprites aenclave-sprites-dl-png">&nbsp;</div>
     </a>
   </td>
 {% endif %}
 {% if allow_dragging %}
-  <td class="drag"></td>
+  <td class="drag">
+    {% if not current %}
+      <div class="aenclave-sprites aenclave-sprites-updown-png"></div>
+    {% endif %}
+  </td>
 {% endif %}
 <td>-</td>

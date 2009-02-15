@@ -35,13 +35,19 @@
 
 {% block actions %}
   {% if song_list %}
-    <a href="javascript:channels.dequeue();" class="remove">Dequeue selected songs</a>
+    <a href="javascript:channels.dequeue();">
+      <div class="aenclave-sprites aenclave-sprites-remove-png"></div>
+      Dequeue selected songs</a>
   {% endif %}
   {{block.super}}
   {% if current_song and not skipping %}
-    <a href="javascript:channels.askemail();" class="email">Email link to song&hellip;</a>
+    <a href="javascript:channels.askemail();">
+      <div class="aenclave-sprites aenclave-sprites-email-png"></div>
+      Email link to song&hellip;</a>
   {% endif %}
-  <a href="javascript:channels.recent();" class="history">Recently played</a>
+  <a href="javascript:channels.recent();">
+    <div class="aenclave-sprites aenclave-sprites-history-png"></div>
+    Recently played</a>
 {% endblock %}
 
 {% block postcopyright %}{{block.super}}

@@ -3,33 +3,8 @@
 // www.jquery.com for documentation.
 
 $(document).ready(function() {
-  var allowToHide = ['play-count', 'skip-count', 'last-played', 'date-added'];
-  var visibleColumns = $.makeArray($('#songlist thead th').map(function (col) {
-    $th = $(this);
-    for (var i = 0; i < allowToHide.length; i++) {
-      if ($th.hasClass(allowToHide[i])) {
-        return null;
-      }
-    }
-    return col + 1;  // columnmanager uses 1-indexed column numbers.
-  }));
-  $('#songlist').columnManager({
-      listTargetID: 'col-list',
-      onClass: 'col-on',
-      offClass: 'col-off',
-      saveState: true,
-      hideInList: visibleColumns
-  });
-  // Create a click menu (not sure what the function is for...).
-  $('#ul-select-col').clickMenu({onClick: function() {}});
-  // Add event handlers to the hearts.
-  var hearts = $('.fav-heart');
-  hearts.click(songlist.toggle_favorite);
-  hearts.hover(function() {
-    $(this).addClass('pink');
-  }, function() {
-    $(this).removeClass('pink');
-  });
+  songlist.initialize_colpicker();
+  songlist.initialize_favorites();
 });
 
 var songlist = {
@@ -99,10 +74,13 @@ var songlist = {
   //   action: code to execute when the button is pressed (e.g. "bazify();")
   //   text: the displayed text on the button (e.g. "Click to bazify!")
   add_subaction_button: function(klass, action, text) {
-    var button = document.createElement("a");
-    button.className = klass;
-    button.href = "javascript:" + action;
-    button.appendChild(document.createTextNode(text));
+    var sprite = $('<div/>');
+    sprite.addClass('aenclave-sprites aenclave-sprites-' + klass + '-png');
+    sprite.html('&nbsp;');
+    var button = $('<a/>');
+    button.attr('href', 'javascript:' + action);
+    button.text(text);
+    button.prepend(sprite);
     songlist.add_subaction_item(button);
   },
 
@@ -352,11 +330,7 @@ var songlist = {
     });
   },
 
-  disable_dnd: function() {
-    jQuery('#songlist .drag').remove();
-  },
-
-  update_songlist: function(url, opt_onComplete) {
+  update_songlist: function(url) {
     // Collect all the song ids in order and send them to the server.
     var song_ids = [];
     var boxen = jQuery('#songlist input');
@@ -379,9 +353,6 @@ var songlist = {
       } else {
         songlist.error_message("Error reaching the server.");
       }
-      if (opt_onComplete) {
-        opt_onComplete();
-      }
     }, 'json');
   },
 
@@ -391,7 +362,9 @@ var songlist = {
   /** Utility Functions for Swapping the class / onclick of the edit column **/
   _edit_column_done: function(target) {
     // target must already be wrapped by jQuery
-    target.removeClass("edit error").addClass("done");
+    var oldClasses = "aenclave-sprites-edit-png aenclave-sprites-cancel-png";
+    var doneClass = "aenclave-sprites-ok-png";
+    $(".aenclave-sprites", target).removeClass(oldClasses).addClass(doneClass);
     target.each(function() {
       this.onclick = function() { songlist.done_editing(this); }
     });
@@ -399,7 +372,9 @@ var songlist = {
 
   _edit_column_edit: function(target) {
     // target must already be wrapped by jQuery
-    target.removeClass("done error").addClass("edit");
+    var oldClasses = "aenclave-sprites-ok-png aenclave-sprites-cancel-png";
+    var newClass = "aenclave-sprites-edit-png";
+    $(".aenclave-sprites", target).removeClass(oldClasses).addClass(newClass);
     target.each(function() {
       this.onclick = function() { songlist.edit_song(this); }
     });
@@ -407,7 +382,9 @@ var songlist = {
 
   _edit_column_error: function(target) {
     // target must already be wrapped by jQuery
-    target.removeClass("done edit").addClass("error");
+    var oldClasses = "aenclave-sprites-ok-png aenclave-sprites-edit-png";
+    var newClass = "aenclave-sprites-cancel-png";
+    $(".aenclave-sprites", target).removeClass(oldClasses).addClass(newClass);
     target.each(function() { this.onclick = function() { }});
   },
 
@@ -419,8 +396,11 @@ var songlist = {
     target.parent('tr:first').children('.editable').each(function() {
       var cell = jQuery(this);
       var input = jQuery(document.createElement("input"));
-      input.attr("type","text");
-      input.attr('value', cell.text().strip());
+      if (cell.hasClass("track")) {
+        input.attr("size", "2");
+      }
+      input.attr("type", "text");
+      input.attr("value", cell.text().strip());
       input.addClass("text");
       input.keypress(function(e) {
         // Check if the user hits enter in any of our textboxes.
@@ -491,21 +471,94 @@ var songlist = {
     tablesort.recolor_rows();
   },
 
-  /******************************* FAVORITES ********************************/
+  /********************************** MISC ***********************************/
+
+  initialize_favorites: function() {
+    // Add event handlers to the hearts.
+    var hearts = $('.fav-heart');
+    hearts.click(songlist.toggle_favorite);
+    hearts.hover(function() {
+      var heart = $(this);
+      heart.attr('hovering', 'true');
+      songlist.update_heart_sprite(heart);
+    }, function() {
+      var heart = $(this);
+      heart.attr('hovering', 'false');
+      songlist.update_heart_sprite(heart);
+    });
+  },
 
   toggle_favorite: function() {
     var heart = $(this);
-    var favorited;
-    if (heart.hasClass('gray')) {
-      heart.removeClass('pink gray').addClass('red');
-      favorited = 'true';
-    } else {
-      heart.removeClass('pink red').addClass('gray');
-      favorited = 'false';
-    }
+    var favorited = heart.attr('favorited') == 'true' ? 'false' : 'true';
+    heart.attr('favorited', favorited);
+    heart.attr('hovering', 'false');
+    songlist.update_heart_sprite(heart);
     var song_id = heart.attr('id').replace('fav-heart-', '');
     $.post('/audio/json/favorite_song/' + song_id + '/',
            {favorited: favorited});
+  },
+
+  update_heart_sprite: function(heart) {
+    var pink = 'aenclave-sprites-heart-pink-png';
+    var gray = 'aenclave-sprites-heart-gray-png';
+    var red = 'aenclave-sprites-heart-png';
+    var newClass;
+    if (heart.attr('hovering') == 'true') {
+      newClass = pink;
+    } else {
+      if (heart.attr('favorited') == 'true') {
+        newClass = red;
+      } else {
+        newClass = gray;
+      }
+    }
+    heart.removeClass(pink + ' ' + gray + ' ' + red).addClass(newClass);
+  },
+
+  // Initialize the column picker on the songlist table.
+  initialize_colpicker: function() {
+    // These are the columns the user is allowed to hide, by name.  We compute
+    // their indexes so we don't have to hardcode them here and update them when
+    // we add columns to the table.
+    var allowToHide = ['play-count', 'skip-count', 'last-played', 'date-added'];
+    var visibleColumns = $.makeArray($('#songlist thead th').map(function (col) {
+      $th = $(this);
+      for (var i = 0; i < allowToHide.length; i++) {
+        if ($th.hasClass(allowToHide[i])) {
+          return null;
+        }
+      }
+      return col + 1;  // columnmanager uses 1-indexed column numbers.
+    }));
+    $('#songlist').columnManager({
+        listTargetID: 'col-list',
+        onClass: 'col-on',
+        offClass: 'col-off',
+        onToggle: songlist.update_colmenu_sprites,
+        saveState: true,
+        hideInList: visibleColumns
+    });
+    // We use a span styled as a inline-block instead of a div for the sprite
+    // because the jquery.clickmenu plugin thinks that a div is a submenu and
+    // does things to it.
+    $('#col-list li').prepend('<span class="aenclave-sprites">&nbsp;</span>');
+    songlist.update_colmenu_sprites();
+    // Create the picker click menu (not sure what the function is for...).
+    $('#ul-select-col').clickMenu({onClick: function() {}});
+  },
+
+  // We use the .col-on and .col-off classes to style the sprites inside the
+  // column picker.  We can't do this with pure CSS, which would be awfully
+  // nice.
+  update_colmenu_sprites: function() {
+    var cols = $('#col-list');
+    var cols_on = $('li.col-on .aenclave-sprites', cols);
+    cols_on.removeClass('aenclave-sprites-cross-png');
+    cols_on.addClass('aenclave-sprites-tick-png');
+    var cols_on = $('li.col-off .aenclave-sprites', cols);
+    cols_on.removeClass('aenclave-sprites-tick-png');
+    cols_on.addClass('aenclave-sprites-cross-png');
   }
 
 };

@@ -1,19 +1,19 @@
 // playlist -- functions for viewing a playlist in Audio Enclave
 
+$(document).ready(function() {
+  songlist.enable_dnd(playlist.save);
+});
+
 var playlist = {
 
-  edit: function() {
-    songlist.enable_dnd();
-    jQuery('#edit-button').hide();
-    jQuery('#save-button').show();
-  },
+  // These two attrs are set by an inline script.
+  id: null,
 
-  save: function(url) {
-    songlist.disable_dnd();
-    songlist.update_songlist(url, function() {
-      jQuery('#save-button').hide();
-      jQuery('#edit-button').show();
-    });
+  allow_edit: false,
+
+  save: function() {
+    if (!playlist.id || !playlist.allow_edit) return;
+    songlist.update_songlist('/audio/playlists/edit/' + playlist.id + '/');
   },
 
   remove: function() {

@@ -38,23 +38,14 @@ TABLE.data THEAD TH.sortd {
 }
 
 TABLE.data THEAD TH.edit {
-    background-image: url(/audio/images/edit.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     width: 12px;
 }
 
 TABLE.data THEAD TH.dl {
-    background-image: url(/audio/images/dl.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     width: 12px;
 }
 
 TABLE.data THEAD TH.drag {
-    background-image: url(/audio/images/updown.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     width: 16px;
 }
 
@@ -81,32 +72,11 @@ TABLE.data TBODY TD.new A {
 }
 
 TABLE.data TBODY TD.edit {
-    background-image: url(/audio/images/edit.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     cursor: pointer;
-    width: 12px;
-}
-
-TABLE.data TBODY TD.done {
-    background-image: url(/audio/images/ok.png);
-    background-position: center center;
-    background-repeat: no-repeat;
-    cursor: pointer;
-    width: 12px;
-}
-
-TABLE.data TBODY TD.error {
-    background-image: url(/audio/images/cancel.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     width: 12px;
 }
 
 TABLE.data TBODY TD.drag {
-    background-image: url(/audio/images/updown.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     cursor: move;
     width: 16px;
 }
@@ -149,23 +119,7 @@ TABLE.data TBODY TD INPUT.text {
 }
 
 div.fav-heart {
-	display: block;
-	width: 16px;
-	height: 16px;
-	cursor: pointer;
-}
-
-/* Note that the 'pink' rule must stay after gray and red to override it. */
-div.fav-heart.gray {
-	background-image: url(/audio/images/heart-gray.png);
-}
-
-div.fav-heart.red {
-	background-image: url(/audio/images/heart.png);
-}
-
-div.fav-heart.pink {
-	background-image: url(/audio/images/heart-pink.png);
+    cursor: pointer;
 }
 
 /******************************** COLPICKER **********************************/
@@ -200,19 +154,18 @@ th.col-picker ul li.main {
 
 table.data .clickMenu div.inner {
     left: -92px;
+    min-width: 120px;
 }
 
-th.col-picker ul#col-list li {
-    padding-left: 20px;
-    background-repeat: no-repeat;
+th.col-picker ul#col-list li .aenclave-sprites {
+    display: inline-block;
+    margin: 2px;
 }
 
-.col-on {
-    background: url(/audio/images/tick.png) 0 50%;
-}
-
-.col-off {
-    background: url(/audio/images/cross.png) 0 50%;
+/* HACK: We can't use a div for this sprite because of the clickmenu plugin, so
+ * we style a span as a block-level element. */
+span.aenclave-sprites-selectcol-png {
+    display: block;
 }
 
 /***************************** SONGLIST COLUMNS ******************************/
@@ -249,6 +202,10 @@ th.col-picker ul#col-list li {
 
 .col-picker {
     width: 10px;
+}
+
+.c div.aenclave-sprites-speaker-png {
+    margin: auto;
 }
 
 /******************************** ACTIONS BAR ********************************/
@@ -291,30 +248,10 @@ DIV#actions A:active {
     color: #335;
 }
 
-DIV#actions A.queue {
-    background: #eef url(/audio/images/speaker.png) 4px center no-repeat;
-}
-DIV#actions A.dl {
-    background: #eef url(/audio/images/dl.png) 4px center no-repeat;
-}
-DIV#actions A.create {
-    background: #eef url(/audio/images/create.png) 4px center no-repeat;
-}
-DIV#actions A.delete {
-    background: #eef url(/audio/images/delete.png) 4px center no-repeat;
-}
-DIV#actions A.add {
-    background: #eef url(/audio/images/add.png) 4px center no-repeat;
-}
-DIV#actions A.remove {
-    background: #eef url(/audio/images/remove.png) 4px center no-repeat;
-}
-DIV#actions A.email {
-    background: #eef url(/audio/images/email.png) 4px center no-repeat;
-}
-DIV#actions A.history {
-    background: #eef url(/audio/images/history.png)
-    4px center no-repeat;
+div#actions a .aenclave-sprites {
+    position: absolute;
+    left: 3px;
+    top: 3px;
 }
 
 DIV#actionsgap { height: 30px; }
@@ -336,11 +273,11 @@ DIV#subactions {
 }
 
 DIV#subactions A {
+    background-color: #eef;
     border: 1px #cce outset;
     color: #779;
     cursor: pointer;
     font-size: 10pt;
-    height: 12px;
     margin: 0px 5px;
     padding: 2px 5px 2px 19px;
     position: relative;
@@ -358,11 +295,10 @@ DIV#subactions A:active {
     color: #335;
 }
 
-DIV#subactions .ok {
-    background: #eef url(/audio/images/ok.png) 4px center no-repeat;
-}
-DIV#subactions .cancel {
-    background: #eef url(/audio/images/cancel.png) 4px center no-repeat;
+div#subactions a .aenclave-sprites {
+    position: absolute;
+    left: 3px;
+    top: 3px;
 }
 
 DIV#subactions INPUT {

@@ -9,6 +9,7 @@
     <meta name="robots" content="NONE"/>
     {% block styles %}
       {% css "aenclave-styles" "base.css" %}
+      {% css "aenclave-styles" "aenclave-sprites.css" %}
     {% endblock %}
     {% block scripts %}
       {% javascript "aenclave-scripts" "jquery-1.2.6.min.js" %}
@@ -47,22 +48,27 @@
     {% block postcopyright %}{% endblock %}
 
     <div id="controls">
-      <a id="controls-minimize" class="control-action" href="#"
-          onclick="controls.minimize()">&nbsp;</a>
+      <div class="control-action aenclave-sprites aenclave-sprites-minimize-png"
+          id="controls-minimize"href="#" onclick="controls.minimize()">&nbsp;</div>
       <h4>Now Playing:</h4>
       <ol>
         <li id="current-song">--</li>
       </ol>
       <div id="control-box">
         <div id="progress-bar"><div id="timebar"></div></div>
-        <a class="control-action" id="pause"
-            href="javascript:controls.pause();">&nbsp;</a>
-        <a class="control-action" style="display:none" id="play"
-            href="javascript:controls.play();">&nbsp;</a>
-        <a class="control-action" id="skip"
-            href="javascript:controls.skip();">&nbsp;</a>
-        <a class="control-action" id="shuffle"
-            href="javascript:controls.shuffle();">&nbsp;</a>
+        <div class="control-action" id="pause" onclick="controls.pause()">
+          <div class="aenclave-sprites aenclave-sprites-pause-png">&nbsp;</div>
+        </div>
+        <div class="control-action" style="display:none" id="play"
+            onclick="controls.play()">
+          <div class="aenclave-sprites aenclave-sprites-pause-png">&nbsp;</div>
+        </div>
+        <div class="control-action" id="skip" onclick="controls.skip()">
+          <div class="aenclave-sprites aenclave-sprites-skip-png">&nbsp;</div>
+        </div>
+        <div class="control-action" id="shuffle" onclick="controls.shuffle()">
+          <div class="aenclave-sprites aenclave-sprites-shuffle-png">&nbsp;</div>
+        </div>
       </div>
       <ol id="song-list" start="2">
         <!--<li>title - artist - album - track</li>-->
@@ -72,8 +78,9 @@
         <!--... 10 songs total, 1h30m playing time.-->
       </span>
     </div>
-    <a style="display:none" id="controls-restore" href="#"
-        onclick="controls.restore()">&nbsp;</a>
+    <div class="aenclave-sprites aenclave-sprites-maximize-png"
+        style="display:none" id="controls-restore"
+        onclick="controls.restore()">&nbsp;</div>
   </body>
 
   <head>

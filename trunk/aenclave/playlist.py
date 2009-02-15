@@ -23,6 +23,7 @@ def playlist_detail(request, playlist_id):
     try: playlist = Playlist.objects.get(pk=playlist_id)
     except Playlist.DoesNotExist: raise Http404
     can_cede = playlist.can_cede(request.user)
+    can_edit = playlist.can_edit(request.user)
     # This order_by uses PlaylistEntry's Meta ordering, which is position.
     songs = playlist.songs.order_by('playlistentry')
     songs = Song.annotate_favorited(songs, request.user)
@@ -31,8 +32,8 @@ def playlist_detail(request, playlist_id):
                                  'song_list': songs,
                                  'force_actions_bar': can_cede,
                                  'allow_cede': can_cede,
-                                 'allow_edit': playlist.can_edit(request.user),
-                                 'allow_dragging': True},
+                                 'allow_edit': can_edit,
+                                 'allow_dragging': can_edit},
                                 context_instance=RequestContext(request))
 
 def user_playlists(request, username):

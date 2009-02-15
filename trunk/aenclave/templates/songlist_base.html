@@ -9,8 +9,8 @@
 
 {% block scripts %}{{block.super}}
   {% javascript "aenclave-scripts" "jquery.tablednd_0_5.js" %}
-  {% javascript "aenclave-scripts" "jquery.clickmenu.pack.js" %}
-  {% javascript "aenclave-scripts" "jquery.columnmanager.pack.js" %}
+  {% javascript "aenclave-scripts" "jquery.clickmenu.js" %}
+  {% javascript "aenclave-scripts" "jquery.columnmanager.js" %}
   {% javascript "aenclave-scripts" "tablesort.js" %}
   {% javascript "aenclave-scripts" "songlist.js" %}
 {% endblock %}
@@ -25,7 +25,9 @@
             <input id="checkall" type="checkbox" onclick="songlist.select_all(this);"/>
           </th>
           {% if user.is_authenticated %}
-            <th width="16"><img src="{% url aenclave-images "heart.png" %}"/></th>
+            <th width="16">
+              <div class="aenclave-sprites aenclave-sprites-heart-png"></div>
+            </th>
           {% endif %}
           {% if current_song %}
             <th class="track">#</th>
@@ -49,19 +51,25 @@
             <th class="sort date-added" sorttype="date" onclick="tablesort.sorta(this);">Date added</th>
           {% endif %}
           {% if user.is_authenticated %}
-            <th class="edit"></th>
+            <th class="edit">
+              <div class="aenclave-sprites aenclave-sprites-edit-png"></div>
+            </th>
           {% endif %}
-	  {% if dl %}
-            <th class="dl"></th>
+          {% if dl %}
+            <th class="dl">
+              <div class="aenclave-sprites aenclave-sprites-dl-png"></div>
+            </th>
           {% endif %}
           {% if allow_dragging %}
-            <th class="drag"></th>
+            <th class="drag">
+              <div class="aenclave-sprites aenclave-sprites-updown-png"></div>
+            </th>
           {% endif %}
           <th class="col-picker">
             <ul id="ul-select-col">
               <li>
-                <img alt="select columns" title="select columns"
-                    src="{% url aenclave-images "selectcol.png" %}"/>
+                <span class="aenclave-sprites aenclave-sprites-selectcol-png">
+                  &nbsp;</span>
                 <ul id="col-list"></ul>
               </li>
             </ul>
@@ -72,17 +80,20 @@
       <tbody>
         {% if current_song.noise %}
           <tr class="c">
-            <td class="c"><img src="{% url aenclave-images "speaker.png" %}"/></td>
+            <td class="c">
+              <div class="aenclave-sprites aenclave-sprites-speaker-png">
+                &nbsp;</div>
+            </td>
             <td class="c" colspan="11">(Dequeuing current song...)</td>
           </tr>
         {% else %}
           {% if current_song %}
             <tr class="c">
-	      {% with current_song as song %}
-	        {% with "true" as current %}
-	          {% include "aenclave/songlist_song_row.html" %}
-	        {% endwith %}
-	      {% endwith %}
+              {% with current_song as song %}
+                {% with "true" as current %}
+                {% include "aenclave/songlist_song_row.html" %}
+              {% endwith %}
+            {% endwith %}
             </tr>
           {% endif %}
         {% endif %}
@@ -107,18 +118,30 @@
       {% block actions %}
         {% if song_list or show_songlist %}
           {% if not no_queuing %}
-            <a href="javascript:songlist.queue();" class="queue">Queue selected songs</a>
+            <a href="javascript:songlist.queue();">
+              <div class="aenclave-sprites aenclave-sprites-speaker-png"></div>
+              Queue selected songs</a>
           {% endif %}
-	  {% if dl %}
-            <a href="javascript:songlist.dl();" class="dl">DL selected songs</a>
+          {% if dl %}
+            <a href="javascript:songlist.dl();">
+              <div class="aenclave-sprites aenclave-sprites-dl-png"></div>
+              DL selected songs</a>
           {% endif %}
           {% if user.is_authenticated %}
-            <a href="javascript:songlist.askcreate();" class="create">Save as playlist&hellip;</a>
-            <a href="javascript:songlist.askadd();" class="add">Add to playlist&hellip;</a>
+            <a href="javascript:songlist.askcreate();">
+              <div class="aenclave-sprites aenclave-sprites-create-png"></div>
+              Save as playlist&hellip;</a>
+            <a href="javascript:songlist.askadd();">
+              <div class="aenclave-sprites aenclave-sprites-add-png"></div>
+              Add to playlist&hellip;</a>
             {% if user.is_staff %}
-              <a href="javascript:songlist.delete_();" class="delete">Delete selected songs</a>
+              <a href="javascript:songlist.delete_();">
+                <div class="aenclave-sprites aenclave-sprites-delete-png"></div>
+                Delete selected songs</a>
             {% else %}
-              <a href="javascript:songlist.askdelete();" class="delete">Request for deletion</a>
+              <a href="javascript:songlist.askdelete();">
+                <div class="aenclave-sprites aenclave-sprites-delete-png"></div>
+                Request for deletion</a>
             {% endif %}
           {% endif %}
         {% endif %}

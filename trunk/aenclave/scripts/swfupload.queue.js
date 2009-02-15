@@ -1,15 +1,15 @@
 /*
-	Queue Plug-in
-	
-	Features:
-		*Adds a cancelQueue() method for cancelling the entire queue.
-		*All queued files are uploaded when startUpload() is called.
-		*If false is returned from uploadComplete then the queue upload is stopped.
-		 If false is not returned (strict comparison) then the queue upload is continued.
-		*Adds a QueueComplete event that is fired when all the queued files have finished uploading.
-		 Set the event handler with the queue_complete_handler setting.
-		
-	*/
+ Queue Plug-in
+
+ Features:
+   *Adds a cancelQueue() method for cancelling the entire queue.
+   *All queued files are uploaded when startUpload() is called.
+   *If false is returned from uploadComplete then the queue upload is stopped.
+    If false is not returned (strict comparison) then the queue upload is continued.
+   *Adds a QueueComplete event that is fired when all the queued files have finished uploading.
+    Set the event handler with the queue_complete_handler setting.
+
+ */
 
 var SWFUpload;
 if (typeof(SWFUpload) === "function") {
@@ -18,7 +18,7 @@ if (typeof(SWFUpload) === "function") {
   SWFUpload.prototype.initSettings = (function (oldInitSettings) {
     return function () {
       if (typeof(oldInitSettings) === "function") {
-	oldInitSettings.call(this);
+        oldInitSettings.call(this);
       }
       
       this.customSettings.queue_cancelled_flag = false;
@@ -64,13 +64,13 @@ if (typeof(SWFUpload) === "function") {
     if (continueUpload) {
       var stats = this.getStats();
       if (stats.files_queued > 0 && this.customSettings.queue_cancelled_flag === false) {
-	this.startUpload();
+        this.startUpload();
       } else if (this.customSettings.queue_cancelled_flag === false) {
-	this.queueEvent("queue_complete_handler", [this.customSettings.queue_upload_count]);
-	this.customSettings.queue_upload_count = 0;
+        this.queueEvent("queue_complete_handler", [this.customSettings.queue_upload_count]);
+        this.customSettings.queue_upload_count = 0;
       } else {
-	this.customSettings.queue_cancelled_flag = false;
-	this.customSettings.queue_upload_count = 0;
+        this.customSettings.queue_cancelled_flag = false;
+        this.customSettings.queue_upload_count = 0;
       }
     }
   };

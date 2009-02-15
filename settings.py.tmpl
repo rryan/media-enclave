@@ -163,17 +163,20 @@ INSTALLED_APPS = (
 DEFER_JAVASCRIPT = False
 USE_BUNDLES = False
 
+# CUSTOMIZE ME
+_MENCLAVE_ROOT = "/path-to-menclave/"
+
 # Bundles for media-enclave.
 MEDIA_BUNDLES = (
     {"type": "javascript",
      "name": "aenclave-scripts",
-     "path": "/home/reid/menclave/aenclave/scripts/",
+     "path": _MENCLAVE_ROOT + "aenclave/scripts/",
      "url": "/audio/scripts/",
      "minify": True,
      "files": (
          "jquery-1.2.6.min.js",
-         "jquery.clickmenu.pack.js",
-         "jquery.columnmanager.pack.js",
+         "jquery.clickmenu.js",
+         "jquery.columnmanager.js",
          "jquery.cookie.min.js",
          "jquery.tablednd_0_5.js",
          "controls.js",
@@ -192,7 +195,7 @@ MEDIA_BUNDLES = (
 
     {"type": "css",
      "name": "aenclave-styles",
-     "path": "/home/reid/menclave/aenclave/styles/",
+     "path": _MENCLAVE_ROOT + "/home/reid/menclave/aenclave/styles/",
      "url": "/audio/styles/",
      "minify": False,
      "files": (
@@ -207,12 +210,41 @@ MEDIA_BUNDLES = (
          "upload.css",
      )},
 
-    ## Image bundling is not implemented yet, but this is how it might look.
-    #{"type": "sprite",
-    # "name": "myapp_sprites",
-    # "path": MEDIA_ROOT + "/images/",
-    # "url": MEDIA_URL + "/images/",
-    # "files": ("foo.png", "bar.png", "baz.png")},
+    {"type": "png-sprite",
+     "name": "aenclave-sprites",
+     "path": _MENCLAVE_ROOT + "aenclave/images/",
+     "url": "/audio/images/",
+     "css_file": _MENCLAVE_ROOT + "/aenclave/styles/aenclave-sprites.css",
+     "files": (
+         "add.png",
+         "cancel.png",
+         "create.png",
+         "cross.png",
+         "delete.png",
+         "dl.png",
+         "edit.png",
+         "email.png",
+         "heart-gray.png",
+         "heart-pink.png",
+         "heart.png",
+         "history.png",
+         "maximize.png",
+         "minimize.png",
+         "new.png",
+         "ok.png",
+         "pause.png",
+         "play.png",
+         "remove.png",
+         "selectcol.png",
+         "shuffle.png",
+         "skip.png",
+         "sorta.png",
+         "sortd.png",
+         "speaker.png",
+         "stop.png",
+         "tick.png",
+         "updown.png",
+     )},
 )
 
 #=========================== DATE/TIME FORMATTING ============================#

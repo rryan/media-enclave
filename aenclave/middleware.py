@@ -19,6 +19,9 @@ class ChannelMiddleware(object):
     """Stuffs channel snapshots into the request object for performance."""
 
     def process_request(self, request):
+        # TODO(rnk): Make this access lazy so that views that update the
+        # channel will ask for this information after they've made their
+        # changes.
         request.channel_snapshots = dict()
         channels = Channel.objects.all()
         for channel in channels:

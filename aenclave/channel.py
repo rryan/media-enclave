@@ -80,15 +80,19 @@ def xml_update(request):
 @permission_required_json('aenclave.can_control')
 def json_control(request):
     action = request.POST.get('action','')
+    ctrl = Controller()
     try:
-        if action == 'play': Controller().unpause()
-        elif action == 'pause': Controller().pause()
-        elif action == 'skip': Controller().skip()
-        elif action == 'shuffle': Controller().shuffle()
+        if action == 'play': ctrl.unpause()
+        elif action == 'pause': ctrl.pause()
+        elif action == 'skip': ctrl.skip()
+        elif action == 'shuffle': ctrl.shuffle()
         else: return json_error('invalid action: ' + action)
     except ControlError, err:
         return json_error(str(err))
     else:
+        # Update the request snapshot so it's recent.
+        snapshot = ctrl.get_channel_snapshot()
+        request.channel_snapshots[ctrl.channel.id] = snapshot
         # Control succeeded, get the current playlist state and send that back.
         return json_control_update(request)
 

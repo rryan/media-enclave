@@ -159,7 +159,7 @@ INSTALLED_APPS = (
     #'menclave.genclave',  # Gaming Enclave
 )
 
-# Enable these both to improve performance and hurt debugging.
+# Enable these both to improve performance and cripple debugging.
 DEFER_JAVASCRIPT = False
 USE_BUNDLES = False
 
@@ -195,9 +195,9 @@ MEDIA_BUNDLES = (
 
     {"type": "css",
      "name": "aenclave-styles",
-     "path": _MENCLAVE_ROOT + "/home/reid/menclave/aenclave/styles/",
+     "path": _MENCLAVE_ROOT + "aenclave/styles/",
      "url": "/audio/styles/",
-     "minify": False,
+     "minify": True,
      "files": (
          "base.css",
          "browse.css",
@@ -208,13 +208,15 @@ MEDIA_BUNDLES = (
          "sftp_info.css",
          "songlist.css",
          "upload.css",
+         # This is the sprites CSS file.
+         "aenclave-sprites.css",
      )},
 
     {"type": "png-sprite",
      "name": "aenclave-sprites",
      "path": _MENCLAVE_ROOT + "aenclave/images/",
      "url": "/audio/images/",
-     "css_file": _MENCLAVE_ROOT + "/aenclave/styles/aenclave-sprites.css",
+     "css_file": _MENCLAVE_ROOT + "aenclave/styles/aenclave-sprites.css",
      "files": (
          "add.png",
          "cancel.png",

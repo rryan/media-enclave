@@ -248,13 +248,26 @@ DIV#actions A:active {
     color: #335;
 }
 
-div#actions a .aenclave-sprites {
+div#actions .aenclave-sprites {
     position: absolute;
     left: 3px;
     top: 3px;
 }
 
 DIV#actionsgap { height: 30px; }
+
+.random-control {
+    font-size: 14px;
+    vertical-align: top;
+}
+
+/*.random-control #random_count {*/
+    /*vertical-align: top;*/
+/*}*/
+
+/*.random-control #random_button {*/
+    /*vertical-align: top;*/
+/*}*/
 
 /****************************** SUB-ACTIONS BAR ******************************/
 

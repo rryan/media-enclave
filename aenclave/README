@@ -1,5 +1,5 @@
-Audio Enclave Install Instructions:
-
+Audio Enclave Install Instructions
+==================================
 
 First, make sure the following dependencies are installed:
 
@@ -18,8 +18,10 @@ settings and this process in general can be found on the Django web site.
 
 Run the manage.py script in the project root like so:
   python manage.py syncdb
+  python manage.py bundle_media
 This will populate the database that you just configured with the model tables
-and a default channel.
+and a default channel, and it will bundle the Javascript, CSS, and image
+sprites.
 
 For development, you should use Django's own HTTP server, but for production
 you now need to configure Apache/mod_python for the aenclave Django project.

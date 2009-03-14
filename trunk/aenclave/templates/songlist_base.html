@@ -122,6 +122,25 @@
               <div class="aenclave-sprites aenclave-sprites-speaker-png"></div>
               Queue selected songs</a>
           {% endif %}
+          <span class="random-control">
+            choose
+            <select id="select_sample_size">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option selected="selected">5</option>
+              <option>6</option>
+              <option>7</option>
+              <option>8</option>
+              <option>9</option>
+              <option>10</option>
+              <option>...</option>
+            </select>
+            random songs:
+            <input id="random_button" type="button" value="Go"
+                onclick="songlist.select_random()"/>
+          </span>
           {% if dl %}
             <a href="javascript:songlist.dl();">
               <div class="aenclave-sprites aenclave-sprites-dl-png"></div>

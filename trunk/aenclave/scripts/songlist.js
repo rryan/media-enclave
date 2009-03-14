@@ -118,6 +118,83 @@ var songlist = {
     jQuery("#songlist input").attr('checked', !!box.checked);
   },
 
+  // Return a random integer from 0 to n - 1 inclusive.
+  random_int: function(n) {
+    return Math.floor(Math.random() * n);
+  },
+
+  // TODO(rnk): Figure out how to do exceptions in JavaScript right.
+  E_SAMPLE_SIZE_TOO_LARGE: "sample size greater than pop size",
+
+  // Chooses k random samples from a population.  If k is near the size of the
+  // population, it will take longer.  If k is greater than the size of the
+  // population, it will raise an error.
+  random_sample: function(population, k) {
+    var results = [];
+    // JS Arrays are kind of like hashes, so we use it like a set.
+    var selected = [];
+    var pop_size = population.length;
+    if (k > pop_size) {
+      throw songlist.E_SAMPLE_SIZE_TOO_LARGE;
+    }
+    for (var i = 0; i < k; i++) {
+      j = songlist.random_int(pop_size);
+      while (selected[j]) {
+        j = songlist.random_int(pop_size);
+      }
+      selected[j] = true;
+      results.push(population[j]);
+    }
+    return results;
+  },
+
+  start_enter_sample: function() {
+    with (songlist) {
+      start_subaction();
+      var label = $('<span id="sample_size_label">Enter sample size:</span>');
+      add_subaction_item(label);
+      add_subaction_textbox('sample_size', '', songlist.end_enter_sample);
+      add_subaction_button('ok', 'songlist.end_enter_sample();', 'Go');
+      add_subaction_cancel_button();
+    }
+  },
+
+  end_enter_sample: function() {
+    var k_str = $('#sample_size').val();
+    var k = parseInt(k_str, 10);
+    var label = $('#sample_size_label');
+    if (isNaN(k)) {
+      label.text('Sample size was not an integer:');
+    } else {
+      try {
+        songlist.select_random(k);
+      } catch (e) {
+        if (e === songlist.E_SAMPLE_SIZE_TOO_LARGE) {
+          label.text('Sample size too large:');
+          return;
+        } else {
+          throw e;
+        }
+      }
+      songlist.end_subaction();
+    }
+  },
+
+  select_random: function(k) {
+    if (!k) {
+      var k_str = $('#select_sample_size').val();
+      k = parseInt(k_str, 10);
+      if (isNaN(k)) {
+        // Have the user enter a number by hand.
+        songlist.start_enter_sample();
+      }
+    }
+    var all_songs = $('#songlist .song_selected');
+    all_songs.attr('checked', false);
+    var songs_sample = songlist.random_sample($.makeArray(all_songs), k);
+    $(songs_sample).attr('checked', 'checked');
+  },
+
   // Returns a space-separated string of the IDs of all selected songs.
   //  empty: if true, nothing selected -> empty return value
   //         if false, nothing selected is equivalent to everything selected
@@ -127,7 +204,7 @@ var songlist = {
         return box.name;
       }));
     }
-    var names = get_names(jQuery("#songlist .song_selected:checked"));
+    var names = get_names(jQuery('#songlist .song_selected:checked'));
     if (!empty && names.length == 0) {
       // If nothing is selected and empty is false, return all songs.
       return get_names(jQuery("#songlist .song_selected")).join(' ');

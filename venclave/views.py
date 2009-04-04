@@ -18,10 +18,10 @@ def home(request):
 def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): str(value)})
 
-def simple_search(request):
+def browse(request):
+    # Process search query
     form = request.GET
-    # Get the query.
-    query_string = form.get('q','')
+    query_string = form.get('q', '')
     query_words = query_string.split()
     if not query_words:
         queryset = ()
@@ -36,10 +36,12 @@ def simple_search(request):
             # WTF Each match must contain every word, so we use AND here.
             full_query &= word_query
         queryset = ContentNode.visibles.filter(full_query)
-    return render_to_response('venclave/search_results.html',
+    return render_to_response('venclave/browse.html',
                               {'videos':queryset,
                                'search_query':query_string})
 
+def upload(request):
+    pass
 
 def content_view(request, id):
     try:
@@ -77,3 +79,6 @@ def director_view(request, id):
 
     return render_to_response("venclave/director_view.html",
                               {'director': director})
+
+def test(request):
+    return render_to_response("venclave/test.html")

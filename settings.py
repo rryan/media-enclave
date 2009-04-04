@@ -154,7 +154,7 @@ INSTALLED_APPS = (
     #'media_bundler',  # bundles js and css
     # The below are the applications included in Media-Enclave.  Usually you
     # will pick one to leave uncommented.
-    'menclave.aenclave',  # Audio Enclave
+    #'menclave.aenclave',  # Audio Enclave
     'menclave.venclave',  # Video Enclave
     #'menclave.genclave',  # Gaming Enclave
 )

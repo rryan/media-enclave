@@ -31,10 +31,13 @@ class Tag(models.Model):
 
 #-----------------------------------------------------------------------------#
 
-class VisibleManager(models.Manager):
-    """VisibleManager -- manager for getting only visible content"""
+class RootNodesManager(models.Manager):
+    """
+    Manager to access only root nodes (i.e. those that should be
+    initially displayed -- movies, tv shows (not episodes), etc.)
+    """
     def get_query_set(self):
-        return super(VisibleManager, self).get_query_set().filter(visible=True)
+        return super(VideosManager, self).get_query_set().filter(parent__isnull=True)
 
 #-----------------------------------------------------------------------------#
 
@@ -44,6 +47,11 @@ class Director(models.Model):
 #-----------------------------------------------------------------------------#
 
 class Genre(models.Model):
+    name = models.TextField()
+
+#-----------------------------------------------------------------------------#
+
+class Actor(models.Model):
     name = models.TextField()
 
 #-----------------------------------------------------------------------------#
@@ -87,10 +95,13 @@ class IMDBMetadata(ContentMetadataSource):
 
     imdb_id = models.CharField(max_length=255, null=True)
     imdb_canonical_title = models.CharField(max_length=1024, null=True)
+    release_date = models.DateTimeField(blank=True, null=True)
     genre = models.ManyToManyField("Genre") # TODO - rename to genres
     directors = models.ManyToManyField("Director")
-    plot_summary = models.TextField()
-    rating = models.FloatField()
+    actors = models.ManyToManyField("Actor")
+    plot_summary = models.TextField(blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)
+    length = models.IntegerField(blank=True, null=True)
 
 class RottenTomatoesMetadata(ContentMetadataSource):
     """
@@ -113,18 +124,6 @@ class FileMetadata(ContentMetadataSource):
     def source_name(cls):
         return "File"
 
-    #--------------------------------- Time ----------------------------------#
-
-    time = models.PositiveIntegerField(help_text="The duration of the video,"
-                                       " in seconds.")
-    def time_string(self):
-        string = str(datetime.timedelta(0, self.time))
-        if self.time < 600: return string[3:]
-        elif self.time < 3600: return string[2:]
-        else: return string
-    time_string.short_description = 'time'
-
-
 class ManualMetadata(ContentMetadataSource):
     """
     Manually entered metadata
@@ -136,7 +135,10 @@ class ManualMetadata(ContentMetadataSource):
 
     description = models.TextField()
 
-#-----------------------------------------------------------------------------#
+class VideoFile(models.Model):
+    
+    file = models.FileField(upload_to='venclave/content')
+    parent = models.ForeignKey('ContentNode')
 
 
 KIND_TV = 'tv'
@@ -147,6 +149,11 @@ KIND_RANDOMCLIP = 'rc'
 KIND_UNKNOWN = 'uk'
 
 class ContentNode(models.Model):
+
+    owner = models.ForeignKey('auth.User')
+
+    objects = models.Manager()
+    root_nodes = RootNodesManager()
 
     def __unicode__(self): return self.full_name()
 
@@ -193,40 +200,14 @@ class ContentNode(models.Model):
         else:
             return self.compact_name()
 
-    #--------------------------------- Release Date --------------------------#
-
-    release_date = models.DateTimeField(blank=True, null=True)
-
     #--------------------------------- Parent Node ---------------------------#
 
-    parent = models.ForeignKey("ContentNode", blank=True, null=True)
+    parent = models.ForeignKey("ContentNode", related_name="children",
+                               blank=True, null=True)
 
     #--------------------------------- Content Metadata ----------------------#
 
     metadata = models.OneToOneField("ContentMetadata")
-
-    #--------------------------------- Content Path --------------------------#
-
-    path = models.FilePathField(path='venclave/content/',
-                                recursive=True,
-                                blank=True,
-                                max_length=512)
-
-    #------------------------------ Content File------------------------------#
-
-    content = models.FileField(upload_to='venclave/content/',
-                               blank=True,
-                               null=True)
-
-    #------------------------------- Cover Art -------------------------------#
-
-    cover_art = models.ImageField(upload_to='venclave/cover_art/%Y/%m/%d',
-                                  blank=True,
-                                  null=True)
-
-    #------------------------------ Download Count ---------------------------#
-
-    downloads = models.IntegerField(default=0, editable=False)
 
     #--------------------------------- Tags ----------------------------------#
 
@@ -239,14 +220,6 @@ class ContentNode(models.Model):
 
     def date_added_string(self): return datetime_string(self.created)
     date_added_string.short_description = 'date added'
-
-    #-------------------------------- Visible --------------------------------#
-
-    visible = models.BooleanField(default=True, help_text="Non-visible content"
-                                  " does not appear in search results.")
-
-    objects = models.Manager()
-    visibles = VisibleManager()
 
     #------------------------------ Other Stuff ------------------------------#
 
@@ -266,21 +239,3 @@ class ContentNode(models.Model):
         return ('title', 'season', 'episode')
 
 
-#-----------------------------------------------------------------------------#
-
-class Chapter(models.Model):
-    def __unicode__(self): return self.name
-
-    content = models.ForeignKey("ContentNode", related_name='chapters')
-
-    name = models.CharField(max_length=50)
-
-    time = models.PositiveIntegerField(help_text="The time from the"
-                                       " start of the video at which the"
-                                       " chapter starts, in seconds.")
-
-    class Meta:
-        ordering = ('content', 'time',)
-        unique_together = (('content', 'name'),)
-
-#=============================================================================#

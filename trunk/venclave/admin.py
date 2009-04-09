@@ -10,9 +10,9 @@ class ContentNodeAdmin(admin.ModelAdmin):
 #                            'cover_art')}),
 #               ('Searching Metadata',
 #                {'fields': ('tags', 'visible')}))
-    list_display = ('title', 'created', 'visible')
+    list_display = ('title', 'created')
     list_display_links = ('title',)
-    list_filter = ('visible', 'created')
+    list_filter = ('created',)
     search_fields = ('title',)
 
 class ContentMetadataAdmin(admin.ModelAdmin):

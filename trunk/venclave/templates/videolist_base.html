@@ -1,25 +1,3 @@
-{% extends "venclave/base.html" %}
-{% load humanize %}
-
-{% endblock %}
-
-{% block body %}
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Size</th>
-      </tr>
-    </thead>
-    <tbody>
-
-      {% for video in videos %}
-        <tr>
-          <td>{{ video.title }}</td>
-          <td>{{ video.size }}</td>
-        </tr>
-      {% endfor %}
-
-    </tbody>
-  </table>
-{% endblock %}
+<table class="video-list">
+  {{ list|safe }}
+</table>

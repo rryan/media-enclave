@@ -1,0 +1,15 @@
+<tr>
+  <td>
+    {{ node.title }}
+  </td>
+</tr>
+{% if sublist %}
+<tr>
+  <td>
+    <table>
+      {{ sublist|safe }}
+    </table>
+  </td>
+</tr>
+{% endif %}
+

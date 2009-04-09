@@ -31,13 +31,58 @@ class Tag(models.Model):
 
 #-----------------------------------------------------------------------------#
 
-class RootNodesManager(models.Manager):
-    """
-    Manager to access only root nodes (i.e. those that should be
-    initially displayed -- movies, tv shows (not episodes), etc.)
-    """
-    def get_query_set(self):
-        return super(VideosManager, self).get_query_set().filter(parent__isnull=True)
+class TreeManager(models.Manager):
+    def root_nodes(self):
+        return super(TreeManager, self).get_query_set().filter(parent__isnull=True)        
+
+    def treeify(self, query_set):
+        roots = []
+        trees = {} # root->tree
+
+        for node in query_set:
+            # Expand all descendants
+            tree = self.expand(node)
+            while node not in trees:
+                trees[node] = tree
+                # Is node a root?
+                if not node.parent:
+                    roots.append(tree)
+                    break
+                # Traverse up branch
+                node = node.parent
+                tree = (node, [tree])
+            else:
+                old_tree = trees[node]
+                # Node is the same, update children
+                old_tree[1] = tree[1]
+        return roots
+
+    # Todo: make more like order_by
+    def sort_trees(self, trees, key=(lambda node: node.title), reverse=False):
+        trees.sort(key=lambda tree: key(tree[0]), reverse=reverse)
+        for tree in trees:
+            self.sort_trees(tree[1], key, reverse)
+
+    def expand(self, node):
+        children = node.children.all()
+        return (node, [self.expand(child) for child in children])
+
+    # Warning! Returns a list of trees, not a query 
+    def all(self):
+        roots = self.root_nodes()
+        return [self.expand(node) for node in roots]
+
+    # Warning! Returns a list of trees, not a query 
+    def filter(self, *args, **kwargs):
+        order_by = None
+        if 'order_by' in kwargs:
+            order_by = kwargs['order_by']
+            del kwargs['order_by']
+        query_set = super(TreeManager,self).filter(*args, **kwargs)
+        trees = self.treeify(query_set)
+        if order_by:
+            trees = self.sort_trees(trees, order_by)
+        return trees
 
 #-----------------------------------------------------------------------------#
 
@@ -60,8 +105,8 @@ class ContentMetadata(models.Model):
     """
     Content metadata container
     """
-    imdb = models.OneToOneField("IMDBMetadata", blank=True, null=True)
-    rotten_tomatoes = models.OneToOneField("RottenTomatoesMetadata",
+    imdb = models.ForeignKey("IMDBMetadata", blank=True, null=True)
+    rotten_tomatoes = models.ForeignKey("RottenTomatoesMetadata",
                                            blank=True, null=True)
     manual = models.OneToOneField("ManualMetadata", blank=True, null=True)
     file = models.OneToOneField("FileMetadata", blank=True, null=True)
@@ -153,13 +198,10 @@ class ContentNode(models.Model):
     owner = models.ForeignKey('auth.User')
 
     objects = models.Manager()
-    root_nodes = RootNodesManager()
+    trees = TreeManager()
 
-    def __unicode__(self): return self.full_name()
+    def __unicode__(self): return self.compact_name()
 
-    #--------------------------------- Kind ----------------------------------#
-
-    # Nodes can have different kinds.
     KIND_CHOICES = ((KIND_MOVIE, 'movie'),
                     (KIND_TV, 'TV episode'),
                     (KIND_SERIES, 'TV series'),
@@ -167,15 +209,16 @@ class ContentNode(models.Model):
                     (KIND_RANDOMCLIP, 'random clip'),
                     (KIND_UNKNOWN, 'unknown'))
 
-    kind = models.CharField(max_length=2, choices=KIND_CHOICES)
+    kind = models.CharField(default=KIND_UNKNOWN,
+                            max_length=2,
+                            choices=KIND_CHOICES)
 
-    #--------------------------------- Title ---------------------------------#
-
-    title = models.CharField(max_length=1024, null=True)
+    title = models.CharField(max_length=1024)
 
     # only applicable for kind=='tv', null if not applicable
     season = models.IntegerField(blank=True, null=True)
     episode = models.IntegerField(blank=True, null=True)
+
 
     def simple_name(self):
         return self.title
@@ -200,28 +243,18 @@ class ContentNode(models.Model):
         else:
             return self.compact_name()
 
-    #--------------------------------- Parent Node ---------------------------#
-
-    parent = models.ForeignKey("ContentNode", related_name="children",
+    parent = models.ForeignKey("self", related_name="children",
                                blank=True, null=True)
-
-    #--------------------------------- Content Metadata ----------------------#
 
     metadata = models.OneToOneField("ContentMetadata")
 
-    #--------------------------------- Tags ----------------------------------#
-
     tags = models.ManyToManyField(Tag, blank=True)
-
-    #--------------------------------- Timestamps ----------------------------#
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     updated = models.DateTimeField(auto_now=True, editable=False)
 
     def date_added_string(self): return datetime_string(self.created)
     date_added_string.short_description = 'date added'
-
-    #------------------------------ Other Stuff ------------------------------#
 
     class Meta:
         get_latest_by = 'created'
@@ -236,6 +269,6 @@ class ContentNode(models.Model):
     @classmethod
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
-        return ('title', 'season', 'episode')
+        return ('title',)
 
 

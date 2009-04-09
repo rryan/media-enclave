@@ -3,6 +3,9 @@
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render_to_response
+from django.template.loader import select_template
+from django.template import Context
+
 
 from menclave.venclave.models import ContentNode, Director, Genre
 
@@ -23,22 +26,33 @@ def browse(request):
     form = request.GET
     query_string = form.get('q', '')
     query_words = query_string.split()
-    if not query_words:
-        queryset = ()
-        query_string = ''
-    else:
-        full_query = Q()
-        for word in query_words:
-            word_query = Q()
-            for field in ContentNode.searchable_fields():
-                # WTF Each word may appear in any field, so we use OR here.
-                word_query |= Qu(field, 'icontains', word)
-            # WTF Each match must contain every word, so we use AND here.
-            full_query &= word_query
-        queryset = ContentNode.visibles.filter(full_query)
+    full_query = Q()
+    for word in query_words:
+        word_query = Q()
+        for field in ContentNode.searchable_fields():
+            # WTF Each word may appear in any field, so we use OR here.
+            word_query |= Qu(field, 'icontains', word)
+        # WTF Each match must contain every word, so we use AND here.
+        full_query &= word_query
+    trees = ContentNode.trees.filter(full_query)
     return render_to_response('venclave/browse.html',
-                              {'videos':queryset,
-                               'search_query':query_string})
+                              {'list': create_video_list(trees),
+                               'search_query': query_string})
+
+def create_video_list(trees):
+    html = []
+    templates = {} # kind->template
+    for node, children in trees:
+        t = templates.setdefault(node.kind,
+                                 select_template(['list_items/kind_%s.html' % node.kind,
+                                                  'list_items/default.html']))
+        c = Context({'node': node})
+        if children:
+            c['sublist'] = create_video_list(children)
+        else:
+            c['sublist'] = None
+        html.append(t.render(c))
+    return ''.join(html)
 
 def upload(request):
     pass
@@ -79,6 +93,3 @@ def director_view(request, id):
 
     return render_to_response("venclave/director_view.html",
                               {'director': director})
-
-def test(request):
-    return render_to_response("venclave/test.html")

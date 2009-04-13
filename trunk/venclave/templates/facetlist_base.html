@@ -1,0 +1,7 @@
+{% load venclave_facets %}
+
+<div id="facet-list">
+{% for attribute in attributes %}
+  {% facet attribute %}
+{% endfor %}
+</div>

@@ -9,6 +9,17 @@ urlpatterns = patterns(
         'menclave.venclave.views.home',
         name='venclave-home'),
 
+   url(r'^browse/$',
+        'menclave.venclave.views.browse',
+        name='venclave-browse'),
+
+    url(r'^upload/$',
+        'menclave.venclave.views.upload',
+        name='venclave-upload'),
+
+    url(r'^update_list/$',
+        'menclave.venclave.views.update_list'),
+
     # Static content -- These exist only for the test server.  In production,
     # they should not be served using Django, but with appropriate server
     # voodoo.
@@ -26,20 +37,5 @@ urlpatterns = patterns(
     url(r'^images/(?P<path>.*)$',
         'django.views.static.serve',
         {'document_root': 'venclave/images/'},
-        name='venclave-images'),
-
-    # Search
-
-   url(r'^browse/$',
-        'menclave.venclave.views.browse',
-        name='venclave-browse'),
-
-    url(r'^upload/$',
-        'menclave.venclave.views.upload',
-        name='venclave-upload'),
-
-   url(r'^test/$',
-       'menclave.venclave.views.test',
-       name='venclave-test')
-
+        name='venclave-images')
 )

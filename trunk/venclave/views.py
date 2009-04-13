@@ -16,6 +16,8 @@ from django.template import Context, RequestContext
 from menclave.venclave.models import ContentNode, Director, Genre
 
 def home(request):
+    if request.user.is_authenticated():
+        return HttpResponseRedirect(reverse('venclave-browse'))
     reg_form = UserCreationForm()
     if request.method == 'POST':
         # login

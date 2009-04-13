@@ -31,10 +31,10 @@
     <td>
       <form name="register" action="{% url venclave-home %}" method="POST">
 	{% for field in reg_form %}
-          <div class="fieldWrapper">
+          <p class="fieldWrapper">
             {{ field.errors }}
             {{ field.label_tag }}: {{ field }}
-          </div>
+          </p>
 	{% endfor %}
 	<input type="hidden" name="f" value="r" />
 	<input type="submit" />

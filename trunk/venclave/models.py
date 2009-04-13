@@ -125,7 +125,7 @@ class AttributesManager(models.Manager):
                    Attribute("Type",
                              "kind",
                              "checkbox",
-                             lambda: [(KIND_TV, 'tv'), (KIND_MOVIE, 'movie')]),
+                             lambda: [(KIND_TV, 'Tv'), (KIND_MOVIE, 'Movie')]),
                   "Year": 
                   Attribute("Year",
                             "metadata__imdb__release_date",

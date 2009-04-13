@@ -84,6 +84,58 @@ class TreeManager(models.Manager):
             trees = self.sort_trees(trees, order_by)
         return trees
 
+class AttributesManager(models.Manager):
+    def all(self):
+        return [self.attributes[a] for a in self.attribute_order]
+
+    class Attribute(object):
+        def __init__(self, name, path, facet_type, get_choices):
+            self.name = name
+            self.path = path # string specifying field in querysets
+                             # relative to ContentNode
+            self.facet_type = facet_type
+            self.get_choices = get_choices
+
+    @staticmethod
+    def year_get_choices():
+        range = IMDBMetadata.objects.aggregate(min=Min('release_date'),
+                                               max=Max('release_date'))
+        range['min'] = range['min'].year                  
+        range['max'] = range['max'].year
+        return range
+
+    attribute_order = ('Type', 'Genre', 'Actor', 'Director')
+
+    attributes = {"Genre": 
+                  Attribute("Genre",
+                            "metadata__imdb__genre__name",
+                            "checkbox",
+                            lambda: [(g.name,g.name) for g in Genre.objects.all()]),
+                  "Actor": 
+                  Attribute("Actor",
+                            "metadata__imdb__actors__name",
+                            "searchbar",
+                            lambda: Actor.objects.all()),
+                  "Director": 
+                  Attribute("Director",
+                            "metadata__imdb__directors__name",
+                            "searchbar",
+                            lambda: Director.objects.all()),
+                  "Type":
+                   Attribute("Type",
+                             "kind",
+                             "checkbox",
+                             lambda: [(KIND_TV, 'tv'), (KIND_MOVIE, 'movie')]),
+                  "Year": 
+                  Attribute("Year",
+                            "metadata__imdb__release_date",
+                            "slider",
+                            # todo: figure out what's the deal with
+                            # static methods and class attributes
+                            lambda: AttributesManager.year_get_choices())
+                  }
+
+
 #-----------------------------------------------------------------------------#
 
 class Director(models.Model):
@@ -190,6 +242,7 @@ class VideoFile(models.Model):
 KIND_TV = 'tv'
 KIND_MOVIE = 'mo'
 KIND_SERIES = 'se'
+KIND_SEASON = 'sn'
 KIND_TRAILER = 'tr'
 KIND_RANDOMCLIP = 'rc'
 KIND_UNKNOWN = 'uk'
@@ -206,6 +259,7 @@ class ContentNode(models.Model):
     KIND_CHOICES = ((KIND_MOVIE, 'movie'),
                     (KIND_TV, 'TV episode'),
                     (KIND_SERIES, 'TV series'),
+                    (KIND_SEASON, 'TV season'),
                     (KIND_TRAILER, 'trailer'),
                     (KIND_RANDOMCLIP, 'random clip'),
                     (KIND_UNKNOWN, 'unknown'))

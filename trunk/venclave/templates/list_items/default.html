@@ -1,22 +1,22 @@
-<tr>
+<tr id1="{{ node.id }}">
   <td class="item-icon">
     i
   </td>
   <td class="item-title">
-    {{ node.title }}
+    <a href="#" class={% if sublist %}"parent"{% else %}"leaf"{% endif %}>{{ node.title }}</a>
   </td>
   <td class="item-length">
     {{ node.metadata.imdb.length|default:"-" }}
   </td>
-  <td class="item-year">
-    {{ node.metadata.imdb.release_date|default:"-" }}
+  <td class="item-release">
+    {{ node.metadata.imdb.release_date|date:"d M Y"|default:"-" }}
   </td>
   <td class="item-rating">
     {{ node.metadata.imdb.rating|default:"-" }}
   </td>
 </tr>
 {% if sublist %}
-<tr>
+<tr style="display:none">
   <td colspan="5" class="sublist-container">
     <table class="video-sublist">
       {{ sublist|safe }}

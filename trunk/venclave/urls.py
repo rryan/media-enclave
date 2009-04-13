@@ -9,9 +9,9 @@ urlpatterns = patterns(
         'menclave.venclave.views.home',
         name='venclave-home'),
 
-   url(r'^browse/$',
+    url(r'^browse/$',
         'menclave.venclave.views.browse',
-        name='venclave-browse'),
+        name='venclave-browse' ),
 
     url(r'^upload/$',
         'menclave.venclave.views.upload',
@@ -19,6 +19,10 @@ urlpatterns = patterns(
 
     url(r'^update_list/$',
         'menclave.venclave.views.update_list'),
+
+    url(r'^load_pane/',
+        'menclave.venclave.views.get_pane',
+        name="venclave-pane"),
 
     url(r'logout/',
         'django.contrib.auth.views.logout_then_login',

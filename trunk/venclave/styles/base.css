@@ -36,7 +36,7 @@ table#video-list .item-title {
 }
 
 table#video-list .item-length,
-table#video-list .item-year,
+table#video-list .item-release,
 table#video-list .item-rating {
     text-align: center;
     width: 100px;

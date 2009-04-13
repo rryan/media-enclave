@@ -3,7 +3,6 @@
 import datetime
 
 from django.db import models
-from django.db.models import Min, Max
 
 #================================= UTILITIES =================================#
 
@@ -51,7 +50,7 @@ class TreeManager(models.Manager):
                     break
                 # Traverse up branch
                 node = node.parent
-                tree = [node, [tree]]
+                tree = (node, [tree])
             else:
                 old_tree = trees[node]
                 # Node is the same, update children
@@ -66,7 +65,7 @@ class TreeManager(models.Manager):
 
     def expand(self, node):
         children = node.children.all()
-        return [node, [self.expand(child) for child in children]]
+        return (node, [self.expand(child) for child in children])
 
     # Warning! Returns a list of trees, not a query 
     def all(self):
@@ -85,71 +84,20 @@ class TreeManager(models.Manager):
             trees = self.sort_trees(trees, order_by)
         return trees
 
-class AttributesManager(models.Manager):
-    def all(self):
-        return [self.attributes[a] for a in self.attribute_order]
-
-    class Attribute(object):
-        def __init__(self, name, path, facet_type, get_choices):
-            self.name = name
-            self.path = path # string specifying field in querysets
-                             # relative to ContentNode
-            self.facet_type = facet_type
-            self.get_choices = get_choices
-
-    attribute_order = ('Type', 'Genre', 'Actor', 'Director')
-
-    attributes = {"Genre": 
-                  Attribute("Genre",
-                            "metadata__imdb__genre__name",
-                            "checkbox",
-                            lambda: [(g.name,g.name) for g in Genre.objects.all()]),
-                  "Actor": 
-                  Attribute("Actor",
-                            "metadata__imdb__actors__name",
-                            "searchbar",
-                            lambda: Actor.objects.all()),
-                  "Director": 
-                  Attribute("Director",
-                            "metadata__imdb__directors__name",
-                            "searchbar",
-                            lambda: Director.objects.all()),
-                  "Type":
-                   Attribute("Type",
-                             "kind",
-                             "checkbox",
-                             lambda: [(KIND_TV, 'tv'), (KIND_MOVIE, 'movie')]),
-#                   "Year": 
-#                   Attribute("Year",
-#                             "metadata__imdb__release_date",
-#                             "slider",
-#                             lambda: IMDBMetadata.objects.aggregate(min=Min('release_date'), max=Max('release_date')))
-                  }
-
-
 #-----------------------------------------------------------------------------#
 
 class Director(models.Model):
-    name = models.TextField()
-
-    def __unicode__(self):
-        return self.name
-
-#-----------------------------------------------------------------------------#
-
-class Genre(models.Model):
-    name = models.TextField()
-
-    def __unicode__(self):
-        return self.name
+    name = models.TextField(primary_key=True)
 
 #-----------------------------------------------------------------------------#
 
 class Actor(models.Model):
-    name = models.TextField()
+    name = models.TextField(primary_key=True)
 
-    def __unicode__(self):
-        return self.name
+#-----------------------------------------------------------------------------#
+
+class Genre(models.Model):
+    name = models.TextField(primary_key=True)
 
 #-----------------------------------------------------------------------------#
 
@@ -175,8 +123,8 @@ class ContentMetadataSource(models.Model):
     def source_name(cls):
         raise NotImplementedError("the source isn't properly defined")
 
-    created = models.DateTimeField(auto_now_add=True, editable=False)
-    updated = models.DateTimeField(auto_now=True, editable=False)
+    #created = models.DateTimeField(auto_now_add=True, editable=False)
+    #updated = models.DateTimeField(auto_now=True, editable=False)
 
     class Meta:
         abstract = True
@@ -190,12 +138,13 @@ class IMDBMetadata(ContentMetadataSource):
     def source_name(cls):
         return "IMDB"
 
-    imdb_id = models.CharField(max_length=255, null=True)
-    imdb_canonical_title = models.CharField(max_length=1024, null=True)
+    imdb_id = models.CharField(max_length=255, null=True, blank=True)
+    imdb_canonical_title = models.CharField(max_length=1024, null=True, primary_key = True)
     release_date = models.DateTimeField(blank=True, null=True)
-    genre = models.ManyToManyField("Genre", related_name="nodes") # TODO - rename to genres
-    directors = models.ManyToManyField("Director", related_name="nodes")
-    actors = models.ManyToManyField("Actor", related_name="nodes")
+    release_year = models.IntegerField(blank=True, null=True)
+    genres = models.ManyToManyField("Genre") # TODO - rename to genres
+    directors = models.ManyToManyField("Director")
+    actors = models.ManyToManyField("Actor")
     plot_summary = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
     length = models.IntegerField(blank=True, null=True)
@@ -251,7 +200,6 @@ class ContentNode(models.Model):
 
     objects = models.Manager()
     trees = TreeManager()
-    attributes = AttributesManager()
 
     def __unicode__(self): return self.compact_name()
 
@@ -301,6 +249,27 @@ class ContentNode(models.Model):
 
     metadata = models.OneToOneField("ContentMetadata")
 
+
+    #--------------------------------- Content Path --------------------------#
+    #TODO (jslocum) Path needs to be an absolute path.
+    path = models.FilePathField(path='venclave/content/',
+                                recursive=True,
+                                blank=True,
+                                max_length=512)
+
+    #------------------------------- Cover Art -------------------------------#
+
+    cover_art = models.ImageField(upload_to='venclave/cover_art/%Y/%m/%d',
+                                  blank=True,
+                                  null=True)
+
+    #------------------------------ Download Count ---------------------------#
+
+    downloads = models.IntegerField(default=0, editable=False)
+
+
+    #--------------------------------- Tags ----------------------------------#
+
     tags = models.ManyToManyField(Tag, blank=True)
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -308,6 +277,9 @@ class ContentNode(models.Model):
 
     def date_added_string(self): return datetime_string(self.created)
     date_added_string.short_description = 'date added'
+
+
+    #------------------------------ Other Stuff ------------------------------#
 
     class Meta:
         get_latest_by = 'created'
@@ -323,4 +295,7 @@ class ContentNode(models.Model):
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
         return ('title',)
+
+
+
 

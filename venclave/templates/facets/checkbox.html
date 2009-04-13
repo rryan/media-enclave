@@ -1,9 +1,13 @@
 {% extends "facets/facet_base.html" %}
 
+{% block facet-type %}
+checkbox
+{% endblock %}
+
 {% block choices %}
-  {% for choice in attribute.get_choices %}
-    <label for="{{ attribute.name }}{{ forloop.counter0 }}">{{choice}}</label>
-    <input type="checkbox" value="{{ choice }}" id="{{ attribute.name }}{{ forloop.counter0 }}" checked="checked" />
+  {% for value,label in attribute.get_choices %}
+    <label for="{{ attribute.name }}{{ forloop.counter0 }}">{{ label }}</label>
+    <input type="checkbox" value="{{ value }}" id="{{ attribute.name }}{{ forloop.counter0 }}" />
     <br />
   {% endfor %}
 

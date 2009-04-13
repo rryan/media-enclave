@@ -1,15 +1,26 @@
 <tr>
-  <td>
+  <td class="item-icon">
+    i
+  </td>
+  <td class="item-title">
     {{ node.title }}
+  </td>
+  <td class="item-length">
+    {{ node.metadata.imdb.length|default:"-" }}
+  </td>
+  <td class="item-year">
+    {{ node.metadata.imdb.release_date|default:"-" }}
+  </td>
+  <td class="item-rating">
+    {{ node.metadata.imdb.rating|default:"-" }}
   </td>
 </tr>
 {% if sublist %}
 <tr>
-  <td>
-    <table>
+  <td colspan="5" class="sublist-container">
+    <table class="video-sublist">
       {{ sublist|safe }}
     </table>
   </td>
 </tr>
 {% endif %}
-

@@ -1,3 +1,20 @@
 <table id="video-list">
-  {{ list|safe }}
+  <tr>
+    <th class="item-icon"></th>
+    <th class="item-title">
+      title
+    </th>
+    <th class="item-length">
+      length
+    </th>
+    <th class="item-year">
+      year
+    </th>
+    <th class="item-rating">
+      rating
+    </th>
+  </tr>
+  <tbody class="list-body">
+    {{ list|safe }}
+  </tbody>
 </table>

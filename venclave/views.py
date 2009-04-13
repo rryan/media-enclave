@@ -1,27 +1,44 @@
 # venclave/views.py
 import cjson
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
+from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.loader import select_template
-from django.template import Context
+from django.template import Context, RequestContext
 
 
 from menclave.venclave.models import ContentNode, Director, Genre
 
 def home(request):
-    nodes = ContentNode.objects.all().order_by('release_date')
-    nodes = nodes.values_list('release_date',flat=True).distinct()
-    years = [x.year for x in nodes]
-
+    reg_form = UserCreationForm()
+    if request.method == 'POST':
+        # login
+        if request.POST['f'] == 'l':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request,user)
+                return HttpResponseRedirect(reverse('venclave-browse'))
+        # register
+        elif request.POST['f'] == 'r':
+            reg_form = UserCreationForm(request.POST)
+            if reg_form.is_valid():
+                user = reg_form.save()
+                login(request,user)
+                return HttpResponseRedirect(reverse('venclave-browse'))
     return render_to_response("venclave/index.html",
-                              {'genres': Genre.objects.all(),
-                               'years': years})
+                              {'reg_form': reg_form})
 
 def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): str(value)})
 
+@login_required
 def browse(request):
     # Process search query
     form = request.GET
@@ -40,26 +57,35 @@ def browse(request):
     return render_to_response('venclave/browse.html',
                               {'attributes': facet_attributes,
                                'list': create_video_list(trees),
-                               'search_query': query_string})
+                               'search_query': query_string},
+                              context_instance=RequestContext(request))
 
+@login_required
 def update_list(request):
     facets = cjson.decode(request.POST['f'])
     full_query = Q()
     for name in facets:
         facet = facets[name]
         attribute = ContentNode.attributes.attributes[name]
+        type = attribute.facet_type
         query = Q()
-        for value in facet['selected']:
-            subquery = Qu(attribute.path, 'exact', value)
-            if facet['op'] == "or":
-                query |= subquery
-            elif facet['op'] == "and":
-                query &= subquery
-            else:
-                raise ValueException, "op must be 'or' or 'and'"
+        if type == 'slider':
+            lo = facet['lo']
+            hi = facet['hi']
+            query = Qu(attribute.path, 'range', (lo, hi))
+        else:
+            kind = 'exact' if type == 'checkbox' else 'icontains'
+            for value in facet['selected']:
+                subquery = Qu(attribute.path, kind, value)
+                if facet['op'] == "or":
+                    query |= subquery
+                elif facet['op'] == "and":
+                    query &= subquery
+                else:
+                    raise ValueException, "op must be 'or' or 'and'"
         full_query &= query
     trees = ContentNode.trees.filter(full_query)
-    return HttpResponse(create_video_list(trees), mimetype='text/plain')
+    return HttpResponse(create_video_list(trees))
 
 def create_video_list(trees):
     html = []

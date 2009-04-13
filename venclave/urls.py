@@ -20,6 +20,10 @@ urlpatterns = patterns(
     url(r'^update_list/$',
         'menclave.venclave.views.update_list'),
 
+    url(r'logout/',
+        'django.contrib.auth.views.logout_then_login',
+        name='venclave-logout'),
+
     # Static content -- These exist only for the test server.  In production,
     # they should not be served using Django, but with appropriate server
     # voodoo.

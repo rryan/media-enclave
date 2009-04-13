@@ -7,6 +7,8 @@
 from __future__ import with_statement
 import re
 import sys
+import cPickle
+
 
 from django.conf import settings
 
@@ -28,13 +30,16 @@ def parse_movies(filename):
 
     with open(filename,"r") as f:
         for line in f:
+            line = line.decode('latin1').encode('utf-8')
             match = movie_matcher.match(line)
 
             if match:
                 title = match.group('title')
                 movie_index.append(title)
 
-    print "parse_movies done"
+ #    pick = open(filename + '.pickle', 'wr')
+#     cPickle.dump(movie_index, pick)
+    print "parse_movies done: #movies is " + str(len(movie_index))
     return movie_index
 
 #============================== PLOT =========================================#
@@ -79,7 +84,7 @@ def parse_plots(filename):
         current_plots = []
         while True:
             try:
-                line = f.next()
+                line = f.next().decode('latin1').encode('utf-8')
 
                 title_match = re_title.match(line)
                 plot_match = re_plot.match(line)
@@ -104,6 +109,8 @@ def parse_plots(filename):
                 break
 
     print "parse_plots done"
+ #    pick = open(filename + ".pickle", 'wr')
+#     cPickle.dump(plot_index, pick)
     return plot_index
 
 #============================== GENRES =======================================#
@@ -129,10 +136,12 @@ def parse_genres(filename):
     """
     genre_matcher = re.compile(GENRE_RE)
     genre_index = {}
+    all_genres = set()
     valid = False
 
     with open(filename,"r") as f:
         for line in f:
+            line = line.decode('latin1').encode('utf-8')
             if not valid:
                 # HACK(rryan): There is noise at the beginning of
                 # the file which hits our filter. So I skip everything
@@ -145,10 +154,18 @@ def parse_genres(filename):
             if match:
                 title = match.group('title')
                 genre = match.group('genre')
+                all_genres.add(genre)
                 genre_index.setdefault(title,[]).append(genre)
 
+#     pick = open(filename + ".pickle",'wr')
+#     cPickle.dump(genre_index, pick)
     print "parse_genres done"
-    return genre_index
+    return genre_index, all_genres
+
+
+#TODO: add actor parsing and support
+
+
 
 #============================== DIRECTORS ====================================#
 
@@ -176,19 +193,20 @@ DIRECTOR_CONTINUE_RE = "^\t+(?P<title>.+)$"
 
 def parse_directors(filename):
     """
-    Parses directorms.list and spits out a map of director names to
+    Parses directors.list and spits out a map of director names to
     list of titles they directed.
     """
     start = re.compile(DIRECTOR_START_RE)
     continue_ = re.compile(DIRECTOR_CONTINUE_RE)
     directors_index = {}
+    all_directors = set()
 
     with open(filename,"r") as f:
         finished = False
         valid = False
         while not finished:
             try:
-                line = f.next()
+                line = f.next().decode('latin1').encode('utf-8')
                 start_match = start.match(line)
 
                 if start_match:
@@ -206,6 +224,9 @@ def parse_directors(filename):
                             # eat the "----\t+------" line
                             f.next()
                         continue
+                    
+                    #add directr's name to list of directors
+                    all_directors.add(director)
 
                     # grab all extra titles following this line
                     while True:
@@ -223,9 +244,82 @@ def parse_directors(filename):
 
             except StopIteration:
                 finished = True
-
+ #    pick = open(filename + ".pickle",'wr')
+#     tup = directors_index, all_directors
+#     cPickle.dump(tup, pick)
     print "parse_directors done"
-    return directors_index
+    return directors_index, all_directors
+
+
+#=============================== ACTORS ======================================#
+
+#The code for this is essentially copied from the code for directors, as the
+#.list files are in a very similar format.
+#TODO (jslocum) figure out what to do with roles.
+ACTOR_START_RE="^(?P<actor>.+?)\t+(?P<title>.+)$"
+ACTOR_CONTINUE_RE = "^\t+(?P<title>.+)$"
+ACOTR_ROLE_RE = "^\t+(?P<title>.+)\[(?P<role>.+)\].+$"
+def parse_actors(filename):
+    """
+    Parses actors.list and spits out a map of actor names to
+    list of titles they played in.
+    """
+    start = re.compile(ACTOR_START_RE)
+    continue_ = re.compile(ACTOR_CONTINUE_RE)
+    actors_index = {}
+    all_actors = set()
+
+    with open(filename,"r") as f:
+        finished = False
+        valid = False
+        while not finished:
+            try:
+                line = f.next().decode('latin1').encode('utf-8')
+                start_match = start.match(line)
+
+                if start_match:
+                    # this line is the start of a actor
+                    actor = start_match.group('actor').strip()
+                    title = start_match.group('title').strip()
+                    titles = [title]
+                    
+
+                    # HACK(rryan): There is noise at the beginning of
+                    # the file which hits our filter. So I skip everything
+                    # until we get Name\t+Titles
+                    if not valid:
+                        if actor.strip() == "Name" and title.strip() == "Titles":
+                            valid = True
+                            # eat the "----\t+------" line
+                            f.next()
+                        continue
+                    
+                    #print actor + '\n\n\n\n\n\n\n' + title + '\n\n\n\n\n\n\n*******************************'
+                    #add actor's name to actor list
+                    all_actors.add(actor)
+
+                    # grab all extra titles following this line
+                    while True:
+                        line = f.next()
+                        continue_match = continue_.match(line)
+
+                        if not continue_match:
+                            break
+
+                        titles.append(continue_match.group('title'))
+
+                    # add the actor to each title
+                    for title in titles:
+                        actors_index.setdefault(title,[]).append(actor)
+
+            except StopIteration:
+                finished = True
+ #    pick = open(filename + ".pickle",'wr')
+#     tup = actors_index, all_actors
+#     cPickle.dump(tup, pick)
+    print "parse_actors done: #actors is:" + str(len(all_actors))
+    return actors_index, all_actors
+
 
 #============================== RATINGS ======================================#
 
@@ -275,7 +369,7 @@ RATINGS_RE = r"""(?x)                          # turn on verbose mode
 #                 episodes repackaged for video, guest appearances in
 #                 variety/comedy specials released on video, or
 #                 self-help/physical fitness videos)
-#(VG)           = videro game
+#(VG)           = video game
 
 # This bastard will parse the above examples.
 TITLE_RE = r"""(?x)                         # turn on verbose
@@ -365,32 +459,69 @@ def parse_ratings(filename):
 
     with open(filename,"r") as f:
         for line in f:
+            line = line.decode('latin1').encode('utf-8')
             match = matcher.match(line)
             if match:
                 title = match.group('title')
                 rating = match.group('rating')
                 ratings_index[title] = rating
 
-    print "parse_ratings done"
+#     pick = open(filename + '.pickle','wr')
+#     print "parse_ratings done"
     return ratings_index
 
-def load_imdb_database(imdb_path):
+
+
+
+def create_imdb_database_pickles(imdb_path):
     movies_file = "%s/movies.list" % imdb_path
     ratings_file = "%s/ratings.list" % imdb_path
     directors_file = "%s/directors.list" % imdb_path
+    actors_file = "%s/actors.list" % imdb_path
+    actresses_file = "%s/actresses.list" % imdb_path
     genres_file = "%s/genres.list" % imdb_path
     plots_file = "%s/plot.list" % imdb_path
 
+    field_lists = {}
+
     movies = parse_movies(movies_file)
     ratings = parse_ratings(ratings_file)
+    
+
+    #parse_directors, actors and genres all return a duple containting a 
+    #title->field dictionary, and a list of all field values (i.e. all actors)
     directors = parse_directors(directors_file)
+    field_lists['directors'] = directors[1]
+    directors = directors[0]
+    
+    actors = parse_actors(actors_file)
+    field_lists['actors'] = actors[1]
+    actors = actors[0]
+    
+    actresses = parse_actors(actresses_file)
+    field_lists['actresses'] = actresses[1]
+    actresses = actresses[0]
+
     genres = parse_genres(genres_file)
+    field_lists['genres'] = genres[1]
+    genres = genres[0]
+    
     plots = parse_plots(plots_file)
 
     titles = []
     title_index = {}
 
+    index = 0
+    print "number of movies is: " + str(len(movies))
+    movies.sort()
+    print "movies sorted"
     for title in movies:
+        if index % 25000 == 24999:
+            print "working on movie " + str(index)
+            pick = open(imdb_path + "dictionary__" + str(index/25000) + ".pickle", 'wr')
+            cPickle.dump(title_index, pick)
+            pick.close()
+            title_index = {}
         title_dict = {}
 
         rating = ratings.get(title,None)
@@ -409,25 +540,129 @@ def load_imdb_database(imdb_path):
         if not directors_list is None:
             title_dict['directors'] = directors_list
 
+        actors_list = actors.get(title,None)
+        if not actors_list is None:
+            title_dict['actors'] = actors_list
+
+        actresses_list = actresses.get(title, None)
+        if not actresses_list is None:
+            title_dict['actresses'] = actresses_list
+
+        title_dict['title'] = title
+        title_dict['title_parse'] = parse_title(title)
+
+#        titles.append(title_dict)
+        title_index[title] = title_dict
+
+        index +=1
+
+  #   imdb = {'titles': titles,
+#             'index': title_index,
+#             'lists': field_lists}
+    
+#     pic = os.open(imdb_path + "pickled_IMDB", 'wr');
+#     cPickle.dump(imdb, pic)
+#     print "Successfully loaded IMDB text files!"
+    
+#    return imdb
+
+
+
+def load_imdb_database(imdb_path):
+    movies_file = "%s/movies.list" % imdb_path
+    ratings_file = "%s/ratings.list" % imdb_path
+    directors_file = "%s/directors.list" % imdb_path
+    actors_file = "%s/actors.list" % imdb_path
+    actresses_file = "%s/actresses.list" % imdb_path
+    genres_file = "%s/genres.list" % imdb_path
+    plots_file = "%s/plot.list" % imdb_path
+
+    field_lists = {}
+
+    movies = parse_movies(movies_file)
+    ratings = parse_ratings(ratings_file)
+    
+
+    #parse_directors, actors and genres all return a duple containting a 
+    #title->field dictionary, and a list of all field values (i.e. all actors)
+    directors = parse_directors(directors_file)
+    field_lists['directors'] = directors[1]
+    directors = directors[0]
+    
+    actors = parse_actors(actors_file)
+    field_lists['actors'] = actors[1]
+    actors = actors[0]
+    
+    actresses = parse_actors(actresses_file)
+    field_lists['actresses'] = actresses[1]
+    actresses = actresses[0]
+
+    genres = parse_genres(genres_file)
+    field_lists['genres'] = genres[1]
+    genres = genres[0]
+    
+    plots = parse_plots(plots_file)
+
+    titles = []
+    title_index = {}
+
+    index = 0
+    print "number of movies is: " + str(len(movies))
+    for title in movies:
+        if index % 25000 == 0:
+            print "working on movie " + str(index)
+        title_dict = {}
+
+        rating = ratings.get(title,None)
+        if not rating is None:
+            title_dict['rating'] = rating
+
+        genres_list = genres.get(title,None)
+        if not genres_list is None:
+            title_dict['genres'] = genres_list
+
+        plots_list = plots.get(title,None)
+        if not plots_list is None:
+            title_dict['plots'] = plots_list
+
+        directors_list = directors.get(title,None)
+        if not directors_list is None:
+            title_dict['directors'] = directors_list
+
+        actors_list = actors.get(title,None)
+        if not actors_list is None:
+            title_dict['actors'] = actors_list
+
+        actresses_list = actresses.get(title, None)
+        if not actresses_list is None:
+            title_dict['actresses'] = actresses_list
+
         title_dict['title'] = title
         title_dict['title_parse'] = parse_title(title)
 
         titles.append(title_dict)
         title_index[title] = title_dict
 
-    imdb = {'titles': titles,
-            'index': title_index}
+        index +=1
 
+    imdb = {'titles': titles,
+            'index': title_index,
+            'lists': field_lists}
+    
+    #pic = os.open(imdb_path + "pickled_IMDB", 'wr');
+    #cPickle.dump(imdb, pic)
+    print "Successfully loaded IMDB text files!"
+    
     return imdb
 
 def update_imdb_metadata(imdb_path):
 
     imdb = load_imdb_database(imdb_path)
 
-    contents = ContentNode.objects.all()
+    contents = IMDBNode.objects.all()
 
     for content in contents:
-        update_content_metadata(content, imdb)
+        update_IMDB_nodes(content, imdb)
 
 def find_content_title(content, imdb):
 
@@ -506,22 +741,10 @@ def find_content_title(content, imdb):
 
     return found['title']
 
-def update_content_metadata(content, imdb):
-    kind = content.kind
-
-    imdb = content.metadata.imdb
-
-    if imdb is None:
-        imdb = ContentMetadata()
-
-    if imdb.imdb_canonical_title is None:
-        imdb.imdb_canonical_title = find_content_title(content, imdb)
-
-    canonical_title = imdb.imdb_canonical_title
-    if canonical_title is None:
-        print "No title for %s" % content
-        return
-
+def update_imdb_node(node, imdb):
+    
+    canonical_title = node.imdb_canonical_title
+    
     title_dict = imdb['index'].get(canonical_title, None)
     parse = title_dict['title_parse']
 
@@ -530,9 +753,9 @@ def update_content_metadata(content, imdb):
         print "No dict for title %s" % canonical_title
         return
 
-    year = content.release_date.year if content.release_date else None
+    year = node.release_date.year if node.release_date else None
     if not year:
-        content.release_date = datetime.datetime(parse['year'],1,1)
+        node.release_date = datetime.datetime(parse['year'],1,1)
 
     # rating
     if 'rating' in title_dict:
@@ -570,28 +793,309 @@ def update_content_metadata(content, imdb):
     content.metadata.imdb = imdb
     content.save()
 
-if __name__ == "__main__":
-    from sys import argv
-    imdb_root = argv[1]
 
-    #ratings_file = "%s/ratings.list" % imdb_root
-    #directors_file = "%s/directors.list" % imdb_root
-    #genres_file = "%s/genres.list" % imdb_root
-    #plots_file = "%s/plot.list" % imdb_root
-    #ratings = parse_ratings(ratings_file)
-    #directors = parse_directors(directors_file)
-    #genres = parse_genres(genres_file)
-    #plots = parse_plots(plots_file)
 
-    imdb = load_imdb_database(imdb_root)
-    from menclave.venclave import models
-    cn = models.ContentNode()
-    cn.title = 'Coffee'
-    import datetime
-    cn.release_date = datetime.datetime(1999,1,1)
-    cn.kind = models.KIND_MOVIE
 
-    find_content_title(cn, imdb)
+def create_movie_nodes(imdb_path):
+    movies_file = "%s/movies.list" % imdb_path
+    ratings_file = "%s/ratings.list" % imdb_path
+    plots_file = "%s/plot.list" % imdb_path
+    
 
-    import pdb
-    pdb.set_trace()
+    titles = parse_movies(movies_file)
+    plots = parse_plots(plots_file)
+    ratings = parse_ratings(ratings_file)
+    i=0
+    for title in titles:
+        i+=1
+        if i%25000==0:
+            print i
+        title_parse = parse_title(title)
+        #print 'movie: ' + title
+        meta = models.IMDBMetadata(imdb_canonical_title = title)
+        meta.save()
+        if title_parse['year'] != '????':
+            try:
+                meta.release_year = int(title_parse['year'])
+            except ValueError:
+                foo=1
+
+        plots_list = plots.get(title,None)
+        if not plots_list is None:
+            if len(plots_list)>0:
+                meta.plot_summary=plots_list[0]['plot']
+
+        rating = ratings.get(title,None)
+        if not rating is None:
+            try:
+                meta.rating = float(rating)
+            except ValueError:
+                foo=2
+        meta.save()
+
+
+
+def create_genre_nodes(imdb_path):
+    genres_file = "%s/genres.list" % imdb_path
+    
+    genes = parse_genres(genres_file)
+    genres = genes[1]
+    for genre in genres:
+        gnode = models.Genre(name = genre)
+        gnode.save()
+        print "created genre:" + genre
+
+    genre_dict = genes[0]
+    i = 0
+    for key in genre_dict.keys():
+        i+=1
+        if i%50000 ==0:
+            print i
+        meta = list(models.IMDBMetadata.objects.filter(imdb_canonical_title__exact = key))
+        if len(meta) > 0:
+            meta = meta[0]
+            for genre in genre_dict[key]:
+                meta.genres.add(list(models.Genre.objects.filter(name__iexact=genre))[0])
+
+
+def create_director_nodes(imdb_path):
+    directors_file = "%s/directors.list" % imdb_path
+    
+
+    directs = parse_directors(directors_file)
+    directors = directs[1]
+    # print 'creating ' + str(len(directors)) + ' director nodes'
+#     i=0
+#     for director in directors:
+#         i+=1
+#         if i%15000 ==0:
+#             print i
+#         dnode = models.Director(name = director)
+#         dnode.save()
+#         #print "created director:" + director
+        
+    director_dict = directs[0]
+    i=0
+    for key in director_dict.keys():
+        i+=1
+        if i%15000 ==0:
+            print i
+#        try:
+        key = key.decode('latin1')
+        meta = list(models.IMDBMetadata.objects.filter(imdb_canonical_title__exact = key))
+        if len(meta) > 0:
+            meta = meta[0]
+            for director in director_dict[key]:
+                dnode = models.Director(name = director)
+                dnode.save()
+                meta.directors.add(list(models.Director.objects.filter(name__iexact=director))[0])
+            meta.save()
+#         except UnicodeError:
+#             print "unicode error!"
+
+
+def create_actor_nodes(imdb_path):
+    actors_file = "%s/actors.list" % imdb_path
+
+    acts = parse_actors(actors_file)
+#     actors = acts[1]
+#     print 'creating ' + str(len(actors)) + ' actor nodes'
+#     i=0
+#     for actor in actors:
+#         i+=1
+#         if i%15000 ==0:
+#             print i
+#         dnode = models.Actor(name = actor)
+#         dnode.save()
+#         #print "created actor:" + actor
+    
+
+    actor_dict = acts[0]
+    i=0
+    print len(actor_dict.keys())
+    for key in actor_dict.keys():
+        key = key.decode('latin1')
+        i+=1
+        if i%15000 ==0:
+            print i
+        meta = list(models.IMDBMetadata.objects.filter(imdb_canonical_title__exact = key))
+        if len(meta) > 0:
+            meta = meta[0]
+            for actor in actor_dict[key]:
+                dnode = models.Actor(name = actor)
+                dnode.save()
+                meta.actors.add(list(models.Actor.objects.filter(name__iexact=actor))[0])
+
+
+
+def create_actress_nodes(imdb_path):
+    actresses_file = "%s/actresses.list" % imdb_path
+    
+    actressi = parse_actors(actresses_file)
+#     actresses = actressi[1]
+#     print 'creating ' + str(len(actresses)) + ' actress nodes'
+#     i=0
+#     for actress in actresses:
+#         i+=1
+#         if i%15000 ==0:
+#             print i
+#         dnode = models.Actor(name = actress)
+#         dnode.save()
+#         #print "created actress:" + actress
+                
+    i=0
+    actor_dict = actressi[0]
+    print len(actor_dict.keys())
+    for key in actor_dict.keys():
+        key = key.decode('latin1')
+        i+=1
+        if i%15000 ==0:
+            print i
+        meta = list(models.IMDBMetadata.objects.filter(imdb_canonical_title__exact = key))
+        if len(meta) > 0:
+            meta = meta[0]
+            for actor in actor_dict[key]:
+                dnode = models.Actor(name = actor)
+                dnode.save()
+                meta.actors.add(list(models.Actor.objects.filter(name__iexact=actor))[0])
+
+
+
+
+
+
+def create_imdb_nodes(imdb_path):
+    imdb = load_imdb_database(imdb_path)
+
+    print 'creating genre nodes'
+    for genre in imdb['lists']['genres']:
+        gnode = models.Genre(name = genre)
+        gnode.save()
+        #print "created genre:" + genre
+
+    print 'creating ' + str(len(imdb['lists']['directors'])) + ' director nodes'
+    for director in imdb['lists']['directors']:
+        dnode = models.Director(name = director)
+        dnode.save()
+        #print "created director:" + director
+
+    print 'creating ' + str(len(imdb['lists']['actors'])) + ' actor nodes'
+    for actor in imdb['lists']['actors']:
+        anode = models.Actor(name = actor)
+        anode.save()
+        #print "created actor:" + actor
+
+    print 'creating ' + str(len(imdb['lists']['actresses'])) + ' actress nodes'
+    for actress in imdb['lists']['actresses']:
+        asnode = models.Actor(name = actress)
+        asnode.save()
+        #print "created actress:" + actress
+
+
+    for title in imdb['index'].keys():
+        movie_data = imdb['index'][title]
+        #TODO: add other fields
+        meta = models.IMDBMetadata(imdb_canonical_title = title)
+        if 'plots' in movie_data.keys():
+            meta.plot_summary = movie_data['plots'][0]['plot']
+        if 'title_parse' in movie_data.keys():
+            if 'year' in movie_data['title_parse']:
+                if movie_data['title_parse']['year'] != "????":
+                    meta.release_year = int(movie_data['title_parse']['year'])
+        meta.save()
+        genres = movie_data['genres']
+        for genre in genres:
+            meta.genres.add(list(models.Genre.objects.filter(name__iexact=genre))[0])
+
+        directors = movie_data['directors']
+        for director in directors:
+            meta.genres.add(list(models.Director.objects.filter(name__iexact=director))[0])
+
+        actors = movie_data['actors'].append(movie_data['actresses'])
+        for actor in actorss:
+            meta.actors.add(list(models.Actor.objects.filter(name__iexact=actor))[0])
+
+        meta.save()
+        print "made movie node for movie" + title
+
+        
+
+
+#this is just a ginormous hack. If you use this for real, you are dumb
+def amnesia_import(path, imdb_path):
+    movies_file = "%s/movies.list" % imdb_path
+    ratings_file = "%s/ratings.list" % imdb_path
+    plots_file = "%s/plot.list" % imdb_path
+    
+
+    movie_list = parse_movies(movies_file)
+    movies = []
+    amnesia = open(path)
+    for line in amnesia:
+        name = line[0:len(line)-7].strip()
+        for movie in movie_list:
+            if name in movie:
+                movies.append(name)
+                break
+    
+    print "Done getting names"
+
+    titles = movies
+    plots = parse_plots(plots_file)
+    ratings = parse_ratings(ratings_file)
+    i=0
+    for title in titles:
+        i+=1
+        if i%25==0:
+            print i
+        title_parse = parse_title(title)
+        #print 'movie: ' + title
+        meta = models.IMDBMetadata(imdb_canonical_title = title)
+        meta.save()
+        if not title_parse is None:
+            if not title_parse['year'] is None:
+                try:
+                    meta.release_year = int(title_parse['year'])
+                except ValueError:
+                    foo=1
+
+        plots_list = plots.get(title,None)
+        if not plots_list is None:
+            if len(plots_list)>0:
+                meta.plot_summary=plots_list[0]['plot']
+
+        rating = ratings.get(title,None)
+        if not rating is None:
+            try:
+                meta.rating = float(rating)
+            except ValueError:
+                foo=2
+        meta.save()
+
+
+
+# if __name__ == "__main__":
+#     from sys import argv
+#     imdb_root = argv[1]
+
+#     #ratings_file = "%s/ratings.list" % imdb_root
+#     #directors_file = "%s/directors.list" % imdb_root
+#     #genres_file = "%s/genres.list" % imdb_root
+#     #plots_file = "%s/plot.list" % imdb_root
+#     #ratings = parse_ratings(ratings_file)
+#     #directors = parse_directors(directors_file)
+#     #genres = parse_genres(genres_file)
+#     #plots = parse_plots(plots_file)
+
+#     imdb = load_imdb_database(imdb_root)
+#     from menclave.venclave import models
+#     cn = models.ContentNode()
+#     cn.title = 'Coffee'
+#     import datetime
+#     cn.release_date = datetime.datetime(1999,1,1)
+#     cn.kind = models.KIND_MOVIE
+
+#     find_content_title(cn, imdb)
+
+#     import pdb
+#     pdb.set_trace()

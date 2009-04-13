@@ -104,7 +104,7 @@ class AttributesManager(models.Manager):
         range['max'] = range['max'].year
         return range
 
-    attribute_order = ('Type', 'Genre', 'Actor', 'Director')
+    attribute_order = ('Type', 'Genre', 'Director')
 
     attributes = {"Genre": 
                   Attribute("Genre",

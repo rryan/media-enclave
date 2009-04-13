@@ -30,7 +30,10 @@ def home(request):
         elif request.POST['f'] == 'r':
             reg_form = UserCreationForm(request.POST)
             if reg_form.is_valid():
-                user = reg_form.save()
+                reg_form.save()
+                username = reg_form.cleaned_data['username']
+                password = reg_form.cleaned_data['password1']
+                user = authenticate(username=username, password=password)
                 login(request,user)
                 return HttpResponseRedirect(reverse('venclave-browse'))
     return render_to_response("venclave/index.html",

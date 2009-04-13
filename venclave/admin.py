@@ -20,3 +20,11 @@ class ContentMetadataAdmin(admin.ModelAdmin):
 
 admin.site.register(models.ContentNode, ContentNodeAdmin)
 admin.site.register(models.ContentMetadata, ContentMetadataAdmin)
+admin.site.register(models.IMDBMetadata)
+admin.site.register(models.RottenTomatoesMetadata)
+admin.site.register(models.ManualMetadata)
+admin.site.register(models.FileMetadata)
+admin.site.register(models.Genre)
+admin.site.register(models.Director)
+admin.site.register(models.Actor)
+

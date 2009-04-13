@@ -52,7 +52,7 @@ $(document).ready(function() {
 	},
 
 	create_li: function(val) {
-	    var li = $('<li><span>'+val+'</span><a>[x]</a></li>');
+	    var li = $('<li><span>'+val+'</span><a href="#">[x]</a></li>');
 	    li.find('a').click(searchbar.remove_li(li));
 	    return li;
 	},

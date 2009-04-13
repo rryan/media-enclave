@@ -109,6 +109,7 @@ def create_video_list_lp(trees):
         html.append(t.render(c))
     return ''.join(html)
 
+@login_required
 def get_pane(request):
     id = request.GET['id']
     node = ContentNode.objects.get(pk=id);
@@ -116,5 +117,6 @@ def get_pane(request):
                          'venclave/panes/default.html'])
     return HttpResponse(t.render(Context({'node': node})))
 
+@login_required
 def upload(request):
-    pass
+    return render_to_response('venclave/upload.html')

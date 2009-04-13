@@ -1,10 +1,45 @@
 body {
     font-family: verdana;
     font-size: 14px;
+    margin: 0;
+}
+
+#container {
+    width: 1000px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#header { 
+    position: relative;
+    padding-top: 20px;
+    width: 1000px;
+}
+
+#navigation img {
+    border: 0;
+}
+
+#search { 
+    position: absolute;
+    top: 50px;
+    right: 40px;
+}
+
+#user {
+    position: absolute;
+    top: 0;
+    right: 40px;
 }
 
 table#browse td {
     vertical-align: top;
+}
+
+#copyright {
+    color: #666;
+    font-size: 10px;
+    text-align: center;
 }
 
 /* Video List */
@@ -48,10 +83,49 @@ div#facet-list {
     width: 250px;
 }
 
+div.facet-name {
+    font-family: Monaco, "Andale Mono", verdana, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+}
+
 div.facet-options {
     font-size: 12px;
+    margin-bottom: 6px;
 }
 
 div.facet {
     border: 1px solid;
+}
+
+div.facet-choices {
+    max-height: 200px;
+    overflow: auto;
+}
+
+div.checkbox .facet-choices label {
+    display: inline-block;
+    overflow: hidden;
+    width: 100px;
+}
+
+div.searchbar .facet-choices ul {
+    padding: 0;
+}
+
+div.searchbar .facet-choices li {
+    list-style-type: none;
+}
+
+div.searchbar .facet-choices li a {
+    font-size: 10px;
+    color: red;
+    padding-left: 5px;
+    text-decoration: none;
+}
+
+/* index.html */
+
+table.home-content {
+    text-align: right;
 }

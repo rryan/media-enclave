@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block header %}
-
+<img src="{% url venclave-images "venclave_welcome.png" %}" alt="Video Enclave" />
 {% endblock header %}
 
 {% block content %}
 <table class="home-content">
   <tr>
-    <td>
+    <th>
       Welcome back
-    </td>
-    <td>
+    </th>
+    <th>
       Create an account
-    </td>
+    </th>
   </tr>
   <tr>
     <td>
@@ -30,7 +30,12 @@
     </td>
     <td>
       <form name="register" action="{% url venclave-home %}" method="POST">
-	{{ reg_form.as_p }}
+	{% for field in reg_form %}
+          <div class="fieldWrapper">
+            {{ field.errors }}
+            {{ field.label_tag }}: {{ field }}
+          </div>
+	{% endfor %}
 	<input type="hidden" name="f" value="r" />
 	<input type="submit" />
       </form>

@@ -1,6 +1,6 @@
 <tr id1="{{ node.id }}">
   <td class="item-icon">
-    i
+    {% block icon %}{% endblock %}
   </td>
   <td class="item-title">
     <a href="#" class={% if sublist %}"parent"{% else %}"leaf"{% endif %}>{{ node.title }}</a>

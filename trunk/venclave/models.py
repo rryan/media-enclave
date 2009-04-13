@@ -108,7 +108,7 @@ class AttributesManager(models.Manager):
 
     attributes = {"Genre": 
                   Attribute("Genre",
-                            "metadata__imdb__genre__name",
+                            "metadata__imdb__genres__name",
                             "checkbox",
                             lambda: [(g.name,g.name) for g in Genre.objects.all()]),
                   "Actor": 
@@ -253,6 +253,7 @@ class ContentNode(models.Model):
 
     objects = models.Manager()
     trees = TreeManager()
+    attributes = AttributesManager()
 
     def __unicode__(self): return self.compact_name()
 

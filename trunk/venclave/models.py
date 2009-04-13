@@ -3,6 +3,7 @@
 import datetime
 
 from django.db import models
+from django.db.models import Min, Max
 
 #================================= UTILITIES =================================#
 
@@ -86,7 +87,7 @@ class TreeManager(models.Manager):
 
 class AttributesManager(models.Manager):
     def all(self):
-        return self.attributes.values()
+        return [self.attributes[a] for a in self.attribute_order]
 
     class Attribute(object):
         def __init__(self, name, path, facet_type, get_choices):
@@ -96,16 +97,34 @@ class AttributesManager(models.Manager):
             self.facet_type = facet_type
             self.get_choices = get_choices
 
+    attribute_order = ('Type', 'Genre', 'Actor', 'Director')
+
     attributes = {"Genre": 
                   Attribute("Genre",
                             "metadata__imdb__genre__name",
                             "checkbox",
-                            lambda: Genre.objects.all()),
+                            lambda: [(g.name,g.name) for g in Genre.objects.all()]),
                   "Actor": 
                   Attribute("Actor",
                             "metadata__imdb__actors__name",
-                            "checkbox",
-                            lambda: Actor.objects.all())}
+                            "searchbar",
+                            lambda: Actor.objects.all()),
+                  "Director": 
+                  Attribute("Director",
+                            "metadata__imdb__directors__name",
+                            "searchbar",
+                            lambda: Director.objects.all()),
+                  "Type":
+                   Attribute("Type",
+                             "kind",
+                             "checkbox",
+                             lambda: [(KIND_TV, 'tv'), (KIND_MOVIE, 'movie')]),
+#                   "Year": 
+#                   Attribute("Year",
+#                             "metadata__imdb__release_date",
+#                             "slider",
+#                             lambda: IMDBMetadata.objects.aggregate(min=Min('release_date'), max=Max('release_date')))
+                  }
 
 
 #-----------------------------------------------------------------------------#

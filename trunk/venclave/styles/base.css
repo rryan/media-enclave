@@ -1,0 +1,57 @@
+body {
+    font-family: verdana;
+    font-size: 14px;
+}
+
+table#browse td {
+    vertical-align: top;
+}
+
+/* Video List */
+
+table#video-list,
+table.video-sublist {
+    border-collapse: collapse;
+}
+
+table#video-list th {
+    font-family: Monaco, "Andale Mono", verdana, sans-serif;
+    text-align: left;
+}
+
+table#video-list .sublist-container {
+    padding: 0;
+}
+
+table#video-list td {
+
+}
+
+table#video-list .item-icon {
+    width: 20px;
+}
+
+table#video-list .item-title {
+    width: 300px;
+}
+
+table#video-list .item-length,
+table#video-list .item-year,
+table#video-list .item-rating {
+    text-align: center;
+    width: 100px;
+}
+
+/* Facets */
+
+div#facet-list {
+    width: 250px;
+}
+
+div.facet-options {
+    font-size: 12px;
+}
+
+div.facet {
+    border: 1px solid;
+}

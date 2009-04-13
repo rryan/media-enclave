@@ -1,4 +1,4 @@
-{% extends "venclave/base.html" %}
+{% extends "base.html" %}
 
 {% block styles %}
 {{ block.super }}
@@ -20,10 +20,10 @@
 {% block content %}
 <table id="browse">
   <tr>
-    <td>
+    <td class="facet-container">
       {% include "facetlist_base.html" %}
     </td>
-    <td>
+    <td class="list-container">
       {% include "venclave/videolist_base.html" %}
     </td>
   </tr>

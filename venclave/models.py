@@ -50,7 +50,7 @@ class TreeManager(models.Manager):
                     break
                 # Traverse up branch
                 node = node.parent
-                tree = (node, [tree])
+                tree = [node, [tree]]
             else:
                 old_tree = trees[node]
                 # Node is the same, update children
@@ -65,7 +65,7 @@ class TreeManager(models.Manager):
 
     def expand(self, node):
         children = node.children.all()
-        return (node, [self.expand(child) for child in children])
+        return [node, [self.expand(child) for child in children]]
 
     # Warning! Returns a list of trees, not a query 
     def all(self):
@@ -84,20 +84,53 @@ class TreeManager(models.Manager):
             trees = self.sort_trees(trees, order_by)
         return trees
 
+class AttributesManager(models.Manager):
+    def all(self):
+        return self.attributes.values()
+
+    class Attribute(object):
+        def __init__(self, name, path, facet_type, get_choices):
+            self.name = name
+            self.path = path # string specifying field in querysets
+                             # relative to ContentNode
+            self.facet_type = facet_type
+            self.get_choices = get_choices
+
+    attributes = {"Genre": 
+                  Attribute("Genre",
+                            "metadata__imdb__genre__name",
+                            "checkbox",
+                            lambda: Genre.objects.all()),
+                  "Actor": 
+                  Attribute("Actor",
+                            "metadata__imdb__actors__name",
+                            "checkbox",
+                            lambda: Actor.objects.all())}
+
+
 #-----------------------------------------------------------------------------#
 
 class Director(models.Model):
     name = models.TextField()
+
+    def __unicode__(self):
+        return self.name
 
 #-----------------------------------------------------------------------------#
 
 class Genre(models.Model):
     name = models.TextField()
 
+    def __unicode__(self):
+        return self.name
+
 #-----------------------------------------------------------------------------#
 
 class Actor(models.Model):
     name = models.TextField()
+
+    def __unicode__(self):
+        return self.name
 
 #-----------------------------------------------------------------------------#
 
@@ -141,9 +174,9 @@ class IMDBMetadata(ContentMetadataSource):
     imdb_id = models.CharField(max_length=255, null=True)
     imdb_canonical_title = models.CharField(max_length=1024, null=True)
     release_date = models.DateTimeField(blank=True, null=True)
-    genre = models.ManyToManyField("Genre") # TODO - rename to genres
-    directors = models.ManyToManyField("Director")
-    actors = models.ManyToManyField("Actor")
+    genre = models.ManyToManyField("Genre", related_name="nodes") # TODO - rename to genres
+    directors = models.ManyToManyField("Director", related_name="nodes")
+    actors = models.ManyToManyField("Actor", related_name="nodes")
     plot_summary = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
     length = models.IntegerField(blank=True, null=True)
@@ -199,6 +232,7 @@ class ContentNode(models.Model):
 
     objects = models.Manager()
     trees = TreeManager()
+    attributes = AttributesManager()
 
     def __unicode__(self): return self.compact_name()
 
@@ -270,5 +304,4 @@ class ContentNode(models.Model):
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
         return ('title',)
-
 

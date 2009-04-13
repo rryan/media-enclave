@@ -1,0 +1,29 @@
+<script type="text/javascript">
+    $('#video-list .item-title > a.parent').each(function(i, a) {
+	var a = $(a);
+	a.click(function(e) {
+	    a.closest('tr').next().toggle();
+	    return false;
+	});
+    });
+
+$('#video-list .item-title > a.leaf').each(function(i, a) {
+    var a = $(a);
+    var id = a.closest('tr').attr('id1');
+    var pane = null;
+    a.click(function(e) {
+	if (!pane) {
+	    $.get('{% url venclave-pane %}',
+		  {id: id},
+		  function(html) {
+		      pane = $(html);
+		      a.closest('tr').after(pane);
+		  });
+	} else {
+	    pane.toggle();
+	}
+	return false;
+    });
+});
+
+</script>

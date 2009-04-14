@@ -74,6 +74,12 @@ table#video-list .item-title a {
     vertical-align: top;
 }
 
+#video-list .pane-more { 
+    font-size: 12px;
+    font-weight: bold;                         
+    text-align: center;
+}
+
 /**** Facets ****/
 
 div#facet-list {
@@ -120,3 +126,7 @@ div.searchbar .facet-choices li a {
     text-decoration: none;
 }
 
+div.slider .slider-div { 
+    margin-left: 8px;
+    width: 80%;
+}

@@ -17,7 +17,7 @@ urlpatterns = patterns(
         'menclave.venclave.views.upload',
         name='venclave-upload'),
 
-    url(r'^detail/(?P<id>)$',
+    url(r'^detail/(\d+)$',
         'menclave.venclave.views.detail',
         name='venclave-detail'),
 

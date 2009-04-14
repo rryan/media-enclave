@@ -3,6 +3,7 @@
 import datetime
 
 from django.db import models
+from django.db.models import Min, Max
 
 #================================= UTILITIES =================================#
 
@@ -97,15 +98,7 @@ class AttributesManager(models.Manager):
             self.facet_type = facet_type
             self.get_choices = get_choices
 
-    @staticmethod
-    def year_get_choices():
-        range = IMDBMetadata.objects.aggregate(min=Min('release_date'),
-                                               max=Max('release_date'))
-        range['min'] = range['min'].year                  
-        range['max'] = range['max'].year
-        return range
-
-    attribute_order = ('Type', 'Genre', 'Director')
+    attribute_order = ('Type', 'Genre', 'Year', 'Director')
 
     attributes = {"Genre": 
                   Attribute("Genre",
@@ -129,11 +122,12 @@ class AttributesManager(models.Manager):
                              lambda: [(KIND_TV, 'TV'), (KIND_MOVIE, 'Movie')]),
                   "Year": 
                   Attribute("Year",
-                            "metadata__imdb__release_date",
+                            "metadata__imdb__release_year",
                             "slider",
                             # todo: figure out what's the deal with
                             # static methods and class attributes
-                            lambda: AttributesManager.year_get_choices())
+                            lambda: IMDBMetadata.objects.aggregate(min=Min('release_year'),
+                                                                   max=Max('release_year')))
                   }
 
 
@@ -359,4 +353,5 @@ class ContentNode(models.Model):
     @classmethod
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
-        return ('title',)
+        return ('title', 'metadata__imdb__directors__name', 'metadata__imdb__actors__name')
+

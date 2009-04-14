@@ -35,6 +35,9 @@ class VenclaveUserCreationForm(auth_forms.UserCreationForm):
     password2 = forms.CharField(label=_("retype password"),
                                 widget=forms.PasswordInput)
 
+def Qu(field, op, value):
+    return Q(**{(str(field) + '__' + str(op)): value})
+
 def home(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('venclave-browse'))
@@ -60,9 +63,6 @@ def home(request):
                 return HttpResponseRedirect(reverse('venclave-browse'))
     return render_to_response("venclave/index.html",
                               {'reg_form': reg_form})
-
-def Qu(field, op, value):
-    return Q(**{(str(field) + '__' + str(op)): str(value)})
 
 @login_required
 def browse(request):
@@ -91,13 +91,13 @@ def update_list(request):
     facets = cjson.decode(request.POST['f'])
     full_query = Q()
     for name in facets:
+        query = Q()
         facet = facets[name]
         attribute = ContentNode.attributes.attributes[name]
         type = attribute.facet_type
-        query = Q()
         if type == 'slider':
-            lo = str(datetime(facet['lo'],1,1))+"00:00"
-            hi = str(datetime(facet['hi'],12,31))+"00:00"
+            lo = facet['lo']
+            hi = facet['hi']
             query = Qu(attribute.path, 'range', (lo, hi))
         else:
             kind = 'exact' if type == 'checkbox' else 'icontains'
@@ -150,3 +150,4 @@ def get_pane(request):
 def upload(request):
     return render_to_response('venclave/upload.html',
                               context_instance=RequestContext(request))
+

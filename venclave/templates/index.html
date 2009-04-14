@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "venclave/base.html" %}
 
 {% block styles %}
   {{ block.super }}
@@ -22,27 +22,27 @@
   <tr>
     <td>
       <form name="login" action="{% url venclave-home %}" method="POST">
-	<p>
-	  <label for="login_username">Username:</label>
-	  <input type="text" maxlength="30" name="username" id="login_username"/>
-	</p>
-	<p>
-	  <label for="login_password">Password:</label> <input type="password" id="login_password" name="password"/>
-	  <input type="hidden" name="f" value="l" />
-	</p>
-	<input type="image" src="{% url venclave-images "sign_in.png" %}"/>
+        <p>
+          <label for="login_username">Username:</label>
+          <input type="text" maxlength="30" name="username" id="login_username"/>
+        </p>
+        <p>
+          <label for="login_password">Password:</label> <input type="password" id="login_password" name="password"/>
+          <input type="hidden" name="f" value="l" />
+        </p>
+        <input type="image" src="{% url venclave-images "sign_in.png" %}"/>
       </form>
     </td>
     <td>
       <form name="register" action="{% url venclave-home %}" method="POST">
-	{% for field in reg_form %}
+        {% for field in reg_form %}
           <p class="fieldWrapper">
             {{ field.errors }}
             {{ field.label_tag }}: {{ field }}
           </p>
-	{% endfor %}
-	<input type="hidden" name="f" value="r" />
-	<input type="image" src="{% url venclave-images "register.png" %}"/>
+        {% endfor %}
+        <input type="hidden" name="f" value="r" />
+        <input type="image" src="{% url venclave-images "register.png" %}"/>
       </form>
     </td>
   </tr>

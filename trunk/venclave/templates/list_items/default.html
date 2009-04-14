@@ -17,6 +17,8 @@
     {{ node.metadata.imdb.rating|default:"-" }}
   </td>
 </tr>
+{# The below is now dealt with in venclave.views.create_video_list_lp. #}
+{% comment %}
 {% if sublist %}
 <tr style="display:none">
   <td colspan="5" class="sublist-container">
@@ -26,3 +28,4 @@
   </td>
 </tr>
 {% endif %}
+{% endcomment %}

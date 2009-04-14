@@ -13,21 +13,21 @@
 <table class="home-content">
   <tr>
     <th>
-      Welcome back
+      <img src="{% url venclave-images "welcome_back.png" %}" alt="welcome back"/>
     </th>
     <th>
-      Create an account
+      <img src="{% url venclave-images "new_account.png" %}" alt="create an account"/>
     </th>
   </tr>
   <tr>
     <td>
       <form name="login" action="{% url venclave-home %}" method="POST">
         <p>
-          <label for="login_username">Username:</label>
+          <label for="login_username">username:</label>
           <input type="text" maxlength="30" name="username" id="login_username"/>
         </p>
         <p>
-          <label for="login_password">Password:</label> <input type="password" id="login_password" name="password"/>
+          <label for="login_password">password:</label> <input type="password" id="login_password" name="password"/>
           <input type="hidden" name="f" value="l" />
         </p>
         <input type="image" src="{% url venclave-images "sign_in.png" %}"/>

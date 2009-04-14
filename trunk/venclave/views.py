@@ -10,7 +10,7 @@ from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import get_template, select_template
 from django.template import Context, RequestContext
 
@@ -151,3 +151,8 @@ def upload(request):
     return render_to_response('venclave/upload.html',
                               context_instance=RequestContext(request))
 
+def detail(request, id):
+    node = get_object_or_404(ContentNode, pk=id)
+    print node.kind
+    return render_to_response('venclave/detail.html',
+                              {'node': node})

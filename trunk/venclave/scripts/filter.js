@@ -8,10 +8,7 @@ $(document).ready(function() {
 
     var update = function() {
         var state = $.toJSON(get_state());
-        // Doing the raw innerHTML is much faster than jQuery.load().
-        $.post('/video/update_list/', {'f': state}, function(data) {
-          $('#video-list > .list-body').get(0).innerHTML = data;
-        });
+        $('#video-list > .list-body').load('/video/update_list/', {'f':state});
     };
 
     var get_state = function() {

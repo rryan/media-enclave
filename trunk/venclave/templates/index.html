@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block styles %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% url venclave-styles "home.css" %}"/>
+{% endblock %}
+
 {% block header %}
 <img src="{% url venclave-images "venclave_welcome.png" %}" alt="Video Enclave" />
 {% endblock header %}
@@ -25,7 +30,7 @@
 	  <label for="login_password">Password:</label> <input type="password" id="login_password" name="password"/>
 	  <input type="hidden" name="f" value="l" />
 	</p>
-	<input type="submit" />
+	<input type="image" src="{% url venclave-images "sign_in.png" %}"/>
       </form>
     </td>
     <td>
@@ -37,7 +42,7 @@
           </p>
 	{% endfor %}
 	<input type="hidden" name="f" value="r" />
-	<input type="submit" />
+	<input type="image" src="{% url venclave-images "register.png" %}"/>
       </form>
     </td>
   </tr>

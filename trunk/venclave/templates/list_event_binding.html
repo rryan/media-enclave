@@ -1,17 +1,29 @@
 <script type="text/javascript">
-    $('#video-list .item-title > a.parent').each(function(i, a) {
-	var a = $(a);
-	a.click(function(e) {
-	    a.closest('tr').next().toggle();
-	    return false;
-	});
+    var cycle_css = function(name, values) {
+	var self = $(this);
+	var i = 0;
+	var n = values.length;
+	return function() {
+	    self.css(name, values[i]);
+	    i = (i + 1) % n;
+	}
+    }
+
+$('#video-list .item-title > a.parent').each(function(i, a) {
+    var a = $(a);
+    a.click(function(e) {
+	a.closest('tr').next().toggle();
+	return false;
     });
+});
 
 $('#video-list .item-title > a.leaf').each(function(i, a) {
     var a = $(a);
     var id = a.closest('tr').attr('id1');
     var pane = null;
+    var toggle_bg = cycle_css.call(a, 'background-color', ['#CCC',''])
     a.click(function(e) {
+	toggle_bg()
 	if (!pane) {
 	    $.get('{% url venclave-pane %}',
 		  {id: id},

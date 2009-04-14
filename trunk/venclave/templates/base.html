@@ -19,7 +19,7 @@
     <div id="header">
       {% block header %}
 	<div id="user">
-	  <tt>{{user.username}} [<a href="{% url venclave-logout %}">logout</a>]</tt>
+	  welcome, {{user.username}} <a href="{% url venclave-logout %}">[logout]</a>
 	</div>
 
 	<div id="title">
@@ -32,6 +32,7 @@
 	      <img src="{% url venclave-images "browse_white.png" %}" alt="Browse" />
 	    {% endblock browse-image %}
 	  </a>
+	  <img src="{% url venclave-images "slash.png" %}" />
 	  <a href="{% url venclave-upload %}">
 	    {% block upload-image %}
 	      <img src="{% url venclave-images "upload_white.png" %}" alt="Upload" />

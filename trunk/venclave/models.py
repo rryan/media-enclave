@@ -65,7 +65,7 @@ class TreeManager(models.Manager):
 
     def expand(self, node):
         children = node.children.all()
-        return (node, [self.expand(child) for child in children])
+        return [node, [self.expand(child) for child in children]]
 
     # Warning! Returns a list of trees, not a query 
     def all(self):
@@ -125,7 +125,7 @@ class AttributesManager(models.Manager):
                    Attribute("Type",
                              "kind",
                              "checkbox",
-                             lambda: [(KIND_TV, 'Tv'), (KIND_MOVIE, 'Movie')]),
+                             lambda: [(KIND_TV, 'TV'), (KIND_MOVIE, 'Movie')]),
                   "Year": 
                   Attribute("Year",
                             "metadata__imdb__release_date",
@@ -141,15 +141,24 @@ class AttributesManager(models.Manager):
 class Director(models.Model):
     name = models.TextField(primary_key=True)
 
+    def __unicode__(self):
+        return self.name
+
 #-----------------------------------------------------------------------------#
 
 class Actor(models.Model):
     name = models.TextField(primary_key=True)
 
+    def __unicode__(self):
+        return self.name
+
 #-----------------------------------------------------------------------------#
 
 class Genre(models.Model):
     name = models.TextField(primary_key=True)
+
+    def __unicode__(self):
+        return self.name
 
 #-----------------------------------------------------------------------------#
 

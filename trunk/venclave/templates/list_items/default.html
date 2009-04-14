@@ -11,7 +11,7 @@
     {{ node.metadata.imdb.length|default:"-" }}
   </td>
   <td class="item-release">
-    {{ node.metadata.imdb.release_date|date:"d M Y"|default:"-" }}
+    {{ node.metadata.imdb.release_year|default:"-" }}
   </td>
   <td class="item-rating">
     {{ node.metadata.imdb.rating|default:"-" }}

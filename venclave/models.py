@@ -32,6 +32,7 @@ class Tag(models.Model):
 #-----------------------------------------------------------------------------#
 
 class TreeManager(models.Manager):
+
     def root_nodes(self):
         return super(TreeManager, self).get_query_set().filter(parent__isnull=True)        
 
@@ -359,7 +360,3 @@ class ContentNode(models.Model):
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
         return ('title',)
-
-
-
-

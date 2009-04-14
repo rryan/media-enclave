@@ -3,7 +3,9 @@ import cjson
 from datetime import datetime
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django import forms
+from django.contrib.auth import forms as auth_forms
+from django.utils.translation import ugettext_lazy as _  # For the auth form.
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -15,10 +17,28 @@ from django.template import Context, RequestContext
 
 from menclave.venclave.models import ContentNode, Director, Genre
 
+class VenclaveUserCreationForm(auth_forms.UserCreationForm):
+
+    """We subclass the default user creation form to change the text labels."""
+
+    username = forms.RegexField(label=_("username"), max_length=30,
+                                regex=r'^\w+$',
+                                help_text = _("Required. 30 characters or "
+                                              "fewer. Alphanumeric characters "
+                                              "only (letters, digits and "
+                                              "underscores)."),
+                                error_message = _("This value must contain "
+                                                  "only letters, numbers and "
+                                                  "underscores."))
+    password1 = forms.CharField(label=_("password"),
+                                widget=forms.PasswordInput)
+    password2 = forms.CharField(label=_("retype password"),
+                                widget=forms.PasswordInput)
+
 def home(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('venclave-browse'))
-    reg_form = UserCreationForm()
+    reg_form = VenclaveUserCreationForm()
     if request.method == 'POST':
         # login
         if request.POST['f'] == 'l':
@@ -30,13 +50,13 @@ def home(request):
                 return HttpResponseRedirect(reverse('venclave-browse'))
         # register
         elif request.POST['f'] == 'r':
-            reg_form = UserCreationForm(request.POST)
+            reg_form = VenclaveUserCreationForm(request.POST)
             if reg_form.is_valid():
                 reg_form.save()
                 username = reg_form.cleaned_data['username']
                 password = reg_form.cleaned_data['password1']
                 user = authenticate(username=username, password=password)
-                login(request,user)
+                login(request, user)
                 return HttpResponseRedirect(reverse('venclave-browse'))
     return render_to_response("venclave/index.html",
                               {'reg_form': reg_form})
@@ -88,31 +108,35 @@ def update_list(request):
                 elif facet['op'] == "and":
                     query &= subquery
                 else:
-                    raise ValueException, "op must be 'or' or 'and'"
+                    raise ValueError, "op must be 'or' or 'and'"
         full_query &= query
     trees = ContentNode.trees.filter(full_query)
     return HttpResponse(create_video_list(trees))
 
 def create_video_list(trees):
-    html = create_video_list_lp(trees)
+    html = ''.join(create_video_list_lp(trees))
     t = get_template('venclave/list_event_binding.html')
     html += t.render(Context())
     return html
 
 def create_video_list_lp(trees):
-    html = []
-    templates = {} # kind->template
+    html_parts = []
     for node, children in trees:
-        t = templates.setdefault(node.kind,
-                                 select_template(['list_items/kind_%s.html' % node.kind,
-                                                  'list_items/default.html']))
+        t = select_template(['list_items/kind_%s.html' % node.kind,
+                             'list_items/default.html'])
         c = Context({'node': node})
+        c['sublist'] = bool(children)
+        html_parts.append(t.render(c))
         if children:
-            c['sublist'] = create_video_list_lp(children)
-        else:
-            c['sublist'] = None
-        html.append(t.render(c))
-    return ''.join(html)
+            # Open a new table for the children, put them in, and close it.
+            html_parts.append('<tr style="display:none">'
+                              '<td colspan="5" class="sublist-container">'
+                              '<table class="video-sublist">')
+            html_parts.extend(create_video_list_lp(children))
+            html_parts.append('</table>'
+                              '</td>'
+                              '</tr>')
+    return html_parts
 
 @login_required
 def get_pane(request):

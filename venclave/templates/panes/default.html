@@ -1,47 +1,60 @@
-<tr>
-  <td>
-  </td>
-  <td colspan="4">
+{% load venclave_tags %}
+
+<tr class="pane">
+  <td colspan="6">
     <table>
       <tr>
-	<th rowspan="2">
+	<th class="pane-plot" rowspan="2">
 	  plot
 	</th>
-	<td rowspan="2">
-	  plot goes here
+	<td class="pane-plot" rowspan="2">
+	  <div>
+	    {{ node.metadata.imdb.plot_summary|default:"Plot summary not available." }}
+	  </div>
 	</td>
-	<th>
+	<td class="pane-spacer" rowspan="4">
+	  <div></div>
+	</td>
+	<th class="pane-language">
 	  language
 	</th>
-	<td>
-	  English, Spanish
+	<td class="pane-language">
+	  Languages not available
 	</td>
       </tr>
       <tr>
-	<th>
+	<th class="pane-genre">
 	  genre
 	</th>
-	<td>
-	  genres
+	<td class="pane-genre">
+	  {% for genre in node.metadata.imdb.genres.all %}
+	    {{ genre.name }}<br />
+	  {% empty %}
+	    Genres not available
+	  {% endfor %}
 	</td>
       </tr>
       <tr>
-	<th>
+	<th class="pane-director">
 	  director
 	</th>
-	<td>
-	  blah blah
+	<td class="pane-director">
+	  {% for director in node.metadata.imdb.directors.all %}
+	    {% reverse_name director.name %}<br />
+	  {% empty %}
+	    Directors not available
+	  {% endfor %}
 	</td>
-	<td rowspan="2" colspan="2">
+	<td class="pane-downloads" rowspan="2" colspan="2">
 	  downloads
 	</td>
       </tr>
-      <tr>
+      <tr class="pane-starring">
 	<th>
 	  starring
 	</th>
-	<td>
-	  blah blah
+	<td class="pane-starring">
+	  Cast not available
 	</td>
       </tr>
     </table>

@@ -124,4 +124,5 @@ def get_pane(request):
 
 @login_required
 def upload(request):
-    return render_to_response('venclave/upload.html')
+    return render_to_response('venclave/upload.html',
+                              context_instance=RequestContext(request))

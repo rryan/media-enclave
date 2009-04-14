@@ -37,112 +37,17 @@ body {
     right: 40px;
 }
 
-table#browse td {
-    vertical-align: top;
+#user a {
+    color: #464646;
+    font-family: "Andale Mono", Monaco, verdana, sans-serif;
+    font-size: 20px;
+    text-decoration: none;
 }
 
 #copyright {
     color: #666;
     font-size: 10px;
+    padding-top: 30px;
     text-align: center;
 }
 
-/* Browse */
-
-#browse .list-container {
-    padding-left: 50px;
-}
-
-/* Video List */
-
-table#video-list,
-table.video-sublist {
-    border-collapse: collapse;
-}
-
-table#video-list th {
-    font-family: Monaco, "Andale Mono", verdana, sans-serif;
-    text-align: left;
-}
-
-table#video-list .sublist-container {
-    padding: 0;
-}
-
-table#video-list td {
-
-}
-
-table#video-list .item-icon,
-table#video-list .item-arrow {
-    width: 20px;
-}
-
-table#video-list .item-title {
-    width: 300px;
-}
-
-table#video-list .item-length,
-table#video-list .item-release,
-table#video-list .item-rating {
-    text-align: center;
-    width: 100px;
-}
-
-table#video-list .item-title a {
-    color: #464646;
-    text-decoration: none;
-}
-
-/* Facets */
-
-div#facet-list {
-    width: 250px;
-}
-
-div.facet-name {
-    font-family: Monaco, "Andale Mono", verdana, sans-serif;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-div.facet-options {
-    font-size: 12px;
-    margin-bottom: 6px;
-}
-
-div.facet {
-
-}
-
-div.facet-choices {
-    max-height: 200px;
-    overflow: auto;
-}
-
-div.checkbox .facet-choices label {
-    display: inline-block;
-    overflow: hidden;
-    width: 100px;
-}
-
-div.searchbar .facet-choices ul {
-    padding: 0;
-}
-
-div.searchbar .facet-choices li {
-    list-style-type: none;
-}
-
-div.searchbar .facet-choices li a {
-    font-size: 10px;
-    color: red;
-    padding-left: 5px;
-    text-decoration: none;
-}
-
-/* index.html */
-
-table.home-content {
-    text-align: right;
-}

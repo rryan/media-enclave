@@ -12,7 +12,11 @@
 $('#video-list .item-title > a.parent').each(function(i, a) {
     var a = $(a);
     a.click(function(e) {
-        a.closest('tr').next().toggle();
+	var tr = a.closest('tr');
+      tr.next().toggle();
+
+
+
         return false;
     });
 });
@@ -30,6 +34,11 @@ $('#video-list .item-title > a.leaf').each(function(i, a) {
                   function(html) {
                       pane = $(html);
                       a.closest('tr').after(pane);
+		      var title = pane.find('.nytimes').attr('href').replace(/#/, '');
+                      jQuery.getJSON("http://www.google.com/uds/GwebSearch?v=1.0&q=nytimes review "+encodeURIComponent(title)+"&callback=?",
+                                     function(json) {
+                                         pane.find('.nytimes').attr({'href' : json.responseData.results[0].url});
+                                     });
                   });
         } else {
             pane.toggle();

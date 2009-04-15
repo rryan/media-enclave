@@ -46,7 +46,25 @@
 	  {% endfor %}
 	</td>
 	<td class="pane-downloads" rowspan="2" colspan="2">
-	  downloads
+          <table>
+            <tr>
+              <td rowspan="2">
+                <img src="{% url venclave-images "dl_arrow_orange.png" %}" />
+              </td>
+              <td>
+                <a href="javascript:false">
+                  moviefile.avi
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <a href="javascript:false">
+                  subtitles.srt
+                </a>
+              </td>
+            </tr>
+          </table>
 	</td>
       </tr>
       <tr class="pane-starring">
@@ -59,7 +77,17 @@
       </tr>
       <tr class="pane-more">
         <td colspan="5">
-          <a href="{% url venclave-detail node.id %}" target="_blank">More information</a>
+          <a href="{% url venclave-detail node.id %}" target="_blank">
+            <img src="{% url venclave-images "orange_arrow.png" %}" />
+            more info
+          </a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  <a href="#{{ node.title }}" class="nytimes" target="_blank">
+            <img src="{% url venclave-images "orange_arrow.png" %}" />
+            <img src="{% url venclave-images "nyt_logo.png" %}" />
+            ny times review
+          </a>
+        </td>
       </tr>
     </table>
   </td>

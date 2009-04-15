@@ -20,6 +20,12 @@
 
 
 {% block content %}
+{% if search_query %}
+  <div class="results-banner">
+    &#8220;{{ search_query }}&#8221; results
+  </div>
+{% endif %}
+
 <table id="browse">
   <tr>
     <td class="facet-container">

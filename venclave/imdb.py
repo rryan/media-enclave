@@ -1147,8 +1147,7 @@ def make_content_nodes(user):
         met = models.ContentMetadata(imdb = x)
         met.save()
         name = x.imdb_canonical_title.strip()
-        if name[-1] == ')':
-            name = name[0:-4].strip()
+        # todo: fix for tv shows
         name = name[0:-6].strip()
         content = models.ContentNode(owner = user, metadata=met,downloads=0,title=name, kind='movie')
         content.save()

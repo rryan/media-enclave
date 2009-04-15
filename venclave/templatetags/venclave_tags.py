@@ -1,6 +1,7 @@
 from django.template import Library
 from django.template import Context
 from django.template.loader import get_template
+from django.core.urlresolvers import reverse
 
 register = Library()
 
@@ -18,3 +19,13 @@ def reverse_name(name):
     """
     last, first = name.split(', ')
     return first+' '+last
+
+@register.simple_tag
+def make_stars(rating):
+    if rating >= 5.75:
+        return ("<img src="+reverse('venclave-images', args=['star_green_full.png'])+"/>") * 5
+    html = ("<img src="+reverse('venclave-images', args=['star_yellow_full.png'])+"/>") * int(rating)
+    if .25 < (rating % 1 ) < .75:
+        html += "<img src="+reverse('venclave-images', args=['star_yellow_half.png'])+"/>"
+    return html
+

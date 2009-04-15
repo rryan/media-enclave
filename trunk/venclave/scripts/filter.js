@@ -8,7 +8,9 @@ $(document).ready(function() {
 
     var update = function() {
         var state = $.toJSON(get_state());
-        $('#video-list > .list-body').load('/video/update_list/', {'f':state});
+        var query = $('.search_query').text()
+        $('#video-list > .list-body').load('/video/update_list/', 
+                                           {'f':state, 'q':query});
     };
 
     var get_state = function() {

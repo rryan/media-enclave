@@ -90,6 +90,18 @@ def browse(request):
 def update_list(request):
     facets = cjson.decode(request.POST['f'])
     full_query = Q()
+    query = Q()
+    if request.POST['q']:
+        query_string = request.POST['q']
+        query_words = query_string.split()
+        for word in query_words:
+            word_query = Q()
+            for field in ContentNode.searchable_fields():
+                # WTF Each word may appear in any field, so we use OR here.
+                word_query |= Qu(field, 'icontains', word)
+                # WTF Each match must contain every word, so we use AND here.
+            query &= word_query
+    full_query &= query
     for name in facets:
         query = Q()
         facet = facets[name]

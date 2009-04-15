@@ -98,7 +98,7 @@ class AttributesManager(models.Manager):
             self.facet_type = facet_type
             self.get_choices = get_choices
 
-    attribute_order = ('Type', 'Genre', 'Year', 'Director')
+    attribute_order = ('Type', 'Genre', 'Rating', 'Year', 'Director')
 
     attributes = {"Genre": 
                   Attribute("Genre",
@@ -127,7 +127,14 @@ class AttributesManager(models.Manager):
                             # todo: figure out what's the deal with
                             # static methods and class attributes
                             lambda: IMDBMetadata.objects.aggregate(min=Min('release_year'),
-                                                                   max=Max('release_year')))
+                                                                   max=Max('release_year'))),
+                  "Rating":
+                  Attribute("Rating",
+                            "metadata__imdb__rating",
+                            "slider",
+                            # todo: figure out what's the deal with
+                            # static methods and class attributes
+                            lambda: {'min':0, 'max':5})
                   }
 
 

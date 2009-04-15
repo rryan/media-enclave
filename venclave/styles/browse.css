@@ -6,6 +6,12 @@ table#browse td {
     vertical-align: top;
 }
 
+div.results-banner { 
+    background: #ffe953;
+    font-family: "Andale Mono", Monaco, verdana, sans-serif;
+    font-size: 24px;
+}
+
 /**** Video List ****/
 
 table#video-list,
@@ -74,10 +80,21 @@ table#video-list .item-title a {
     vertical-align: top;
 }
 
-#video-list .pane-more { 
-    font-size: 12px;
+#video-list .pane-more a { 
+    color: #464646;
+    font-size: 14px;
+    font-style: italic;
     font-weight: bold;                         
-    text-align: center;
+    text-decoration: none;
+}
+
+#video-list .pane-more img { 
+    border: none;
+}
+
+#video-list .pane-downloads a { 
+    font-size: 12px;
+    color: #464646;
 }
 
 /**** Facets ****/

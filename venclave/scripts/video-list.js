@@ -3,7 +3,8 @@ $(document).ready(function() {
     $('#video-list .item-title > a').each(function(i, a) {
         a = $(a);
         a.click(function(e) {
-            a.closest('tr').next().toggle();
+            tr.a.closest('tr').next();
+            tr.toggle();
             return false;
         });
     });

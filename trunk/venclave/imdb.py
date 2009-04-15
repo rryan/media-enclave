@@ -5,11 +5,12 @@
 # In general, IMDB parsing crap.
 #
 from __future__ import with_statement
+
 import re
 import sys
 import cPickle
 
-
+from django.contrib.auth.models import User
 from django.conf import settings
 
 from menclave.venclave import models
@@ -34,7 +35,7 @@ def parse_movies(filename):
             match = movie_matcher.match(line)
 
             if match:
-                title = match.group('title')
+                title = match.group('title').strip()
                 movie_index.append(title)
 
  #    pick = open(filename + '.pickle', 'wr')
@@ -91,7 +92,7 @@ def parse_plots(filename):
                 author_match = re_author.match(line)
 
                 if title_match:
-                    title = title_match.group('title')
+                    title = title_match.group('title').strip()
                     if current_title:
                         plot_index[current_title] = current_plots
                         current_plots = []
@@ -152,7 +153,7 @@ def parse_genres(filename):
             match = genre_matcher.match(line)
 
             if match:
-                title = match.group('title')
+                title = match.group('title').strip()
                 genre = match.group('genre')
                 all_genres.add(genre)
                 genre_index.setdefault(title,[]).append(genre)
@@ -211,8 +212,8 @@ def parse_directors(filename):
 
                 if start_match:
                     # this line is the start of a director
-                    director = start_match.group('director')
-                    title = start_match.group('title')
+                    director = start_match.group('director').strip()
+                    title = start_match.group('title').strip()
                     titles = [title]
 
                     # HACK(rryan): There is noise at the beginning of
@@ -321,24 +322,6 @@ def parse_actors(filename):
     return actors_index, all_actors
 
 
-#============================== RATINGS ======================================#
-
-# General rating format:
-#'      2..222...2       5   5.2  "#1 College Sports Show, The" (2004)'
-
-#RATINGS_RE = "^\s+([.*0-9]{10})\s+(\d+)\s+(\d+\.\d)\s+(.*)$"
-RATINGS_RE = r"""(?x)                          # turn on verbose mode
-                 ^                             # grab from start
-                 \s+                           #
-                 (?P<distribution>[.*1-9]{10}) # distribution chars, 10 times
-                 \s+                           #
-                 (?P<votes>\d+)                # number of votes
-                 \s+                           #
-                 (?P<rating>\d+\.\d+)          # the rating 0-10.x
-                 \s+                           #
-                 (?P<title>.*)                 # the title
-                 $                             # end of string
-                 """
 
 # Various title formats:
 # TODO - fold these into a tests
@@ -448,6 +431,36 @@ def parse_title(title):
         return title
     return None
 
+
+#============================== RATINGS ======================================#
+
+# General rating format:
+#'      2..222...2       5   5.2  "#1 College Sports Show, The" (2004)'
+
+#RATINGS_RE = "^\s+([.*0-9]{10})\s+(\d+)\s+(\d+\.\d)\s+(.*)$"
+
+
+
+#This regular expression DOES NOT WORK ON ALL MOVIES. I have no clue why.
+#Example of failure: the movie 21 (made in 2008), is not matched.
+# RATINGS_RE = r"""(?x)                          # turn on verbose mode
+#                  ^                             # grab from start
+#                  \s+                           #
+#                  (?P<distribution>[.*1-9]{10}) # distribution chars, 10 times
+#                  \s+                           #
+#                  (?P<votes>\d+)                # number of votes
+#                  \s+                           #
+#                  (?P<rating>\d+\.\d+)          # the rating 0-10.x
+#                  \s+                           #
+#                  (?P<title>.*)                 # the title
+#                  $                             # end of string
+#                  """
+
+
+#Somehow this works though? WTF?
+RATINGS_RE = """^\s+([.*0-9]{10})\s+(\d+)\s+(?P<rating>\d+\.\d)\s+(?P<title>.*)$"""
+
+
 def parse_ratings(filename):
     """
     Parses ratings out of IMDB's ratings.list. Returns a map of IMDB
@@ -462,13 +475,58 @@ def parse_ratings(filename):
             line = line.decode('latin1').encode('utf-8')
             match = matcher.match(line)
             if match:
-                title = match.group('title')
+                title = match.group('title').strip()
                 rating = match.group('rating')
                 ratings_index[title] = rating
+            
+
 
 #     pick = open(filename + '.pickle','wr')
-#     print "parse_ratings done"
+    print "parse_ratings done"
     return ratings_index
+
+
+#This is just quick thing I whipped up to match running times. It doesn't work 
+#for TV shows, but it seems to work for movies.
+
+
+RUNNING_RE = """^(?P<title>.+\))\s+[^\d]*(?P<time>\d+).*$"""
+
+
+#I don't think this is necessary
+RUNNING_RE_2 = """^(?P<title>.+\).+\))\s+[^\d]*(?P<time>\d+).*$"""
+
+def parse_runnings(filename):
+    """
+    Parses runnings out of IMDB's running-times.list. Returns a map of IMDB
+    titles to times.
+    """
+    matcher = re.compile(RUNNING_RE)
+    matcher2 = re.compile(RUNNING_RE_2)
+    title_matcher = re.compile(TITLE_RE)
+    ratings_index = {}
+
+    with open(filename,"r") as f:
+        for line in f:
+            line = line.decode('latin1').encode('utf-8')
+            match = matcher.match(line)
+            if match:
+                title = match.group('title').strip()
+                time = match.group('time')
+                ratings_index[title] = time
+            else:
+                match = matcher2.match(line)
+                if match:
+                    title = match.group('title').strip()
+                    time = match.group('time')
+                    ratings_index[title] = time
+            
+
+
+#     pick = open(filename + '.pickle','wr')
+    print "parse_runnings done"
+    return ratings_index
+
 
 
 
@@ -946,7 +1004,7 @@ def create_actress_nodes(imdb_path):
     i=0
     actor_dict = actressi[0]
     print len(actor_dict.keys())
-    for key in actor_dict.keys():
+    for key in actor_dict.keys()[3000000:]:
         key = key.decode('latin1')
         i+=1
         if i%15000 ==0:
@@ -1026,7 +1084,7 @@ def amnesia_import(path, imdb_path):
     movies_file = "%s/movies.list" % imdb_path
     ratings_file = "%s/ratings.list" % imdb_path
     plots_file = "%s/plot.list" % imdb_path
-    
+    runnings_file = "%s/running-times.list" % imdb_path
 
     movie_list = parse_movies(movies_file)
     movies = []
@@ -1043,6 +1101,7 @@ def amnesia_import(path, imdb_path):
     titles = movies
     plots = parse_plots(plots_file)
     ratings = parse_ratings(ratings_file)
+    runnings = parse_runnings(runnings_file)
     i=0
     for title in titles:
         i+=1
@@ -1069,8 +1128,35 @@ def amnesia_import(path, imdb_path):
             try:
                 meta.rating = float(rating)
             except ValueError:
-                foo=2
+                print "rating failed for: " + rating + "  " + title
+
+        running = runnings.get(title,None)
+        if not running is None:
+            try:
+                meta.length = float(running)
+            except ValueError:
+                print "running failed for: " + running + "  " + title
+
+        
         meta.save()
+
+
+#makes a content node for every IMDBMetadata instance, and gives it to the user
+def make_content_nodes(user):
+    for x in models.IMDBMetadata.objects.all():
+        met = models.ContentMetadata(imdb = x)
+        met.save()
+        name = x.imdb_canonical_title.strip()
+        if name[-1] == ')':
+            name = name[0:-4].strip()
+        name = name[0:-6].strip()
+        content = models.ContentNode(owner = user, metadata=met,downloads=0,title=name, kind='movie')
+        content.save()
+        
+
+
+
+
 
 
 

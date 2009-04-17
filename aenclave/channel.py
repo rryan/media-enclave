@@ -23,7 +23,7 @@ from menclave.aenclave.models import Channel, Song
 def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
-    snapshot = request.channel_snapshots[int(channel_id)]
+    snapshot = request.get_channel_snapshot(int(channel_id))
     songs = Song.annotate_favorited(snapshot.song_queue, request.user)
     return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
@@ -37,20 +37,12 @@ def channel_detail(request, channel_id=1):
                                 context_instance=RequestContext(request))
 
 def channel_history(request, channel_id):
-    snapshot = request.channel_snapshots[int(channel_id)]
+    snapshot = request.get_channel_snapshot(int(channel_id))
     songs = Song.annotate_favorited(snapshot.song_history, request.user)
     return render_html_template("aenclave/list_songs.html", request,
                                 {'song_list': songs,
                                  'title': 'Channel History'},
                                 context_instance=RequestContext(request))
-
-def channel_reorder(request, channel_id=1):
-    try: channel = Channel.objects.get(pk=channel_id)
-    except Channel.DoesNotExist: raise Http404
-    ctrl = channel.controller()
-    form = request.GET
-    ctrl.move_song(int(form['playid']), int(form['after_playid']))
-    return json_success('Successfully reordered channel.')
 
 def xml_update(request):
     # TODO(rnk): This code is dead and untested.
@@ -63,7 +55,7 @@ def xml_update(request):
     if timestamp is None: return xml_error('invalid timestamp')
     elif timestamp >= channel.last_touched_timestamp():  # up-to-date timestamp
         try:
-            snapshot = request.channel_snapshots[channel_id]
+            snapshot = request.get_channel_snapshot(channel_id)
             if snapshot.status != "playing":
                 return simple_xml_response('continue')
             elapsed_time = snapshot.time_elapsed
@@ -75,7 +67,7 @@ def xml_update(request):
     else:
         return simple_xml_response('reload')  # old timestamp
 
-#---------------------------------- Queuing ----------------------------------#
+#---------------------------------- Control ----------------------------------#
 
 @permission_required_json('aenclave.can_control')
 def json_control(request):
@@ -90,11 +82,17 @@ def json_control(request):
     except ControlError, err:
         return json_error(str(err))
     else:
-        # Update the request snapshot so it's recent.
-        snapshot = ctrl.get_channel_snapshot()
-        request.channel_snapshots[ctrl.channel.id] = snapshot
         # Control succeeded, get the current playlist state and send that back.
         return json_control_update(request)
+
+@permission_required_json('aenclave.can_control')
+def channel_reorder(request, channel_id=1):
+    try: channel = Channel.objects.get(pk=channel_id)
+    except Channel.DoesNotExist: raise Http404
+    ctrl = channel.controller()
+    form = request.GET
+    ctrl.move_song(int(form['playid']), int(form['after_playid']))
+    return json_control_update(request, channel_id)
 
 def json_control_update(request, channel_id=1):
     try:

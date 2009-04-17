@@ -15,8 +15,18 @@ $(document).ready(function() {
     jQuery.ajax({
       url: '/audio/channels/' + channels.channel_id + '/reorder/',
       type: 'get',
-      data: {'playid': playid, 'after_playid': after_playid}
-      // TODO(rnk): Let the user know in case of error.
+      data: {'playid': playid, 'after_playid': after_playid},
+      dataType: 'json',
+      success: function(data) {
+        if (data.error) {
+          this.error(data.error);
+          return;
+        }
+        controls.update_playlist_info(data);
+      },
+      error: function(errorMsg) {
+        controls.error(errorMsg);
+      }
     });
   });
 });

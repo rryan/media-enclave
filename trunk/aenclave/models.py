@@ -244,12 +244,19 @@ class Playlist(models.Model):
         return ('aenclave-playlist', (str(self.id),))
 
     def can_cede(self, user):
+        if user.is_staff:
+            return True
         return (user.id == self.owner_id)
 
     def can_edit(self, user):
-        if self.group_id is None: return (user.id == self.owner_id)
-        try: self.group.user_set.get(id=user.id)
-        except User.DoesNotExist: return (user == self.owner)
+        if user.is_staff:
+            return True
+        if self.group_id is None:
+            return (user.id == self.owner_id)
+        try:
+            self.group.user_set.get(id=user.id)
+        except User.DoesNotExist:
+            return (user == self.owner)
         else: return True
 
     @staticmethod

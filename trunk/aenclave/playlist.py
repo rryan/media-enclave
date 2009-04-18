@@ -66,7 +66,6 @@ def json_user_playlists(request):
     print playlist_data
     return render_json_response(cjson.encode(playlist_data))
 
-
 #----------------------------- Playlist Editing ------------------------------#
 
 @permission_required('aenclave.add_playlist', 'Make Playlist')

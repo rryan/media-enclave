@@ -4,7 +4,6 @@
 
 import logging
 
-from menclave.aenclave.models import Channel
 
 class LoggingMiddleware(object):
 
@@ -23,12 +22,11 @@ class ChannelMiddleware(object):
         # channel will ask for this information after they've made their
         # changes.
         request.channel_snapshots = dict()
-        def get_channel_snapshot(channel_id):
-            if channel_id in request.channel_snapshots:
-                return request.channel_snapshots[channel_id]
+        def get_channel_snapshot(channel):
+            if channel.id in request.channel_snapshots:
+                return request.channel_snapshots[channel.id]
             else:
-                channel = Channel.objects.get(pk=channel_id)
                 snapshot = channel.controller().get_channel_snapshot()
-                request.channel_snapshots[channel_id] = snapshot
+                request.channel_snapshots[channel.id] = snapshot
                 return snapshot
         request.get_channel_snapshot = get_channel_snapshot

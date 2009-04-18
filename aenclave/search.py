@@ -6,8 +6,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.db.models import Q, Count
 
-from menclave.aenclave.control import Controller
-from menclave.aenclave.models import Song
+from menclave.aenclave.models import Channel, Song
 from menclave.aenclave.utils import (parse_date, parse_time, parse_integer,
                                      get_unicode)
 from menclave.aenclave.html import render_html_template, html_error
@@ -56,7 +55,9 @@ def normal_search(request):
         if queryset is ():
             queryset = Song.visibles
         song = queryset.order_by('?')[0]
-        Controller().add_song(song)
+        channel = Channel.default()
+        ctrl = channel.controller()
+        ctrl.add_song(song)
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
     queryset = Song.annotate_favorited(queryset, request.user)

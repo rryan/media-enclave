@@ -30,8 +30,8 @@
         {% for playlist in playlist_list %}
           <tr class="{% cycle a,b %}">
             <td><a href="{{playlist.get_absolute_url}}">{{playlist.name|escape}}</a></td>
-            <td><a href="user/{{playlist.owner.username|escape}}/"><tt>{{playlist.owner.username}}</tt></a></td>
-            <td class="r">{{playlist.songs.count}}</td>
+            <td><a href="user/{{playlist.owner_name|escape}}/"><tt>{{playlist.owner_name}}</tt></a></td>
+            <td class="r">{{playlist.songs__count}}</td>
             <td class="r">{{playlist.last_modified_string}}</td>
             <td class="r">{{playlist.date_created_string}}</td>
           </tr>

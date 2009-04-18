@@ -7,7 +7,7 @@ import logging
 import Pyro.core
 
 from menclave import settings
-from menclave.aenclave.models import Channel, Song
+from menclave.aenclave.models import Song
 
 #=============================================================================#
 
@@ -34,34 +34,21 @@ def delegate_rpc(method):
 
 #=============================================================================#
 
-class Controller(object):
+class WrappedSnapshot(object):
 
-    """
-    Class for remotely controlling the playback of a channel.
+    """A snapshot that refreshes its models from the db on first access."""
 
-    channel -- The id of the controlled channel.
-    player -- The Pyro remote player object.
-
-    This class wraps a RemotePlayer object does extra client-side steps as
-    necessary.  All multi-step player logic belongs in the base GstPlayer object
-    to avoid multiple RPCs.  The player is also synchronized, so we avoid race
-    conditions by doing computation in the player.
-    """
-
-    def __init__(self, channel=None):
-        """
-        Create a controller for the given channel or the default channel, 1.
-        """
-        if channel is None: channel = Channel.default()
-        self.channel = channel
-        # TODO(rnk): Change the naming to make one remote object per channel.
-        #subs = (settings.HOST_NAME, settings.GST_PLAYER_PORT, channel.id)
-        #uri = "PYROLOC://%s:%i/gst_player/%i" % subs
-        uri = "PYROLOC://%s:%i/gst_player" % (settings.GST_PLAYER_HOST,
-                                              settings.GST_PLAYER_PORT)
-        self.player = Pyro.core.getProxyForURI(uri)
-
-    #---------------------------- STATUS METHODS -----------------------------#
+    def __init__(self, snapshot):
+        # Delegated attributes:
+        self.status = snapshot.status
+        self.current_song = snapshot.current_song
+        self.time_elapsed = snapshot.time_elapsed
+        self.queue_duration = snapshot.queue_duration
+        # Refreshed/memoized attribtues:
+        self._song_queue = None
+        self.orig_song_queue = snapshot.song_queue
+        self._song_history = None
+        self.orig_song_history = snapshot.song_history
 
     def _refresh_songs(self, songs):
         """
@@ -80,12 +67,50 @@ class Controller(object):
             fresh_songs.append(fresh_song)
         return fresh_songs
 
+    @property
+    def song_queue(self):
+        if self._song_queue is None:
+            self._song_queue = self._refresh_songs(self.orig_song_queue)
+        return self._song_queue
+
+    @property
+    def song_history(self):
+        if self._song_history is None:
+            self._song_history = self._refresh_songs(self.orig_song_history)
+        return self._song_history
+
+class Controller(object):
+
+    """
+    Class for remotely controlling the playback of a channel.
+
+    channel -- The id of the controlled channel.
+    player -- The Pyro remote player object.
+
+    This class wraps a RemotePlayer object does extra client-side steps as
+    necessary.  All multi-step player logic belongs in the base GstPlayer object
+    to avoid multiple RPCs.  The player is also synchronized, so we avoid race
+    conditions by doing computation in the player.
+    """
+
+    def __init__(self, channel=None):
+        """
+        Create a controller for the given channel or the default channel, 1.
+        """
+        self.channel = channel
+        # TODO(rnk): Change the naming to make one remote object per channel.
+        #subs = (settings.HOST_NAME, settings.GST_PLAYER_PORT, channel.id)
+        #uri = "PYROLOC://%s:%i/gst_player/%i" % subs
+        uri = "PYROLOC://%s:%i/gst_player" % (settings.GST_PLAYER_HOST,
+                                              settings.GST_PLAYER_PORT)
+        self.player = Pyro.core.getProxyForURI(uri)
+
+    #---------------------------- STATUS METHODS -----------------------------#
+
     @delegate_rpc
     def get_channel_snapshot(self, rpc_retval=None):
         """Return a snapshot of the current channel state."""
-        rpc_retval.song_queue = self._refresh_songs(rpc_retval.song_queue)
-        rpc_retval.song_history = self._refresh_songs(rpc_retval.song_history)
-        return rpc_retval
+        return WrappedSnapshot(rpc_retval)
 
     #--------------------------- PLAYBACK CONTROL ----------------------------#
 

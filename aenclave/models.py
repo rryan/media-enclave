@@ -144,10 +144,11 @@ class Song(models.Model):
         """Add a boolean attr for if the song is a favorite of the user."""
         if user.is_authenticated():
             pl = Playlist.get_favorites(user)
-            favs = set(song.pk for song in pl.songs.all())
-            for song in songs:
-                if song.pk in favs:
-                    song.favorited = True
+            if pl:
+                favs = set(song.pk for song in pl.songs.all())
+                for song in songs:
+                    if song.pk in favs:
+                        song.favorited = True
         return songs
 
     class Meta:
@@ -243,20 +244,28 @@ class Playlist(models.Model):
         return ('aenclave-playlist', (str(self.id),))
 
     def can_cede(self, user):
-        return (user == self.owner)
+        return (user.id == self.owner_id)
 
     def can_edit(self, user):
-        if self.group is None: return (user == self.owner)
+        if self.group_id is None: return (user.id == self.owner_id)
         try: self.group.user_set.get(id=user.id)
         except User.DoesNotExist: return (user == self.owner)
         else: return True
 
     @staticmethod
-    def get_favorites(user):
+    def get_favorites(user, create=False):
+        """Return a user's favorites playlist or None, or create it."""
         errmsg = "User must be authenticated to have favorites."
         assert user.is_authenticated(), errmsg
         pl_name = "%s's favorites" % user.username
-        pl, _ = Playlist.objects.get_or_create(name=pl_name, owner=user)
+        try:
+            pl = Playlist.objects.get(name=pl_name, owner=user)
+        except Playlist.DoesNotExist:
+            if create:
+                pl = Playlist(name=pl_name, owner=user)
+                pl.save()
+            else:
+                pl = None
         return pl
 
 #-----------------------------------------------------------------------------#

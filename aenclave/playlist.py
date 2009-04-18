@@ -1,7 +1,7 @@
 import cjson
 
 from django.template import RequestContext
-from django.db.models.query import Q
+from django.db.models import Count, Q
 from django.http import Http404, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
@@ -15,8 +15,14 @@ from menclave.aenclave.utils import get_integer, get_unicode, get_song_list
 #----------------------------- Playlist Viewing ------------------------------#
 
 def all_playlists(request):
+    pls = Playlist.objects.all().annotate(Count('songs'))
+    # Perform this hairy join so we can get the username without hitting the db
+    # for every entry.
+    pls = pls.extra(select={'owner_name': 'auth_user.username'},
+                    tables=('auth_user',),
+                    where=('auth_user.id = aenclave_playlist.owner_id',))
     return render_html_template('aenclave/playlist_list.html', request,
-                                {'playlist_list': Playlist.objects.all()},
+                                {'playlist_list': pls},
                                 context_instance=RequestContext(request))
 
 def playlist_detail(request, playlist_id):
@@ -24,8 +30,8 @@ def playlist_detail(request, playlist_id):
     except Playlist.DoesNotExist: raise Http404
     can_cede = playlist.can_cede(request.user)
     can_edit = playlist.can_edit(request.user)
-    # This order_by uses PlaylistEntry's Meta ordering, which is position.
-    songs = playlist.songs.order_by('playlistentry')
+    # Using the PlaylistEntry default order_by makes a godawful query.
+    songs = playlist.songs.order_by('playlistentry__position')
     songs = Song.annotate_favorited(songs, request.user)
     return render_html_template('aenclave/playlist_detail.html', request,
                                 {'playlist': playlist,

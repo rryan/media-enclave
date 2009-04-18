@@ -12,10 +12,11 @@ from menclave.aenclave.login import (permission_required_json,
 from menclave.aenclave.utils import get_int_list, get_song_list, get_integer
 from menclave.aenclave.xml import (simple_xml_response, xml_error,
                                    render_xml_to_response)
-from menclave.aenclave.json import (render_json_response, json_success,
-                                    json_error, json_channel_info)
+from menclave.aenclave.html import html_error
+from menclave.aenclave.json import (render_json_response, json_error,
+                                    json_channel_info)
 from menclave.aenclave.html import render_html_template
-from menclave.aenclave.control import Controller, ControlError
+from menclave.aenclave.control import ControlError
 from menclave.aenclave.models import Channel, Song
 
 #--------------------------------- Channels ----------------------------------#
@@ -23,7 +24,7 @@ from menclave.aenclave.models import Channel, Song
 def channel_detail(request, channel_id=1):
     try: channel = Channel.objects.get(pk=channel_id)
     except Channel.DoesNotExist: raise Http404
-    snapshot = request.get_channel_snapshot(int(channel_id))
+    snapshot = request.get_channel_snapshot(channel)
     songs = Song.annotate_favorited(snapshot.song_queue, request.user)
     return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
@@ -36,8 +37,10 @@ def channel_detail(request, channel_id=1):
                                  'allow_dragging': True},
                                 context_instance=RequestContext(request))
 
-def channel_history(request, channel_id):
-    snapshot = request.get_channel_snapshot(int(channel_id))
+def channel_history(request, channel_id=1):
+    try: channel = Channel.objects.get(pk=channel_id)
+    except Channel.DoesNotExist: raise Http404
+    snapshot = request.get_channel_snapshot(channel)
     songs = Song.annotate_favorited(snapshot.song_history, request.user)
     return render_html_template("aenclave/list_songs.html", request,
                                 {'song_list': songs,
@@ -55,7 +58,7 @@ def xml_update(request):
     if timestamp is None: return xml_error('invalid timestamp')
     elif timestamp >= channel.last_touched_timestamp():  # up-to-date timestamp
         try:
-            snapshot = request.get_channel_snapshot(channel_id)
+            snapshot = request.get_channel_snapshot(channel)
             if snapshot.status != "playing":
                 return simple_xml_response('continue')
             elapsed_time = snapshot.time_elapsed
@@ -72,7 +75,8 @@ def xml_update(request):
 @permission_required_json('aenclave.can_control')
 def json_control(request):
     action = request.POST.get('action','')
-    ctrl = Controller()
+    channel = Channel.default()
+    ctrl = channel.controller()
     try:
         if action == 'play': ctrl.unpause()
         elif action == 'pause': ctrl.pause()
@@ -83,7 +87,7 @@ def json_control(request):
         return json_error(str(err))
     else:
         # Control succeeded, get the current playlist state and send that back.
-        return json_control_update(request)
+        return _json_control_update(request, channel)
 
 @permission_required_json('aenclave.can_control')
 def channel_reorder(request, channel_id=1):
@@ -92,11 +96,18 @@ def channel_reorder(request, channel_id=1):
     ctrl = channel.controller()
     form = request.GET
     ctrl.move_song(int(form['playid']), int(form['after_playid']))
-    return json_control_update(request, channel_id)
+    return _json_control_update(request, channel)
 
 def json_control_update(request, channel_id=1):
+    """View handler that serves the JSON API request."""
+    try: channel = Channel.objects.get(pk=channel_id)
+    except Channel.DoesNotExist: raise Http404
+    return _json_control_update(request, channel)
+
+def _json_control_update(request, channel):
+    """Utility for returning JSON with updated channel status."""
     try:
-        channel_info = json_channel_info(request, int(channel_id))
+        channel_info = json_channel_info(request, channel)
     except ControlError, err:
         return json_error(str(err))
     else:
@@ -108,10 +119,18 @@ def queue_songs(request):
     # Get the selected songs.
     songs = get_song_list(form)
     # Queue the songs.
-    Controller().add_songs(songs)
+    channel = Channel.default()
+    ctrl = channel.controller()
+    try:
+        ctrl.add_songs(songs)
+    except ControlError, err:
+        if 'getupdate' in form:
+            return json_error(str(err))
+        else:
+            return html_error(request, str(err))
     if 'getupdate' in form:
         # Send back an updated playlist status.
-        return json_control_update(request)
+        return _json_control_update(request, channel)
     else:
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
@@ -122,7 +141,12 @@ def dequeue_songs(request):
     # Get the selected playids.
     playids = get_int_list(form, 'playids')
     # Dequeue the songs.
-    Controller().remove_songs(playids)
+    channel = Channel.default()
+    ctrl = channel.controller()
+    try:
+        ctrl.remove_songs(playids)
+    except ControlError, err:
+        return html_error(request, str(err))
     # Redirect to the channels page.
     return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
@@ -132,7 +156,9 @@ def xml_queue(request):
     # Get the selected songs.
     songs = get_song_list(form)
     # Queue the songs.
-    try: Controller().add_songs(songs)
+    channel = Channel.default()
+    ctrl = channel.controller()
+    try: ctrl.add_songs(songs)
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')
 
@@ -142,7 +168,9 @@ def xml_dequeue(request):
     # Get the selected songs.
     playids = get_int_list(form, 'playids')
     # Dequeue the songs.
-    try: Controller().remove_songs(playids)
+    channel = Channel.default()
+    ctrl = channel.controller()
+    try: ctrl.remove_songs(playids)
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')
 
@@ -150,11 +178,13 @@ def xml_dequeue(request):
 def xml_control(request):
     form = request.POST
     action = form.get('action','')
+    channel = Channel.default()
+    ctrl = channel.controller()
     try:
-        if action == 'play': Controller().unpause()
-        elif action == 'pause': Controller().pause()
-        elif action == 'skip': Controller().skip()
-        elif action == 'shuffle': Controller().shuffle()
+        if action == 'play': ctrl.unpause()
+        elif action == 'pause': ctrl.pause()
+        elif action == 'skip': ctrl.skip()
+        elif action == 'shuffle': ctrl.shuffle()
         else: return xml_error('invalid action: ' + action)
     except ControlError, err: return xml_error(str(err))
     else: return simple_xml_response('success')

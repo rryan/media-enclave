@@ -32,16 +32,15 @@ def json_success(message=""):
 def json_error(message):
     return render_json_response(cjson.encode({'error': message}))
 
-def json_channel_info(request, channel_id=1):
+def json_channel_info(request, channel):
     """Return a JSON blob with the channel info.
 
     We do this on every page load, so it makes sense to put it here.  Also, we
     need to in order to avoid circular dependencies.
     """
-    channel = Channel.objects.get(pk=channel_id)
     data = {}
     ctrl = channel.controller()
-    snapshot = request.get_channel_snapshot(channel_id)
+    snapshot = request.get_channel_snapshot(channel)
     songs = snapshot.song_queue
     current_song = snapshot.current_song
     queue_length = len(songs) + int(bool(current_song))

@@ -25,7 +25,7 @@ $(document).ready(function() {
         controls.update_playlist_info(data);
       },
       error: function(errorMsg) {
-        controls.error(errorMsg);
+        controls.error(String(errorMsg));
       }
     });
   });

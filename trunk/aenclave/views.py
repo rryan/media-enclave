@@ -61,7 +61,7 @@ def favorite_song(request, song_id):
         song = Song.objects.get(pk=int(song_id))
     except Song.DoesNotExist:
         raise Http404
-    pl = Playlist.get_favorites(request.user)
+    pl = Playlist.get_favorites(request.user, create=True)
     try:
         fav = PlaylistEntry.objects.get(song=song, playlist=pl)
     except PlaylistEntry.DoesNotExist:

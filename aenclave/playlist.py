@@ -18,9 +18,11 @@ def all_playlists(request):
     pls = Playlist.objects.all().annotate(Count('songs'))
     # Perform this hairy join so we can get the username without hitting the db
     # for every entry.
-    pls = pls.extra(select={'owner_name': 'auth_user.username'},
+    pls = pls.extra(select={'owner_name': 'auth_user.username',
+                            'lower_name': 'lower(aenclave_playlist.name)'},
                     tables=('auth_user',),
                     where=('auth_user.id = aenclave_playlist.owner_id',))
+    pls = pls.order_by('lower_name')
     return render_html_template('aenclave/playlist_list.html', request,
                                 {'playlist_list': pls},
                                 context_instance=RequestContext(request))

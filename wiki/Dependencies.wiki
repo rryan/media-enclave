@@ -7,10 +7,8 @@ Very incomplete, so add more
 
 
 = Packages =
-
-<ul>
-<li> Python 2.5.x : <a href="http://www.python.org"> www.python.org </a> </li>
-<li> Django development build: : <a href="http://www.djangoproject.com"> www.djangoproject.com </a> </li>
-<li> Pyro </li>
-<li> Gstreamer </li>
-</ul>
+  * MySQL
+  * Python 2.5.x : http://www.python.org
+  * Django development build: : http://www.djangoproject.com
+  * Pyro
+  * Gstreamer

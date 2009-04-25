@@ -31,9 +31,23 @@ case "$1" in
         echo -n "Stopping $DESC: "
         start-stop-daemon --pidfile "$PIDFILE" --stop --retry 5
         if [ $? == 0 ]; then
+            rm "$PIDFILE"
             echo "Stopped $NAME."
         else
             echo "Failed to stop $NAME."
+        fi
+        ;;
+
+    status)
+        if [ -f "$PIDFILE" ]; then
+            running=$( ps `cat "$PIDFILE"` | grep "$DAEMON" )
+            if [ -z "$running" ]; then
+                echo "$NAME is not running."
+            else
+                echo "$NAME is running."
+            fi
+        else
+            echo "$NAME is not running."
         fi
         ;;
 
@@ -42,7 +56,7 @@ case "$1" in
         ;;
 
     *)
-        echo "Usage: /etc/init.d/$NAME {start|stop|restart}" >&2
+        echo "Usage: /etc/init.d/$NAME {start|stop|status|restart}" >&2
         exit 1
         ;;
 esac

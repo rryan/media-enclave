@@ -2,23 +2,25 @@ from django.conf import settings
 from django.contrib import auth as django_auth
 import re
 
-class KerberosBackend:
+class KerberosBackend(object):
+
     """
     Backend for authentication using MIT Certificate headers posted
     with mod_headers
     """
+
     def authenticate(self, request):
         if not request.META.get('HTTP_SSL_CLIENT_VERIFY','') == 'SUCCESS':
             return None
 
         ssl_email = request.META.get('HTTP_SSL_CLIENT_S_DN_EMAIL', '')
-        
+
         matcher = re.compile('(.+)@MIT.EDU')
 
         m = matcher.match(ssl_email)
         if m is None:
             return None
-        
+
         kerberos = m.group(1)
 
         if kerberos is None:
@@ -28,7 +30,7 @@ class KerberosBackend:
             user = django_auth.models.User.objects.get(username = kerberos)
         except django_auth.models.User.DoesNotExist:
             # Create a user.
-            new_user = django_auth.models.User.objects.create_user(kerberos, 
+            new_user = django_auth.models.User.objects.create_user(kerberos,
                                                                    ssl_email,
                                                                    '')
             new_user.set_unusable_password()
@@ -39,7 +41,7 @@ class KerberosBackend:
             user = new_user
 
         return user
-    
+
     def get_user(self, user_id):
         try:
             return django_auth.models.User.objects.get(pk=user_id)

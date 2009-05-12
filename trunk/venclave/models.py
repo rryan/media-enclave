@@ -66,6 +66,8 @@ class TreeManager(models.Manager):
             self.sort_trees(tree[1], key, reverse)
 
     def expand(self, node):
+        if node.kind == "movie":
+            return [node, []]
         children = node.children.all()
         return [node, [self.expand(child) for child in children]]
 
@@ -80,7 +82,7 @@ class TreeManager(models.Manager):
         if 'order_by' in kwargs:
             order_by = kwargs['order_by']
             del kwargs['order_by']
-        query_set = super(TreeManager,self).filter(*args, **kwargs)
+        query_set = super(TreeManager,self).filter(*args, **kwargs).select_related('metadata__imdb')
         trees = self.treeify(query_set)
         if order_by:
             trees = self.sort_trees(trees, order_by)

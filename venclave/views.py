@@ -127,8 +127,6 @@ def update_list(request):
 
 def create_video_list(trees):
     html = ''.join(create_video_list_lp(trees))
-    t = get_template('venclave/list_event_binding.html')
-    html += t.render(Context())
     return html
 
 def create_video_list_lp(trees):

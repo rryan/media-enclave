@@ -7,7 +7,7 @@
   <td class="item-arrow">
   </td>
   <td class="item-title">
-    <a href="#" class={% if sublist %}"parent"{% else %}"leaf"{% endif %}>{{ node.title }}</a>
+    <a href="#" class={% if sublist %}"parent"{% else %}"leaf"{% endif %} onclick="return venclave.videolist.title_onclick(this)">{{ node.title}}</a>
   </td>
   <td class="item-length">
     {{ node.metadata.imdb.length|default:"-" }}

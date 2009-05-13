@@ -9,8 +9,13 @@ $(document).ready(function() {
     var update = function() {
         var state = $.toJSON(get_state());
         var query = $('.search_query').text()
-        $('#video-list > .list-body').load('/video/update_list/', 
-                                           {'f':state, 'q':query});
+        $.post('/video/update_list/', 
+               {'f':state, 'q':query},
+               function(data) {
+                   $('#video-list > tbody.list-body').html(data.videolist);
+                   $('#results-banner').text(data.banner_msg);
+               },
+              'json');
     };
 
     var get_state = function() {

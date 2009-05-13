@@ -1,5 +1,6 @@
 # venclave/views.py
 import cjson
+import cgi
 from datetime import datetime
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -64,6 +65,8 @@ def home(request):
     return render_to_response("venclave/index.html",
                               {'reg_form': reg_form})
 
+
+# TODO(skyewm): combine browse and update_list
 @login_required
 def browse(request):
     # Process search query
@@ -80,10 +83,15 @@ def browse(request):
         full_query &= word_query
     trees = ContentNode.trees.filter(full_query)
     facet_attributes = ContentNode.attributes.all()
+    video_count = ContentNode.trees.leaf_nodes().count()
+    results_count = reduce(lambda x,y: x+y,
+                           [len(ContentNode.trees.fringe(tree)) for tree in trees],
+                           0)
     return render_to_response('venclave/browse.html',
                               {'attributes': facet_attributes,
                                'list': create_video_list(trees),
-                               'search_query': query_string},
+                               'search_query': query_string,
+                               'banner_msg': banner_msg(video_count, results_count, query_string)},
                               context_instance=RequestContext(request))
 
 @login_required
@@ -91,6 +99,7 @@ def update_list(request):
     facets = cjson.decode(request.POST['f'])
     full_query = Q()
     query = Q()
+    query_string = None
     if request.POST['q']:
         query_string = request.POST['q']
         query_words = query_string.split()
@@ -123,7 +132,13 @@ def update_list(request):
                     raise ValueError, "op must be 'or' or 'and'"
         full_query &= query
     trees = ContentNode.trees.filter(full_query)
-    return HttpResponse(create_video_list(trees))
+    video_count = ContentNode.trees.leaf_nodes().count()
+    results_count = reduce(lambda x,y: x+y,
+                           [len(ContentNode.trees.fringe(tree)) for tree in trees],
+                           0)
+    return HttpResponse(cjson.encode({
+                'videolist': create_video_list(trees),
+                'banner_msg': banner_msg(video_count, results_count, query_string)}))
 
 def create_video_list(trees):
     html = ''.join(create_video_list_lp(trees))
@@ -147,6 +162,15 @@ def create_video_list_lp(trees):
                               '</td>'
                               '</tr>')
     return html_parts
+
+def banner_msg(video_count, results_count, search_string):
+    msg = ''
+    if video_count != results_count:
+        msg += '%s results in ' % results_count
+    msg += '%s videos' % video_count
+    if search_string:
+        msg += ' for &#8220;%s&#8221;' % cgi.escape(search_string)
+    return msg
 
 @login_required
 def get_pane(request):

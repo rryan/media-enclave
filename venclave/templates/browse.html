@@ -20,11 +20,9 @@
 
 
 {% block content %}
-{% if search_query %}
-  <div class="results-banner">
-    &#8220;<span class="search_query">{{ search_query }}</span>&#8221; results
+  <div id="results-banner">
+    {{banner_msg|safe}}
   </div>
-{% endif %}
 
 <table id="browse">
   <tr>

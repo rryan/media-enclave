@@ -4,6 +4,7 @@ import datetime
 
 from django.db import models
 from django.db.models import Min, Max
+from django.db.models import Q
 
 #================================= UTILITIES =================================#
 
@@ -36,6 +37,19 @@ class TreeManager(models.Manager):
 
     def root_nodes(self):
         return super(TreeManager, self).get_query_set().filter(parent__isnull=True)        
+
+    def leaf_nodes(self):
+        return super(TreeManager, self).get_query_set().filter(
+            Q(kind='movie') | Q(kind='TV episode'))
+
+    def fringe(self, tree):
+        if not tree[1]:
+            return [tree[0]]
+        else:
+            fringe = []
+            for subtree in tree[1]:
+                fringe += self.fringe(subtree)
+            return fringe
 
     def treeify(self, query_set):
         roots = []
@@ -106,36 +120,32 @@ class AttributesManager(models.Manager):
                   Attribute("Genre",
                             "metadata__imdb__genres__name",
                             "checkbox",
-                            lambda: [(g.name,g.name) for g in Genre.objects.all()]),
+                            lambda: [(g.name,g.name) for g in Genre.objects.order_by('name')]),
                   "Actor": 
                   Attribute("Actor",
                             "metadata__imdb__actors__name",
                             "searchbar",
-                            lambda: Actor.objects.all()),
+                            lambda: Actor.objects.order_by('name')),
                   "Director": 
                   Attribute("Director",
                             "metadata__imdb__directors__name",
                             "searchbar",
-                            lambda: Director.objects.all()),
+                            lambda: Director.objects.order_by('name')),
                   "Type":
                    Attribute("Type",
                              "kind",
                              "checkbox",
-                             lambda: [(KIND_TV, 'TV'), (KIND_MOVIE, 'Movie')]),
+                             lambda: [('movie', 'Movie'), ('TV episode', 'TV')]),
                   "Year": 
                   Attribute("Year",
                             "metadata__imdb__release_year",
                             "slider",
-                            # todo: figure out what's the deal with
-                            # static methods and class attributes
                             lambda: IMDBMetadata.objects.aggregate(min=Min('release_year'),
                                                                    max=Max('release_year'))),
                   "Rating":
                   Attribute("Rating",
                             "metadata__imdb__rating",
                             "slider",
-                            # todo: figure out what's the deal with
-                            # static methods and class attributes
                             lambda: {'min':0, 'max':5})
                   }
 

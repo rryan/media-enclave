@@ -6,7 +6,7 @@ table#browse td {
     vertical-align: top;
 }
 
-div.results-banner { 
+div#results-banner { 
     background: #ffe953;
     font-family: "Andale Mono", Monaco, verdana, sans-serif;
     font-size: 24px;

@@ -111,10 +111,12 @@ def update_list(request):
                 # WTF Each match must contain every word, so we use AND here.
             query &= word_query
     full_query &= query
-    for name in facets:
+    for facet in facets:
+        # Don't apply this filter on reset
+        if ('reset' in facet) and facet['reset']:
+            continue
         query = Q()
-        facet = facets[name]
-        attribute = ContentNode.attributes.attributes[name]
+        attribute = ContentNode.attributes.attributes[facet['name']]
         type = attribute.facet_type
         if type == 'slider':
             lo = facet['lo']

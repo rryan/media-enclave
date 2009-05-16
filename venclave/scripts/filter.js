@@ -12,7 +12,7 @@ venclave.filter = {
 
     update: function() {
         var state = $.toJSON(this.get_state());
-        var query = $('.search_query').text();
+        var query = $('.search_query')[0].value;
         $.post('/video/update_list/', 
                {'f':state, 'q':query},
                function(data) {

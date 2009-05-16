@@ -41,6 +41,10 @@ table#video-list .item-title {
     width: 300px;
 }
 
+table#video-list .item-title a{
+    display: block;
+}
+
 table#video-list .item-length,
 table#video-list .item-release,
 table#video-list .item-rating {

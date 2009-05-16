@@ -9,7 +9,7 @@ venclave.videolist = {
             $.get('/video/load_pane/',
                   {id: id},
                   function(html) {
-                      that.toggle_style(a_elt, 'background', '#CCC');
+                      that.toggle_style(a_elt.parentNode, 'background', '#CCC');
                       var pane = $(html);
                       that.panes[id] = pane;
                       a.closest('tr').after(pane);
@@ -21,7 +21,7 @@ venclave.videolist = {
                   });
         } else {
             this.panes[id].toggle();
-            this.toggle_style(a_elt, 'background', '#CCC');
+            this.toggle_style(a_elt.parentNode, 'background', '#CCC');
         }
         return false;
     },

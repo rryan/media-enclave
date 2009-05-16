@@ -171,7 +171,7 @@ def banner_msg(video_count, results_count, search_string):
         msg += '%s results in ' % results_count
     msg += '%s videos' % video_count
     if search_string:
-        msg += ' for &#8220;%s&#8221;' % cgi.escape(search_string)
+        msg += ' for "%s"' % cgi.escape(search_string)
     return msg
 
 @login_required

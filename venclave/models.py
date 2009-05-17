@@ -4,7 +4,6 @@ import datetime
 
 from django.db import models
 from django.db.models import Min, Max
-from django.db.models import Q
 
 #================================= UTILITIES =================================#
 
@@ -30,78 +29,6 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ('name',)
-
-#-----------------------------------------------------------------------------#
-
-class TreeManager(models.Manager):
-
-    def root_nodes(self):
-        return super(TreeManager, self).get_query_set().filter(parent__isnull=True)
-
-    def leaf_nodes(self):
-        return super(TreeManager, self).get_query_set().filter(
-            Q(kind='movie') | Q(kind='TV episode'))
-
-    def fringe(self, tree):
-        if not tree[1]:
-            return [tree[0]]
-        else:
-            fringe = []
-            for subtree in tree[1]:
-                fringe += self.fringe(subtree)
-            return fringe
-
-    def treeify(self, query_set):
-        roots = []
-        trees = {} # root->tree
-
-        for node in query_set:
-            # Expand all descendants
-            tree = self.expand(node)
-            while node not in trees:
-                trees[node] = tree
-                # Is node a root?
-                if not node.parent:
-                    roots.append(tree)
-                    break
-                # Traverse up branch
-                node = node.parent
-                tree = (node, [tree])
-            else:
-                old_tree = trees[node]
-                # Node is the same, update children
-                old_tree[1] = tree[1]
-        return roots
-
-    # Todo: make more like order_by
-    def sort_trees(self, trees, key=(lambda node: node.title), reverse=False):
-        trees.sort(key=lambda tree: key(tree[0]), reverse=reverse)
-        for tree in trees:
-            self.sort_trees(tree[1], key, reverse)
-
-    def expand(self, node):
-        if node.kind == "movie":
-            return [node, []]
-        children = node.children.all()
-        return [node, [self.expand(child) for child in children]]
-
-    # Warning! Returns a list of trees, not a query
-    def all(self):
-        roots = self.root_nodes()
-        return [self.expand(node) for node in roots]
-
-    # Warning! Returns a list of trees, not a query
-    def filter(self, *args, **kwargs):
-        order_by = None
-        if 'order_by' in kwargs:
-            order_by = kwargs['order_by']
-            del kwargs['order_by']
-        query_set = super(TreeManager,self).filter(*args, **kwargs)
-        query_set = query_set.select_related('metadata__imdb')
-        trees = self.treeify(query_set)
-        if order_by:
-            trees = self.sort_trees(trees, order_by)
-        return trees
 
 
 class AttributesManager(models.Manager):
@@ -149,15 +76,12 @@ class AttributesManager(models.Manager):
     }
 
 
-#-----------------------------------------------------------------------------#
-
 class Director(models.Model):
     name = models.TextField(primary_key=True)
 
     def __unicode__(self):
         return self.name
 
-#-----------------------------------------------------------------------------#
 
 class Actor(models.Model):
     name = models.TextField(primary_key=True)
@@ -165,7 +89,6 @@ class Actor(models.Model):
     def __unicode__(self):
         return self.name
 
-#-----------------------------------------------------------------------------#
 
 class Genre(models.Model):
     name = models.TextField(primary_key=True)
@@ -173,7 +96,6 @@ class Genre(models.Model):
     def __unicode__(self):
         return self.name
 
-#-----------------------------------------------------------------------------#
 
 class ContentMetadata(models.Model):
     """
@@ -185,7 +107,6 @@ class ContentMetadata(models.Model):
     manual = models.OneToOneField("ManualMetadata", blank=True, null=True)
     file = models.OneToOneField("FileMetadata", blank=True, null=True)
 
-#-----------------------------------------------------------------------------#
 
 class ContentMetadataSource(models.Model):
     """
@@ -202,6 +123,7 @@ class ContentMetadataSource(models.Model):
 
     class Meta:
         abstract = True
+
 
 class IMDBMetadata(ContentMetadataSource):
     """
@@ -224,6 +146,7 @@ class IMDBMetadata(ContentMetadataSource):
     rating = models.FloatField(blank=True, null=True)
     length = models.IntegerField(blank=True, null=True)
 
+
 class RottenTomatoesMetadata(ContentMetadataSource):
     """
     RottenTomatoes metadata
@@ -236,6 +159,7 @@ class RottenTomatoesMetadata(ContentMetadataSource):
     percent_rating = models.IntegerField()
     average_rating = models.FloatField()
 
+
 class FileMetadata(ContentMetadataSource):
     """
     File-based metadata
@@ -244,6 +168,7 @@ class FileMetadata(ContentMetadataSource):
     @classmethod
     def source_name(cls):
         return "File"
+
 
 class ManualMetadata(ContentMetadataSource):
     """
@@ -255,6 +180,7 @@ class ManualMetadata(ContentMetadataSource):
         return "Manual"
 
     description = models.TextField()
+
 
 class VideoFile(models.Model):
 
@@ -272,10 +198,17 @@ KIND_UNKNOWN = 'uk'
 
 class ContentNode(models.Model):
 
+    """A video-like set of content.
+
+    We use this model to represent movies, TV series, TV seasons, TV episodes,
+    trailers, and random clips.  Series and seasons are the only kinds of
+    ContentNodes that have children and  don't directly correspond to a set of
+    video files.
+    """
+
     owner = models.ForeignKey('auth.User')
 
     objects = models.Manager()
-    trees = TreeManager()
     attributes = AttributesManager()
 
     def __unicode__(self): return self.compact_name()
@@ -297,7 +230,6 @@ class ContentNode(models.Model):
     # only applicable for kind=='tv', null if not applicable
     season = models.IntegerField(blank=True, null=True)
     episode = models.IntegerField(blank=True, null=True)
-
 
     def simple_name(self):
         return self.title

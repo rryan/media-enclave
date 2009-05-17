@@ -87,10 +87,11 @@ def browse_and_update_vals(query, query_string):
 
     Returns a dict containing objects useful for browse and update_list.
     """
-    trees = ContentNode.trees.filter(query)
-    video_list = create_video_list(trees)
-    video_count = ContentNode.trees.leaf_nodes().count()
-    results_count = sum(len(ContentNode.trees.fringe(tree)) for tree in trees)
+    nodes = ContentNode.objects.filter(query)
+    nodes = nodes.select_related('metadata__imdb')
+    video_list = create_video_list(nodes)
+    video_count = ContentNode.objects.all().count()
+    results_count = nodes.count()
     return {
         'list': video_list,
         'video_count': video_count,
@@ -147,28 +148,18 @@ def update_list(request):
     return HttpResponse(cjson.encode(result))
 
 
-def create_video_list(trees):
-    html = ''.join(create_video_list_lp(trees))
+def create_video_list(nodes):
+    html = ''.join(create_video_list_lp(nodes))
     return html
 
 
-def create_video_list_lp(trees):
+def create_video_list_lp(nodes):
     html_parts = []
-    for node, children in trees:
+    for node in nodes:
         t = select_template(['list_items/kind_%s.html' % node.kind,
                              'list_items/default.html'])
         c = Context({'node': node})
-        c['sublist'] = bool(children)
         html_parts.append(t.render(c))
-        if children:
-            # Open a new table for the children, put them in, and close it.
-            html_parts.append('<tr style="display:none">'
-                              '<td colspan="5" class="sublist-container">'
-                              '<table class="video-sublist">')
-            html_parts.extend(create_video_list_lp(children))
-            html_parts.append('</table>'
-                              '</td>'
-                              '</tr>')
     return html_parts
 
 

@@ -96,17 +96,21 @@ class TreeManager(models.Manager):
         if 'order_by' in kwargs:
             order_by = kwargs['order_by']
             del kwargs['order_by']
-        query_set = super(TreeManager,self).filter(*args, **kwargs).select_related('metadata__imdb')
+        query_set = super(TreeManager,self).filter(*args, **kwargs)
+        query_set = query_set.select_related('metadata__imdb')
         trees = self.treeify(query_set)
         if order_by:
             trees = self.sort_trees(trees, order_by)
         return trees
 
+
 class AttributesManager(models.Manager):
+
     def all(self):
         return [self.attributes[a] for a in self.attribute_order]
 
     class Attribute(object):
+
         def __init__(self, name, path, facet_type, get_choices):
             self.name = name
             self.path = path # string specifying field in querysets
@@ -116,38 +120,33 @@ class AttributesManager(models.Manager):
 
     attribute_order = ('Type', 'Genre', 'Rating', 'Year', 'Director')
 
-    attributes = {"Genre":
-                  Attribute("Genre",
-                            "metadata__imdb__genres__name",
-                            "checkbox",
-                            lambda: [(g.name,g.name) for g in Genre.objects.order_by('name')]),
-                  "Actor":
-                  Attribute("Actor",
-                            "metadata__imdb__actors__name",
-                            "searchbar",
-                            lambda: Actor.objects.order_by('name')),
-                  "Director":
-                  Attribute("Director",
-                            "metadata__imdb__directors__name",
-                            "searchbar",
-                            lambda: Director.objects.order_by('name')),
-                  "Type":
-                   Attribute("Type",
-                             "kind",
-                             "checkbox",
-                             lambda: [('movie', 'Movie'), ('TV episode', 'TV')]),
-                  "Year":
-                  Attribute("Year",
-                            "metadata__imdb__release_year",
-                            "slider",
-                            lambda: IMDBMetadata.objects.aggregate(min=Min('release_year'),
-                                                                   max=Max('release_year'))),
-                  "Rating":
-                  Attribute("Rating",
+    attributes = {
+        "Genre": Attribute("Genre",
+                           "metadata__imdb__genres__name",
+                           "checkbox",
+                           lambda: [(g.name,g.name) for g in Genre.objects.order_by('name')]),
+        "Actor": Attribute("Actor",
+                           "metadata__imdb__actors__name",
+                           "searchbar",
+                           lambda: Actor.objects.order_by('name')),
+        "Director": Attribute("Director",
+                              "metadata__imdb__directors__name",
+                              "searchbar",
+                              lambda: Director.objects.order_by('name')),
+        "Type": Attribute("Type",
+                          "kind",
+                          "checkbox",
+                          lambda: [('movie', 'Movie'), ('TV episode', 'TV')]),
+        "Year": Attribute("Year",
+                          "metadata__imdb__release_year",
+                          "slider",
+                          lambda: IMDBMetadata.objects.aggregate(min=Min('release_year'),
+                                                                 max=Max('release_year'))),
+        "Rating": Attribute("Rating",
                             "metadata__imdb__rating",
                             "slider",
                             lambda: {'min':0, 'max':5})
-                  }
+    }
 
 
 #-----------------------------------------------------------------------------#
@@ -214,7 +213,8 @@ class IMDBMetadata(ContentMetadataSource):
         return "IMDB"
 
     imdb_id = models.CharField(max_length=255, null=True, blank=True)
-    imdb_canonical_title = models.CharField(max_length=1024, null=True, primary_key = True)
+    imdb_canonical_title = models.CharField(max_length=1024, null=True,
+                                            primary_key=True)
     release_date = models.DateTimeField(blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
     genres = models.ManyToManyField("Genre") # TODO - rename to genres
@@ -327,7 +327,6 @@ class ContentNode(models.Model):
 
     metadata = models.OneToOneField("ContentMetadata")
 
-
     #--------------------------------- Content Path --------------------------#
     #TODO (jslocum) Path needs to be an absolute path.
     path = models.FilePathField(path='venclave/content/',
@@ -372,4 +371,5 @@ class ContentNode(models.Model):
     @classmethod
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
-        return ('title', 'metadata__imdb__directors__name', 'metadata__imdb__actors__name')
+        return ('title', 'metadata__imdb__directors__name',
+                'metadata__imdb__actors__name')

@@ -106,7 +106,7 @@ def browse(request):
     form = request.GET
     query_string = form.get('q', '')
     full_query = words_to_query(query_string)
-    facet_attributes = ContentNode.attributes.all()
+    facet_attributes = ContentNode.attributes
     result = browse_and_update_vals(full_query, query_string)
     result.update({'attributes': facet_attributes,
                    'search_query': query_string})
@@ -124,7 +124,7 @@ def update_list(request):
         if ('reset' in facet) and facet['reset']:
             continue
         query = Q()
-        attribute = ContentNode.attributes.attributes[facet['name']]
+        attribute = ContentNode.attrs_by_name[facet['name']]
         type = attribute.facet_type
         if type == 'slider':
             lo = facet['lo']
@@ -191,6 +191,5 @@ def upload(request):
 
 def detail(request, id):
     node = get_object_or_404(ContentNode, pk=id)
-    print node.kind
     return render_to_response('venclave/detail.html',
                               {'node': node})

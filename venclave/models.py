@@ -31,52 +31,81 @@ class Tag(models.Model):
         ordering = ('name',)
 
 
-class AttributesManager(models.Manager):
+class Facet(object):
 
-    def all(self):
-        return [self.attributes[a] for a in self.attribute_order]
+    name = None
+    path = None # string specifying field in querysets relative to ContentNode
+    facet_type = None
 
-    class Attribute(object):
+    @classmethod
+    def get_choices(cls):
+        raise NotImplementedError
 
-        def __init__(self, name, path, facet_type, get_choices):
-            self.name = name
-            self.path = path # string specifying field in querysets
-                             # relative to ContentNode
-            self.facet_type = facet_type
-            self.get_choices = get_choices
 
-    attribute_order = ('Type', 'Genre', 'Rating', 'Year', 'Director')
+class GenreFacet(Facet):
 
-    attributes = {
-        "Genre": Attribute("Genre",
-                           "metadata__imdb__genres__name",
-                           "checkbox",
-                           lambda: [(g.name,g.name) for g in Genre.objects.order_by('name')]),
-        "Actor": Attribute("Actor",
-                           "metadata__imdb__actors__name",
-                           "searchbar",
-                           lambda: Actor.objects.order_by('name')),
-        "Director": Attribute("Director",
-                              "metadata__imdb__directors__name",
-                              "searchbar",
-                              lambda: Director.objects.order_by('name')),
-        "Type": Attribute("Type",
-                          "kind",
-                          "checkbox",
-                          lambda: [('movie', 'Movie'), ('TV episode', 'TV')]),
-        "Year": Attribute("Year",
-                          "metadata__imdb__release_year",
-                          "slider",
-                          lambda: IMDBMetadata.objects.aggregate(min=Min('release_year'),
-                                                                 max=Max('release_year'))),
-        "Rating": Attribute("Rating",
-                            "metadata__imdb__rating",
-                            "slider",
-                            lambda: {'min':0, 'max':5})
-    }
+    name = "Genre"
+    path = "metadata__imdb__genres__name"
+    facet_type = "checkbox"
+
+    @classmethod
+    def get_choices(cls):
+        return [(g.name,g.name) for g in Genre.objects.order_by('name')]
+
+class ActorFacet(Facet):
+
+    name = "Actor"
+    path = "metadata__imdb__actors__name"
+    facet_type = "searchbar"
+    
+    @classmethod
+    def get_choices(cls):
+        return Actor.objects.order_by('name')
+
+class DirectorFacet(Facet):
+
+    name = "Director"
+    path = "metadata__imdb__directors__name"
+    facet_type = "searchbar"
+    
+    @classmethod
+    def get_choices(cls):
+        return Director.objects.order_by('name')
+
+class TypeFacet(Facet):
+
+    name = "Type"
+    path = "kind"
+    facet_type = "checkbox"
+    
+    @classmethod
+    def get_choices(cls):
+        return ContentNode.KIND_CHOICES
+
+class YearFacet(Facet):
+
+    name = "Year"
+    path = "metadata__imdb__release_year"
+    facet_type = "slider"
+
+    @classmethod
+    def get_choices(cls):
+        return IMDBMetadata.objects.aggregate(min=Min('release_year'),
+                                              max=Max('release_year'))
+
+class RatingFacet(Facet):
+
+    name = "Rating"
+    path = "metadata__imdb__rating"
+    facet_type = "slider"
+    
+    @classmethod
+    def get_choices(cls):
+        return {'min':0, 'max':5}
 
 
 class Director(models.Model):
+
     name = models.TextField(primary_key=True)
 
     def __unicode__(self):
@@ -209,17 +238,18 @@ class ContentNode(models.Model):
     owner = models.ForeignKey('auth.User')
 
     objects = models.Manager()
-    attributes = AttributesManager()
+    attributes = (TypeFacet, GenreFacet, RatingFacet, YearFacet, DirectorFacet)
+    attrs_by_name = dict((f.name, f) for f in attributes)
 
     def __unicode__(self): return self.compact_name()
 
-    KIND_CHOICES = ((KIND_MOVIE, 'movie'),
+    KIND_CHOICES = ((KIND_MOVIE, 'Movie'),
                     (KIND_TV, 'TV episode'),
                     (KIND_SERIES, 'TV series'),
                     (KIND_SEASON, 'TV season'),
-                    (KIND_TRAILER, 'trailer'),
-                    (KIND_RANDOMCLIP, 'random clip'),
-                    (KIND_UNKNOWN, 'unknown'))
+                    (KIND_TRAILER, 'Trailer'),
+                    (KIND_RANDOMCLIP, 'Random clip'),
+                    (KIND_UNKNOWN, 'Unknown'))
 
     kind = models.CharField(default=KIND_UNKNOWN,
                             max_length=2,
@@ -235,7 +265,7 @@ class ContentNode(models.Model):
         return self.title
 
     def compact_name(self):
-        if self.kind == 'tv':
+        if self.kind == KIND_TV:
             return "%s S%2dE%2d" % (self.title, self.season, self.episode)
         return self.title
 
@@ -253,9 +283,6 @@ class ContentNode(models.Model):
                                 self.compact_name())
         else:
             return self.compact_name()
-
-    def get_template(self):
-        return 'list_items/kind_%s.html' % self.kind
 
     parent = models.ForeignKey("self", related_name="children",
                                blank=True, null=True)

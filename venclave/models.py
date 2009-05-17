@@ -36,7 +36,7 @@ class Tag(models.Model):
 class TreeManager(models.Manager):
 
     def root_nodes(self):
-        return super(TreeManager, self).get_query_set().filter(parent__isnull=True)        
+        return super(TreeManager, self).get_query_set().filter(parent__isnull=True)
 
     def leaf_nodes(self):
         return super(TreeManager, self).get_query_set().filter(
@@ -85,12 +85,12 @@ class TreeManager(models.Manager):
         children = node.children.all()
         return [node, [self.expand(child) for child in children]]
 
-    # Warning! Returns a list of trees, not a query 
+    # Warning! Returns a list of trees, not a query
     def all(self):
         roots = self.root_nodes()
         return [self.expand(node) for node in roots]
 
-    # Warning! Returns a list of trees, not a query 
+    # Warning! Returns a list of trees, not a query
     def filter(self, *args, **kwargs):
         order_by = None
         if 'order_by' in kwargs:
@@ -116,17 +116,17 @@ class AttributesManager(models.Manager):
 
     attribute_order = ('Type', 'Genre', 'Rating', 'Year', 'Director')
 
-    attributes = {"Genre": 
+    attributes = {"Genre":
                   Attribute("Genre",
                             "metadata__imdb__genres__name",
                             "checkbox",
                             lambda: [(g.name,g.name) for g in Genre.objects.order_by('name')]),
-                  "Actor": 
+                  "Actor":
                   Attribute("Actor",
                             "metadata__imdb__actors__name",
                             "searchbar",
                             lambda: Actor.objects.order_by('name')),
-                  "Director": 
+                  "Director":
                   Attribute("Director",
                             "metadata__imdb__directors__name",
                             "searchbar",
@@ -136,7 +136,7 @@ class AttributesManager(models.Manager):
                              "kind",
                              "checkbox",
                              lambda: [('movie', 'Movie'), ('TV episode', 'TV')]),
-                  "Year": 
+                  "Year":
                   Attribute("Year",
                             "metadata__imdb__release_year",
                             "slider",
@@ -257,7 +257,7 @@ class ManualMetadata(ContentMetadataSource):
     description = models.TextField()
 
 class VideoFile(models.Model):
-    
+
     file = models.FileField(upload_to='venclave/content')
     parent = models.ForeignKey('ContentNode')
 
@@ -373,4 +373,3 @@ class ContentNode(models.Model):
     def searchable_fields(cls):
         # TODO(rnk): Expand this to include the rest of the metadata.
         return ('title', 'metadata__imdb__directors__name', 'metadata__imdb__actors__name')
-

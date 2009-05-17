@@ -13,7 +13,7 @@ venclave.filter = {
     update: function() {
         var state = $.toJSON(this.get_state());
         var query = $('.search_query')[0].value;
-        $.post('/video/update_list/', 
+        $.post('/video/update_list/',
                {'f':state, 'q':query},
                function(data) {
                    $('#video-list > tbody.list-body').html(data.videolist);
@@ -70,7 +70,7 @@ venclave.filter = {
 venclave.filter.checkbox.prototype.get_state = function() {
     var op = $(this.div).find('.facet-options > input:checked').val();
     var selected = $(this.div).find('.facet-choices > input:checked');
-    selected = $.map(selected, function(e){return e.value;});        
+    selected = $.map(selected, function(e){return e.value;});
     return {name: this.name, op: op, selected: selected};
 };
 

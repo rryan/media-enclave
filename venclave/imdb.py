@@ -225,7 +225,7 @@ def parse_directors(filename):
                             # eat the "----\t+------" line
                             f.next()
                         continue
-                    
+
                     #add directr's name to list of directors
                     all_directors.add(director)
 
@@ -283,7 +283,7 @@ def parse_actors(filename):
                     actor = start_match.group('actor').strip()
                     title = start_match.group('title').strip()
                     titles = [title]
-                    
+
 
                     # HACK(rryan): There is noise at the beginning of
                     # the file which hits our filter. So I skip everything
@@ -294,7 +294,7 @@ def parse_actors(filename):
                             # eat the "----\t+------" line
                             f.next()
                         continue
-                    
+
                     #print actor + '\n\n\n\n\n\n\n' + title + '\n\n\n\n\n\n\n*******************************'
                     #add actor's name to actor list
                     all_actors.add(actor)
@@ -478,7 +478,7 @@ def parse_ratings(filename):
                 title = match.group('title').strip()
                 rating = match.group('rating')
                 ratings_index[title] = rating
-            
+
 
 
 #     pick = open(filename + '.pickle','wr')
@@ -486,7 +486,7 @@ def parse_ratings(filename):
     return ratings_index
 
 
-#This is just quick thing I whipped up to match running times. It doesn't work 
+#This is just quick thing I whipped up to match running times. It doesn't work
 #for TV shows, but it seems to work for movies.
 
 
@@ -520,7 +520,7 @@ def parse_runnings(filename):
                     title = match.group('title').strip()
                     time = match.group('time')
                     ratings_index[title] = time
-            
+
 
 
 #     pick = open(filename + '.pickle','wr')
@@ -544,18 +544,18 @@ def create_imdb_database_pickles(imdb_path):
 
     movies = parse_movies(movies_file)
     ratings = parse_ratings(ratings_file)
-    
 
-    #parse_directors, actors and genres all return a duple containting a 
+
+    #parse_directors, actors and genres all return a duple containting a
     #title->field dictionary, and a list of all field values (i.e. all actors)
     directors = parse_directors(directors_file)
     field_lists['directors'] = directors[1]
     directors = directors[0]
-    
+
     actors = parse_actors(actors_file)
     field_lists['actors'] = actors[1]
     actors = actors[0]
-    
+
     actresses = parse_actors(actresses_file)
     field_lists['actresses'] = actresses[1]
     actresses = actresses[0]
@@ -563,7 +563,7 @@ def create_imdb_database_pickles(imdb_path):
     genres = parse_genres(genres_file)
     field_lists['genres'] = genres[1]
     genres = genres[0]
-    
+
     plots = parse_plots(plots_file)
 
     titles = []
@@ -617,11 +617,11 @@ def create_imdb_database_pickles(imdb_path):
   #   imdb = {'titles': titles,
 #             'index': title_index,
 #             'lists': field_lists}
-    
+
 #     pic = os.open(imdb_path + "pickled_IMDB", 'wr');
 #     cPickle.dump(imdb, pic)
 #     print "Successfully loaded IMDB text files!"
-    
+
 #    return imdb
 
 
@@ -639,18 +639,18 @@ def load_imdb_database(imdb_path):
 
     movies = parse_movies(movies_file)
     ratings = parse_ratings(ratings_file)
-    
 
-    #parse_directors, actors and genres all return a duple containting a 
+
+    #parse_directors, actors and genres all return a duple containting a
     #title->field dictionary, and a list of all field values (i.e. all actors)
     directors = parse_directors(directors_file)
     field_lists['directors'] = directors[1]
     directors = directors[0]
-    
+
     actors = parse_actors(actors_file)
     field_lists['actors'] = actors[1]
     actors = actors[0]
-    
+
     actresses = parse_actors(actresses_file)
     field_lists['actresses'] = actresses[1]
     actresses = actresses[0]
@@ -658,7 +658,7 @@ def load_imdb_database(imdb_path):
     genres = parse_genres(genres_file)
     field_lists['genres'] = genres[1]
     genres = genres[0]
-    
+
     plots = parse_plots(plots_file)
 
     titles = []
@@ -706,11 +706,11 @@ def load_imdb_database(imdb_path):
     imdb = {'titles': titles,
             'index': title_index,
             'lists': field_lists}
-    
+
     #pic = os.open(imdb_path + "pickled_IMDB", 'wr');
     #cPickle.dump(imdb, pic)
     print "Successfully loaded IMDB text files!"
-    
+
     return imdb
 
 def update_imdb_metadata(imdb_path):
@@ -800,9 +800,9 @@ def find_content_title(content, imdb):
     return found['title']
 
 def update_imdb_node(node, imdb):
-    
+
     canonical_title = node.imdb_canonical_title
-    
+
     title_dict = imdb['index'].get(canonical_title, None)
     parse = title_dict['title_parse']
 
@@ -858,7 +858,7 @@ def create_movie_nodes(imdb_path):
     movies_file = "%s/movies.list" % imdb_path
     ratings_file = "%s/ratings.list" % imdb_path
     plots_file = "%s/plot.list" % imdb_path
-    
+
 
     titles = parse_movies(movies_file)
     plots = parse_plots(plots_file)
@@ -895,7 +895,7 @@ def create_movie_nodes(imdb_path):
 
 def create_genre_nodes(imdb_path):
     genres_file = "%s/genres.list" % imdb_path
-    
+
     genes = parse_genres(genres_file)
     genres = genes[1]
     for genre in genres:
@@ -918,7 +918,7 @@ def create_genre_nodes(imdb_path):
 
 def create_director_nodes(imdb_path):
     directors_file = "%s/directors.list" % imdb_path
-    
+
 
     directs = parse_directors(directors_file)
     directors = directs[1]
@@ -931,7 +931,7 @@ def create_director_nodes(imdb_path):
 #         dnode = models.Director(name = director)
 #         dnode.save()
 #         #print "created director:" + director
-        
+
     director_dict = directs[0]
     i=0
     for key in director_dict.keys():
@@ -966,7 +966,7 @@ def create_actor_nodes(imdb_path):
 #         dnode = models.Actor(name = actor)
 #         dnode.save()
 #         #print "created actor:" + actor
-    
+
 
     actor_dict = acts[0]
     i=0
@@ -988,7 +988,7 @@ def create_actor_nodes(imdb_path):
 
 def create_actress_nodes(imdb_path):
     actresses_file = "%s/actresses.list" % imdb_path
-    
+
     actressi = parse_actors(actresses_file)
 #     actresses = actressi[1]
 #     print 'creating ' + str(len(actresses)) + ' actress nodes'
@@ -1000,7 +1000,7 @@ def create_actress_nodes(imdb_path):
 #         dnode = models.Actor(name = actress)
 #         dnode.save()
 #         #print "created actress:" + actress
-                
+
     i=0
     actor_dict = actressi[0]
     print len(actor_dict.keys())
@@ -1076,7 +1076,7 @@ def create_imdb_nodes(imdb_path):
         meta.save()
         print "made movie node for movie" + title
 
-        
+
 
 
 #this is just a ginormous hack. If you use this for real, you are dumb
@@ -1095,7 +1095,7 @@ def amnesia_import(path, imdb_path):
             if name in movie:
                 movies.append(name)
                 break
-    
+
     print "Done getting names"
 
     titles = movies
@@ -1137,7 +1137,7 @@ def amnesia_import(path, imdb_path):
             except ValueError:
                 print "running failed for: " + running + "  " + title
 
-        
+
         meta.save()
 
 
@@ -1151,7 +1151,7 @@ def make_content_nodes(user):
         name = name[0:-6].strip()
         content = models.ContentNode(owner = user, metadata=met,downloads=0,title=name, kind='movie')
         content.save()
-        
+
 
 
 

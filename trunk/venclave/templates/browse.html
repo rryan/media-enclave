@@ -1,17 +1,20 @@
 {% extends "venclave/base.html" %}
 
+{% load venclave_tags %}
+{% load bundler_tags %}
+
 {% block styles %}
-{{ block.super }}
-      <link rel="stylesheet" type="text/css" href="{% url venclave-styles "jquery-ui-1.7.1.custom.css" %}"/>
-      <link rel="stylesheet" type="text/css" href="{% url venclave-styles "browse.css" %}"/>
+  {{ block.super }}
+  {% css "venclave-styles" "jquery-ui-1.7.1.custom.css" %}
+  {% css "venclave-styles" "browse.css" %}
 {% endblock %}
 
 {% block scripts %}
-{{ block.super }}
-      <script type="text/javascript" src="{% url venclave-scripts "jquery.json-1.3.min.js" %}"></script>
-      <script type="text/javascript" src="{% url venclave-scripts "jquery-ui-1.7.1.custom.min.js" %}"></script>
-      <script type="text/javascript" src="{% url venclave-scripts "filter.js" %}"></script>
-      <script type="text/javascript" src="{% url venclave-scripts "video-list.js" %}"></script>
+  {{ block.super }}
+  {% javascript "venclave-scripts" "jquery.json-1.3.min.js" %}
+  {% javascript "venclave-scripts" "jquery-ui-1.7.1.custom.min.js" %}
+  {% javascript "venclave-scripts" "filter.js" %}
+  {% javascript "venclave-scripts" "video-list.js" %}
 {% endblock scripts %}
 
 {% block browse-image %}
@@ -24,37 +27,32 @@
     {{banner_msg|safe}}
   </div>
 
-<table id="browse">
-  <tr>
-    <td class="facet-container">
-      {% include "facetlist_base.html" %}
-    </td>
-    <td class="list-container">
-      <table id="video-list" cellspacing="0" cellpadding="0">
-        <thead>
-          <tr>
-            <th class="item-icon"></th>
-            <th class="item-arrow"></th>
-            <th class="item-title">
-              title
-            </th>
-            <th class="item-length">
-              length
-            </th>
-            <th class="item-release">
-              year
-            </th>
-            <th class="item-rating">
-              rating
-            </th>
-          </tr>
-        </thead>
-        <tbody class="list-body">
-          {{ videolist|safe }}
-        </tbody>
-      </table>
-    </td>
-  </tr>
-</table>
+  <table id="browse">
+    <tr>
+      <td class="facet-container">
+        <div id="facet-list">
+          {% for attribute in attributes %}
+            {% facet attribute %}
+          {% endfor %}
+        </div>
+      </td>
+      <td class="list-container">
+        <table id="video-list" cellspacing="0" cellpadding="0">
+          <thead>
+            <tr>
+              <th class="item-icon"></th>
+              <th class="item-arrow"></th>
+              <th class="item-title">title</th>
+              <th class="item-length">length</th>
+              <th class="item-release">year</th>
+              <th class="item-rating">rating</th>
+            </tr>
+          </thead>
+          <tbody class="list-body">
+            {{ videolist|safe }}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
 {% endblock %}
-

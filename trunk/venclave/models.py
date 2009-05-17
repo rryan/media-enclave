@@ -254,6 +254,9 @@ class ContentNode(models.Model):
         else:
             return self.compact_name()
 
+    def get_template(self):
+        return 'list_items/kind_%s.html' % self.kind
+
     parent = models.ForeignKey("self", related_name="children",
                                blank=True, null=True)
 

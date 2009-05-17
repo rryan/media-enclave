@@ -1,22 +1,20 @@
 # venclave/views.py
 import cjson
 import cgi
-from datetime import datetime
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django import forms
 from django.contrib.auth import forms as auth_forms
 from django.utils.translation import ugettext_lazy as _  # For the auth form.
-from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template.loader import get_template, select_template
+from django.template.loader import select_template
 from django.template import Context, RequestContext
 
 
-from menclave.venclave.models import ContentNode, Director, Genre
+from menclave.venclave.models import ContentNode
 
 class VenclaveUserCreationForm(auth_forms.UserCreationForm):
 
@@ -66,51 +64,56 @@ def home(request):
                               {'reg_form': reg_form})
 
 
-# TODO(skyewm): combine browse and update_list
+def words_to_query(query_string):
+    """Given a string of words, returns a query for matching each word."""
+    full_query = Q()
+    query_words = query_string.split()
+    for word in query_words:
+        word_query = Q()
+        for field in ContentNode.searchable_fields():
+            # Each word may appear in any field, so we use OR here.
+            word_query |= Qu(field, 'icontains', word)
+        # Each match must contain every word, so we use AND here.
+        full_query &= word_query
+    return full_query
+
+
+def browse_and_update_vals(query, query_string):
+    """Compute values common to browse and update_list.
+
+    Returns a dict containing objects useful for browse and update_list.
+    """
+    trees = ContentNode.trees.filter(query)
+    video_list = create_video_list(trees)
+    video_count = ContentNode.trees.leaf_nodes().count()
+    results_count = sum(len(ContentNode.trees.fringe(tree)) for tree in trees)
+    return {
+        'list': video_list,
+        'video_count': video_count,
+        'results_count': results_count,
+        'banner_msg': banner_msg(video_count, results_count, query_string),
+    }
+
+
 @login_required
 def browse(request):
     # Process search query
     form = request.GET
     query_string = form.get('q', '')
-    query_words = query_string.split()
-    full_query = Q()
-    for word in query_words:
-        word_query = Q()
-        for field in ContentNode.searchable_fields():
-            # WTF Each word may appear in any field, so we use OR here.
-            word_query |= Qu(field, 'icontains', word)
-        # WTF Each match must contain every word, so we use AND here.
-        full_query &= word_query
-    trees = ContentNode.trees.filter(full_query)
+    full_query = words_to_query(query_string)
     facet_attributes = ContentNode.attributes.all()
-    video_count = ContentNode.trees.leaf_nodes().count()
-    results_count = reduce(lambda x,y: x+y,
-                           [len(ContentNode.trees.fringe(tree)) for tree in trees],
-                           0)
-    return render_to_response('venclave/browse.html',
-                              {'attributes': facet_attributes,
-                               'list': create_video_list(trees),
-                               'search_query': query_string,
-                               'banner_msg': banner_msg(video_count, results_count, query_string)},
+    result = browse_and_update_vals(full_query, query_string)
+    result.update({'attributes': facet_attributes,
+                   'search_query': query_string})
+    return render_to_response('venclave/browse.html', result,
                               context_instance=RequestContext(request))
+
 
 @login_required
 def update_list(request):
     facets = cjson.decode(request.POST['f'])
-    full_query = Q()
-    query = Q()
-    query_string = None
-    if request.POST['q']:
-        query_string = request.POST['q']
-        query_words = query_string.split()
-        for word in query_words:
-            word_query = Q()
-            for field in ContentNode.searchable_fields():
-                # WTF Each word may appear in any field, so we use OR here.
-                word_query |= Qu(field, 'icontains', word)
-                # WTF Each match must contain every word, so we use AND here.
-            query &= word_query
-    full_query &= query
+    query_string = request.POST.get('q', '')
+    full_query = words_to_query(query_string)
     for facet in facets:
         # Don't apply this filter on reset
         if ('reset' in facet) and facet['reset']:
@@ -133,14 +136,12 @@ def update_list(request):
                 else:
                     raise ValueError, "op must be 'or' or 'and'"
         full_query &= query
-    trees = ContentNode.trees.filter(full_query)
-    video_count = ContentNode.trees.leaf_nodes().count()
-    results_count = reduce(lambda x,y: x+y,
-                           [len(ContentNode.trees.fringe(tree)) for tree in trees],
-                           0)
-    return HttpResponse(cjson.encode({
-                'videolist': create_video_list(trees),
-                'banner_msg': banner_msg(video_count, results_count, query_string)}))
+    result = browse_and_update_vals(full_query, query_string)
+    # TODO(rnk): Make these use the same name.
+    result['videolist'] = result['list']
+    del result['list']
+    return HttpResponse(cjson.encode(result))
+
 
 def create_video_list(trees):
     html = ''.join(create_video_list_lp(trees))

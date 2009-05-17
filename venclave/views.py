@@ -93,7 +93,7 @@ def browse_and_update_vals(query, query_string):
     video_count = ContentNode.objects.all().count()
     results_count = nodes.count()
     return {
-        'list': video_list,
+        'videolist': video_list,
         'video_count': video_count,
         'results_count': results_count,
         'banner_msg': banner_msg(video_count, results_count, query_string),
@@ -142,9 +142,6 @@ def update_list(request):
                     raise ValueError, "op must be 'or' or 'and'"
         full_query &= query
     result = browse_and_update_vals(full_query, query_string)
-    # TODO(rnk): Make these use the same name.
-    result['videolist'] = result['list']
-    del result['list']
     return HttpResponse(cjson.encode(result))
 
 
@@ -154,10 +151,14 @@ def create_video_list(nodes):
 
 
 def create_video_list_lp(nodes):
+    kind_to_tmpl = {}
+    for kind, _ in ContentNode.KIND_CHOICES:
+        t = select_template(['list_items/kind_%s.html' % kind,
+                             'list_items/default.html'])
+        kind_to_tmpl[kind] = t
     html_parts = []
     for node in nodes:
-        t = select_template(['list_items/kind_%s.html' % node.kind,
-                             'list_items/default.html'])
+        t = kind_to_tmpl[node.kind]
         c = Context({'node': node})
         html_parts.append(t.render(c))
     return html_parts

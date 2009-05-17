@@ -1,6 +1,8 @@
 # venclave/views.py
+
 import cjson
 import cgi
+
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django import forms
@@ -13,8 +15,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import select_template
 from django.template import Context, RequestContext
 
-
 from menclave.venclave.models import ContentNode
+
 
 class VenclaveUserCreationForm(auth_forms.UserCreationForm):
 
@@ -34,8 +36,10 @@ class VenclaveUserCreationForm(auth_forms.UserCreationForm):
     password2 = forms.CharField(label=_("retype password"),
                                 widget=forms.PasswordInput)
 
+
 def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): value})
+
 
 def home(request):
     if request.user.is_authenticated():
@@ -147,6 +151,7 @@ def create_video_list(trees):
     html = ''.join(create_video_list_lp(trees))
     return html
 
+
 def create_video_list_lp(trees):
     html_parts = []
     for node, children in trees:
@@ -166,6 +171,7 @@ def create_video_list_lp(trees):
                               '</tr>')
     return html_parts
 
+
 def banner_msg(video_count, results_count, search_string):
     msg = ''
     if video_count != results_count:
@@ -175,6 +181,7 @@ def banner_msg(video_count, results_count, search_string):
         msg += ' for "%s"' % cgi.escape(search_string)
     return msg
 
+
 @login_required
 def get_pane(request):
     id = request.GET['id']
@@ -183,10 +190,12 @@ def get_pane(request):
                          'venclave/panes/default.html'])
     return HttpResponse(t.render(Context({'node': node})))
 
+
 @login_required
 def upload(request):
     return render_to_response('venclave/upload.html',
                               context_instance=RequestContext(request))
+
 
 def detail(request, id):
     node = get_object_or_404(ContentNode, pk=id)

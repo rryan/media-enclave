@@ -420,7 +420,7 @@ def parse_title(title):
         # if it has series, then it is a tv episode or tv series
         elif title['series']:
             # if it has an episode and season, then it is a tv episode
-            if not title['episode'] is None and not title['season'] is None:
+            if title['episode'] is not None and title['season'] is not None:
                 kind = models.KIND_TV
             else: # otherwise it is probably a series
                 kind = models.KIND_SERIES
@@ -717,7 +717,7 @@ def update_imdb_metadata(imdb_path):
 
     imdb = load_imdb_database(imdb_path)
 
-    contents = IMDBNode.objects.all()
+    contents = models.IMDBMetadata.objects.all()
 
     for content in contents:
         update_IMDB_nodes(content, imdb)
@@ -1149,7 +1149,8 @@ def make_content_nodes(user):
         name = x.imdb_canonical_title.strip()
         # todo: fix for tv shows
         name = name[0:-6].strip()
-        content = models.ContentNode(owner = user, metadata=met,downloads=0,title=name, kind='movie')
+        content = models.ContentNode(owner=user, metadata=met, downloads=0,
+                                     title=name, kind='movie')
         content.save()
 
 

@@ -106,21 +106,23 @@ class RatingFacet(Facet):
 
 class Director(models.Model):
 
-    name = models.TextField(primary_key=True)
+    name = models.CharField(max_length=255, primary_key=True)
 
     def __unicode__(self):
         return self.name
 
 
 class Actor(models.Model):
-    name = models.TextField(primary_key=True)
+
+    name = models.CharField(max_length=255, primary_key=True)
 
     def __unicode__(self):
         return self.name
 
 
 class Genre(models.Model):
-    name = models.TextField(primary_key=True)
+
+    name = models.CharField(max_length=255, primary_key=True)
 
     def __unicode__(self):
         return self.name
@@ -164,7 +166,7 @@ class IMDBMetadata(ContentMetadataSource):
         return "IMDB"
 
     imdb_id = models.CharField(max_length=255, null=True, blank=True)
-    imdb_canonical_title = models.CharField(max_length=1024, null=True,
+    imdb_canonical_title = models.CharField(max_length=255, null=True,
                                             primary_key=True)
     release_date = models.DateTimeField(blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
@@ -255,7 +257,7 @@ class ContentNode(models.Model):
                             max_length=2,
                             choices=KIND_CHOICES)
 
-    title = models.CharField(max_length=1024)
+    title = models.CharField(max_length=255)
 
     # only applicable for kind=='tv', null if not applicable
     season = models.IntegerField(blank=True, null=True)
@@ -265,8 +267,8 @@ class ContentNode(models.Model):
         return self.title
 
     def compact_name(self):
-        if self.kind == KIND_TV:
-            return "%s S%2dE%2d" % (self.title, self.season, self.episode)
+        #if self.kind == KIND_TV:
+            #return "%s S%2dE%2d" % (self.title, self.season, self.episode)
         return self.title
 
     def full_name(self):

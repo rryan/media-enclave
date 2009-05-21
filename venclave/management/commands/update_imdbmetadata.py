@@ -28,4 +28,5 @@ class Command(BaseCommand):
                                "set IMDB_PATH in settings.py or pass it on "
                                "the command line.")
         titles = [node.title for node in ContentNode.objects.all()]
-        imdb.amnesia_import(titles, imdb_path)
+        #imdb.amnesia_import(titles, imdb_path)
+        imdb.create_imdb_nodes(imdb_path)

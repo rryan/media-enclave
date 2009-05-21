@@ -26,7 +26,7 @@ def listdir(dirpath):
 
 class Command(BaseCommand):
 
-    """Bundles your media as specified in settings.py."""
+    """Updates and creates ContentNodes."""
 
     def handle(self, *args, **options):
         if args:
@@ -40,7 +40,7 @@ class Command(BaseCommand):
                                "the command line.")
         # TODO(rnk): Maybe have a default user setting and an option to
         # override?
-        self.owner = User.objects.all()[0]
+        self.owner = User.objects.all()[:1][0]
         # Clear all existing content nodes.
         # TODO(rnk): Later, we'll want to run this while we're online, so we
         # should get or create content nodes instead of just creating.

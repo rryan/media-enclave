@@ -647,13 +647,14 @@ def load_imdb_database(imdb_path):
     field_lists['directors'] = directors[1]
     directors = directors[0]
 
-    actors = parse_actors(actors_file)
-    field_lists['actors'] = actors[1]
-    actors = actors[0]
+    # TODO(rnk): These take too much memory.
+    #actors = parse_actors(actors_file)
+    #field_lists['actors'] = actors[1]
+    #actors = actors[0]
 
-    actresses = parse_actors(actresses_file)
-    field_lists['actresses'] = actresses[1]
-    actresses = actresses[0]
+    #actresses = parse_actors(actresses_file)
+    #field_lists['actresses'] = actresses[1]
+    #actresses = actresses[0]
 
     genres = parse_genres(genres_file)
     field_lists['genres'] = genres[1]
@@ -687,13 +688,14 @@ def load_imdb_database(imdb_path):
         if not directors_list is None:
             title_dict['directors'] = directors_list
 
-        actors_list = actors.get(title,None)
-        if not actors_list is None:
-            title_dict['actors'] = actors_list
+        # TODO(rnk): These take too much memory.
+        #actors_list = actors.get(title,None)
+        #if not actors_list is None:
+            #title_dict['actors'] = actors_list
 
-        actresses_list = actresses.get(title, None)
-        if not actresses_list is None:
-            title_dict['actresses'] = actresses_list
+        #actresses_list = actresses.get(title, None)
+        #if not actresses_list is None:
+            #title_dict['actresses'] = actresses_list
 
         title_dict['title'] = title
         title_dict['title_parse'] = parse_title(title)
@@ -1023,37 +1025,46 @@ def create_actress_nodes(imdb_path):
 
 
 def create_imdb_nodes(imdb_path):
+    print 'loading db...'
     imdb = load_imdb_database(imdb_path)
+    print 'done.'
 
-    print 'creating genre nodes'
+    print 'creating genre nodes...'
     for genre in imdb['lists']['genres']:
-        gnode = models.Genre(name = genre)
+        gnode = models.Genre(name=genre)
         gnode.save()
-        #print "created genre:" + genre
+    print 'done.'
 
-    print 'creating ' + str(len(imdb['lists']['directors'])) + ' director nodes'
+    num = len(imdb['lists']['directors'])
+    print ('creating %d director nodes...' % num)
+    i = 0
     for director in imdb['lists']['directors']:
-        dnode = models.Director(name = director)
+        i += 1
+        if i % 2500 == 0:
+            print i
+        dnode = models.Director(name=director)
         dnode.save()
         #print "created director:" + director
+    print 'done.'
 
-    print 'creating ' + str(len(imdb['lists']['actors'])) + ' actor nodes'
-    for actor in imdb['lists']['actors']:
-        anode = models.Actor(name = actor)
-        anode.save()
-        #print "created actor:" + actor
+    # TODO(rnk): These take too much memory.
+    #print 'creating ' + str(len(imdb['lists']['actors'])) + ' actor nodes'
+    #for actor in imdb['lists']['actors']:
+        #anode = models.Actor(name = actor)
+        #anode.save()
+        ##print "created actor:" + actor
 
-    print 'creating ' + str(len(imdb['lists']['actresses'])) + ' actress nodes'
-    for actress in imdb['lists']['actresses']:
-        asnode = models.Actor(name = actress)
-        asnode.save()
-        #print "created actress:" + actress
+    #print 'creating ' + str(len(imdb['lists']['actresses'])) + ' actress nodes'
+    #for actress in imdb['lists']['actresses']:
+        #asnode = models.Actor(name=actress)
+        #asnode.save()
+        ##print "created actress:" + actress
 
 
     for title in imdb['index'].keys():
         movie_data = imdb['index'][title]
         #TODO: add other fields
-        meta = models.IMDBMetadata(imdb_canonical_title = title)
+        meta = models.IMDBMetadata(imdb_canonical_title=title)
         if 'plots' in movie_data.keys():
             meta.plot_summary = movie_data['plots'][0]['plot']
         if 'title_parse' in movie_data.keys():
@@ -1069,9 +1080,10 @@ def create_imdb_nodes(imdb_path):
         for director in directors:
             meta.genres.add(list(models.Director.objects.filter(name__iexact=director))[0])
 
-        actors = movie_data['actors'].append(movie_data['actresses'])
-        for actor in actorss:
-            meta.actors.add(list(models.Actor.objects.filter(name__iexact=actor))[0])
+        # TODO(rnk): These take too much memory.
+        #actors = movie_data['actors'].append(movie_data['actresses'])
+        #for actor in actors:
+            #meta.actors.add(list(models.Actor.objects.filter(name__iexact=actor))[0])
 
         meta.save()
         print "made movie node for movie" + title

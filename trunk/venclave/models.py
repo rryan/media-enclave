@@ -161,6 +161,10 @@ class IMDBMetadata(ContentMetadataSource):
     IMDB sourced metadata
     """
 
+    def __unicode__(self):
+        return ("<IMDBMetadata: imdb_canonical_title=%s>" %
+                self.imdb_canonical_title)
+
     @classmethod
     def source_name(cls):
         return "IMDB"

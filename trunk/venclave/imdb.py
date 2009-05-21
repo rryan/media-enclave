@@ -1080,36 +1080,26 @@ def create_imdb_nodes(imdb_path):
 
 
 #this is just a ginormous hack. If you use this for real, you are dumb
-def amnesia_import(path, imdb_path):
+def amnesia_import(titles, imdb_path):
     movies_file = "%s/movies.list" % imdb_path
     ratings_file = "%s/ratings.list" % imdb_path
     plots_file = "%s/plot.list" % imdb_path
     runnings_file = "%s/running-times.list" % imdb_path
 
-    movie_list = parse_movies(movies_file)
-    movies = []
-    amnesia = open(path)
-    for line in amnesia:
-        name = line[0:len(line)-7].strip()
-        for movie in movie_list:
-            if name in movie:
-                movies.append(name)
-                break
-
-    print "Done getting names"
-
-    titles = movies
+    #movie_list = parse_movies(movies_file)
     plots = parse_plots(plots_file)
     ratings = parse_ratings(ratings_file)
     runnings = parse_runnings(runnings_file)
-    i=0
+
+    i = 0
     for title in titles:
-        i+=1
-        if i%25==0:
+        i += 1
+        if i % 25==0:
             print i
+
         title_parse = parse_title(title)
         #print 'movie: ' + title
-        meta = models.IMDBMetadata(imdb_canonical_title = title)
+        meta = models.IMDBMetadata(imdb_canonical_title=title)
         meta.save()
         if not title_parse is None:
             if not title_parse['year'] is None:
@@ -1118,27 +1108,32 @@ def amnesia_import(path, imdb_path):
                 except ValueError:
                     foo=1
 
-        plots_list = plots.get(title,None)
+        plots_list = plots.get(title, None)
         if not plots_list is None:
             if len(plots_list)>0:
                 meta.plot_summary=plots_list[0]['plot']
 
-        rating = ratings.get(title,None)
+        rating = ratings.get(title, None)
         if not rating is None:
             try:
-                meta.rating = float(rating)
+                meta.rating = float(rating) / 2
             except ValueError:
                 print "rating failed for: " + rating + "  " + title
 
-        running = runnings.get(title,None)
+        running = runnings.get(title, None)
         if not running is None:
             try:
                 meta.length = float(running)
             except ValueError:
                 print "running failed for: " + running + "  " + title
 
-
+        print meta
         meta.save()
+
+        nodes = models.ContentNode.objects.filter(title=title)
+        for node in nodes:
+            node.metadata.imdb = meta
+            node.metadata.save()
 
 
 #makes a content node for every IMDBMetadata instance, and gives it to the user
@@ -1150,11 +1145,22 @@ def make_content_nodes(user):
         # todo: fix for tv shows
         name = name[0:-6].strip()
         content = models.ContentNode(owner=user, metadata=met, downloads=0,
-                                     title=name, kind='movie')
+                                     title=name, kind=models.KIND_MOVIE)
         content.save()
 
 
+DB_FILES = (
+    'ratings.list',
+    'movies.list',
+    'genres.list',
+    'plot.list',
+    'directors.list',
+    'actors.list',
+    'actresses.list',
+    'running-times.list',
+)
 
+DB_URL = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/"
 
 
 

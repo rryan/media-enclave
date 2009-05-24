@@ -16,6 +16,7 @@ from django.template.loader import select_template
 from django.template import Context, RequestContext
 
 from menclave.venclave.models import ContentNode
+from menclave.venclave.templatetags import venclave_tags
 
 
 class VenclaveUserCreationForm(auth_forms.UserCreationForm):
@@ -131,7 +132,8 @@ def update_list(request):
             hi = facet['hi']
             query = Qu(attribute.path, 'range', (lo, hi))
         else:
-            kind = 'exact' if type == 'checkbox' else 'icontains'
+            #kind = 'exact' if type == 'checkbox' else 'icontains'
+            kind = 'contains'
             for value in facet['selected']:
                 subquery = Qu(attribute.path, kind, value)
                 if facet['op'] == "or":
@@ -150,17 +152,44 @@ def create_video_list(nodes):
     return html
 
 
+LIST_ITEM_TEMPLATE = """\
+<tr id1="%(id)s">
+  <td class="item-icon">
+    <img src="%(icon)s" alt="%(kind)s"/>
+  </td>
+  <td class="item-arrow">
+  </td>
+  <td class="item-title">
+    <a href="#" class="leaf"
+      onclick="return venclave.videolist.title_onclick(this)">%(title)s</a>
+  </td>
+  <td class="item-length">
+    %(length)s
+  </td>
+  <td class="item-release">
+    %(year)s
+  </td>
+  <td class="item-rating">
+    %(rating)s
+  </td>
+</tr>
+"""
+
+
 def create_video_list_lp(nodes):
-    kind_to_tmpl = {}
-    for kind, _ in ContentNode.KIND_CHOICES:
-        t = select_template(['list_items/kind_%s.html' % kind,
-                             'list_items/default.html'])
-        kind_to_tmpl[kind] = t
     html_parts = []
     for node in nodes:
-        t = kind_to_tmpl[node.kind]
-        c = Context({'node': node})
-        html_parts.append(t.render(c))
+        imdb = node.metadata.imdb
+        html_parts.append(LIST_ITEM_TEMPLATE % {
+            'id': node.id,
+            'icon': reverse("venclave-images",
+                            args=["%s_icon.png" % node.kind]),
+            'kind': node.kind,
+            'title': node.title,
+            'length': venclave_tags.mins_to_hours(imdb.length) or '-',
+            'year': imdb.release_year or '-',
+            'rating': venclave_tags.make_stars(imdb.rating) or '-',
+       })
     return html_parts
 
 

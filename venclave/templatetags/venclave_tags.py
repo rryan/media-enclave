@@ -29,7 +29,9 @@ def reverse_name(name):
 
 @register.simple_tag
 def make_stars(rating):
-    if rating >= 5.75:
+    if not rating:
+        return ""
+    if rating >= 4.75:
         url = reverse('venclave-images', args=['star_green_full.png'])
         return ('<img src="%s"/>' % url) * 5
     url = reverse('venclave-images', args=['star_yellow_full.png'])

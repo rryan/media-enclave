@@ -9,7 +9,6 @@ Run this command after downloading new IMDB metadata.
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
-from menclave.venclave.models import ContentNode
 from menclave.venclave import imdb
 
 
@@ -27,6 +26,4 @@ class Command(BaseCommand):
             raise CommandError("Unable to find path to video files.  Either "
                                "set IMDB_PATH in settings.py or pass it on "
                                "the command line.")
-        titles = [node.title for node in ContentNode.objects.all()]
-        #imdb.amnesia_import(titles, imdb_path)
-        imdb.create_imdb_nodes(imdb_path)
+        imdb.create_imdb_metadata(imdb_path)

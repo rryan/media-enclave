@@ -1,30 +1,40 @@
 venclave.filter = {
+
     filters: [],
 
     init: function() {
-        $('div.facet').each(venclave.bound_func(
-            function(i, div) {
-                var type = div.className.split("facet ")[1];
-                var filter = new this[type](div);
-                this.filters.push(filter);
-            }, this));
+        $('div.facet').each(venclave.bound_func(function(i, div) {
+            var type = div.className.split("facet ")[1];
+            var filter = new this[type](div);
+            this.filters.push(filter);
+        }, this));
     },
 
+    /**
+     * Fire off the updated query to the server and load the results into the
+     * TBODY.
+     */
     update: function() {
         var state = $.toJSON(this.get_state());
         var query = $('.search_query')[0].value;
-        $.post('/video/update_list/',
-               {'f':state, 'q':query},
-               function(data) {
-                   $('#video-list > tbody.list-body').html(data.videolist);
-                   $('#results-banner').text(data.banner_msg);
-               },
-              'json');
+        $.post('/video/update_list/', {'f': state, 'q': query},
+               venclave.bound_func(this.update_success, this),
+               'json');
+    },
+
+    /**
+     * Load the results of the new query into the TBODY.
+     */
+    update_success: function(data) {
+        // This is performance critical, so we use the crazy replaceHtml
+        // method.
+        var td = $('#list-container').get(0);
+        venclave.replaceHtml(td, data.videolist);
+        $('#results-banner').text(data.banner_msg);
     },
 
     get_state: function() {
-        return $.map(this.filters,
-                     function(filter) {return filter.get_state()});
+        return $.map(this.filters, function(f) { return f.get_state(); });
     },
 
     checkbox: function(div) {
@@ -65,6 +75,7 @@ venclave.filter = {
                     }
                    });
     },
+
 };
 
 venclave.filter.checkbox.prototype.get_state = function() {

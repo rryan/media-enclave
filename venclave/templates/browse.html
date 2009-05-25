@@ -36,22 +36,8 @@
           {% endfor %}
         </div>
       </td>
-      <td class="list-container">
-        <table id="video-list" cellspacing="0" cellpadding="0">
-          <thead>
-            <tr>
-              <th class="item-icon"></th>
-              <th class="item-arrow"></th>
-              <th class="item-title">title</th>
-              <th class="item-length">length</th>
-              <th class="item-release">year</th>
-              <th class="item-rating">rating</th>
-            </tr>
-          </thead>
-          <tbody class="list-body">
-            {{ videolist|safe }}
-          </tbody>
-        </table>
+      <td id="list-container" class="list-container">
+        {{ videolist|safe }}
       </td>
     </tr>
   </table>

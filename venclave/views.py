@@ -95,8 +95,6 @@ def browse_and_update_vals(query, query_string):
     results_count = nodes.count()
     return {
         'videolist': video_list,
-        'video_count': video_count,
-        'results_count': results_count,
         'banner_msg': banner_msg(video_count, results_count, query_string),
     }
 
@@ -148,8 +146,49 @@ def update_list(request):
 
 
 def create_video_list(nodes):
-    html = ''.join(create_video_list_lp(nodes))
-    return html
+    """Return the HTML table of the video list.
+
+    We do not use Django templates here because they are *extremely* slow when
+    rendered over and over again in a loop.  This optimization may become
+    irrelevant when we enable paging, but for now it's a big help.
+    """
+    html_parts = [LIST_HEADER]
+    for node in nodes:
+        imdb = node.metadata.imdb
+        html_parts.append(LIST_ITEM_TEMPLATE % {
+            'id': node.id,
+            'icon': reverse("venclave-images",
+                            args=["%s_icon.png" % node.kind]),
+            'kind': node.kind,
+            'title': node.title,
+            'length': venclave_tags.mins_to_hours(imdb.length) or '-',
+            'year': imdb.release_year or '-',
+            'rating': venclave_tags.make_stars(imdb.rating) or '-',
+       })
+    html_parts.append(LIST_FOOTER)
+    return ''.join(html_parts)
+
+
+LIST_HEADER = """\
+<table id="video-list" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <th class="item-icon"></th>
+      <th class="item-arrow"></th>
+      <th class="item-title">title</th>
+      <th class="item-length">length</th>
+      <th class="item-release">year</th>
+      <th class="item-rating">rating</th>
+    </tr>
+  </thead>
+  <tbody id="list-body" class="list-body">
+"""
+
+
+LIST_FOOTER = """\
+  </tbody>
+</table>
+"""
 
 
 LIST_ITEM_TEMPLATE = """\
@@ -174,23 +213,6 @@ LIST_ITEM_TEMPLATE = """\
   </td>
 </tr>
 """
-
-
-def create_video_list_lp(nodes):
-    html_parts = []
-    for node in nodes:
-        imdb = node.metadata.imdb
-        html_parts.append(LIST_ITEM_TEMPLATE % {
-            'id': node.id,
-            'icon': reverse("venclave-images",
-                            args=["%s_icon.png" % node.kind]),
-            'kind': node.kind,
-            'title': node.title,
-            'length': venclave_tags.mins_to_hours(imdb.length) or '-',
-            'year': imdb.release_year or '-',
-            'rating': venclave_tags.make_stars(imdb.rating) or '-',
-       })
-    return html_parts
 
 
 def banner_msg(video_count, results_count, search_string):

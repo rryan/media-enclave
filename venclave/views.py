@@ -154,17 +154,17 @@ def create_video_list(nodes):
     """
     html_parts = [LIST_HEADER]
     for node in nodes:
-        imdb = node.metadata.imdb
+        imdb = node.metadata and node.metadata.imdb
         html_parts.append(LIST_ITEM_TEMPLATE % {
             'id': node.id,
             'icon': reverse("venclave-images",
                             args=["%s_icon.png" % node.kind]),
             'kind': node.kind,
             'title': node.title,
-            'length': venclave_tags.mins_to_hours(imdb.length) or '-',
-            'year': imdb.release_year or '-',
-            'rating': venclave_tags.make_stars(imdb.rating) or '-',
-       })
+            'length': imdb and venclave_tags.mins_to_hours(imdb.length) or '-',
+            'year': imdb and imdb.release_year or '-',
+            'rating': imdb and venclave_tags.make_stars(imdb.rating) or '-',
+        })
     html_parts.append(LIST_FOOTER)
     return ''.join(html_parts)
 

@@ -19,12 +19,11 @@ def facet(attribute):
 
 
 @register.simple_tag
-def reverse_name(name):
-    """
-    "Smith, John" => "John Smith"
-    """
-    last, first = name.split(', ')
-    return "%s %s" % (first, last)
+def comma_separated(items, alt_text=""):
+    items = list(items)
+    if not items:
+        return alt_text
+    return ', '.join(str(item) for item in items)
 
 
 @register.simple_tag

@@ -4,48 +4,46 @@
   <td colspan="6">
     <table>
       <tr>
-	<th class="pane-plot" rowspan="2">
-	  plot
-	</th>
-	<td class="pane-plot" rowspan="2">
-	  <div>
-	    {{ node.metadata.imdb.plot_summary|default:"Plot summary not available." }}
-	  </div>
-	</td>
-	<td class="pane-spacer" rowspan="4">
-	  <div></div>
-	</td>
-	<th class="pane-language">
-	  language
-	</th>
-	<td class="pane-language">
-	  Languages not available
-	</td>
+        <th class="pane-plot" rowspan="2">
+          plot
+        </th>
+        <td class="pane-plot" rowspan="2">
+          <div>
+            {{ node.metadata.imdb.plot_summary|default:"Plot summary not available." }}
+          </div>
+        </td>
+        <td class="pane-spacer" rowspan="4">
+          <div></div>
+        </td>
+        <th class="pane-language">
+          language
+        </th>
+        <td class="pane-language">
+          Languages not available
+        </td>
       </tr>
       <tr>
-	<th class="pane-genre">
-	  genre
-	</th>
-	<td class="pane-genre">
-	  {% for genre in node.metadata.imdb.genres.all %}
-	    {{ genre.name }}<br />
-	  {% empty %}
-	    Genres not available
-	  {% endfor %}
-	</td>
+        <th class="pane-genre">
+          genre
+        </th>
+        <td class="pane-genre">
+          {% for genre in node.metadata.imdb.genres.all %}
+            {{ genre.name }}<br />
+          {% empty %}
+            Genres not available
+          {% endfor %}
+        </td>
       </tr>
       <tr>
-	<th class="pane-director">
-	  director
-	</th>
-	<td class="pane-director">
-	  {% for director in node.metadata.imdb.directors.all %}
-	    {% reverse_name director.name %}<br />
-	  {% empty %}
-	    Directors not available
-	  {% endfor %}
-	</td>
-	<td class="pane-downloads" rowspan="2" colspan="2">
+        <th class="pane-director">
+          director
+        </th>
+        <td class="pane-director">
+          {% with node.metadata.imdb.directors.all as directors %}
+            {% comma_separated directors "Directors not available" %}
+          {% endwith %}
+        </td>
+        <td class="pane-downloads" rowspan="2" colspan="2">
           <table>
             <tr>
               <td rowspan="2">
@@ -65,15 +63,17 @@
               </td>
             </tr>
           </table>
-	</td>
+        </td>
       </tr>
       <tr class="pane-starring">
-	<th>
-	  starring
-	</th>
-	<td class="pane-starring">
-	  Cast not available
-	</td>
+        <th>
+          starring
+        </th>
+        <td class="pane-starring">
+          {% with node.metadata.imdb.get_important_actors as actors %}
+            {% comma_separated actors "Cast not available" %}
+          {% endwith %}
+        </td>
       </tr>
       <tr class="pane-more">
         <td colspan="5">
@@ -82,7 +82,7 @@
             more info
           </a>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	  <a href="#{{ node.title }}" class="nytimes" target="_blank">
+          <a href="#{{ node.title }}" class="nytimes" target="_blank">
             <img src="{% url venclave-images "orange_arrow.png" %}" />
             <img src="{% url venclave-images "nyt_logo.png" %}" />
             ny times review

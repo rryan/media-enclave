@@ -6,6 +6,7 @@
 
 from __future__ import with_statement
 
+import datetime
 import re
 
 from menclave.venclave import models
@@ -19,10 +20,20 @@ DB_FILES = (
     'directors.list',
     'actors.list',
     'actresses.list',
+    'release-dates.list',
     'running-times.list',
 )
 
 DB_URL = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/"
+
+
+def parse_int(int_str):
+    """Parse an int or return None."""
+    try:
+        return int(int_str)
+    except (TypeError, ValueError):
+        return None
+
 
 class ImdbParser(object):
 
@@ -210,12 +221,25 @@ class ImdbParser(object):
 
     #============================= ACTORS ====================================#
 
+    # "xxxxx"        = a television series
+    # "xxxxx" (mini) = a television mini-series
+    # [xxxxx]        = character name
+    # <xx>           = number to indicate billing position in credits
+    # (TV)           = TV movie, or made for cable movie
+    # (V)            = made for video movie (this category does NOT include TV 
+    #                  episodes repackaged for video, guest appearances in
+    #                  variety/comedy specials released on video, or
+    #                  self-help/physical fitness videos)
+
     # The code for this is essentially copied from the code for directors, as the
     # .list files are in a very similar format.
-    #TODO(jslocum): Figure out what to do with roles.
-    ACTOR_START_RE="^(?P<actor>.+?)\t+(?P<title>.+)$"
-    ACTOR_CONTINUE_RE = "^\t+(?P<title>.+)$"
-    ACOTR_ROLE_RE = "^\t+(?P<title>.+)\[(?P<role>.+)\].+$"
+
+    ACTOR_END_RE = ("\t+(?P<title>[^\t]+?)"
+                    "( +\((TV|V|VG)\))?"
+                    "( +\[(?P<role>.+)\])?"
+                    "( +<(?P<bill_pos>\d+)>)?\n$")
+    ACTOR_CONTINUE_RE = "^" + ACTOR_END_RE
+    ACTOR_START_RE = "^(?P<actor>[^\t]+?)" + ACTOR_END_RE
 
     def generate_actors(self):
         """Generate (actor, title) pairs from actors.list."""
@@ -227,12 +251,13 @@ class ImdbParser(object):
 
             # Skip until the actors start.
             for line in f:
-                if line == "Name\t\t\tTitles\n":
+                if line.strip() == "Name\t\t\tTitles":
+                    f.next()  # Skip next line.
                     break
 
             # Parse and generate the pairs.
             for line in f:
-                line = f.next().decode('latin1').encode('utf-8')
+                line = line.decode('latin1').encode('utf-8')
                 start_match = start.match(line)
 
                 # Skip nonsense lines.
@@ -240,9 +265,12 @@ class ImdbParser(object):
                     continue
 
                 # this line is the start of a actor
-                actor = start_match.group('actor').strip()
-                title = start_match.group('title').strip()
-                yield (actor, title)
+                # TODO(jslocum): Figure out what to do with roles.
+                actor = start_match.group('actor')
+                title = start_match.group('title')
+                role = start_match.group('role')
+                bill_pos = parse_int(start_match.group('bill_pos'))
+                yield (actor, title, role, bill_pos)
 
                 # grab all extra titles following this line
                 for line in f:
@@ -250,7 +278,9 @@ class ImdbParser(object):
                     if not continue_match:
                         break
                     title = continue_match.group('title')
-                    yield (actor, title)
+                    role = continue_match.group('role')
+                    bill_pos = parse_int(continue_match.group('bill_pos'))
+                    yield (actor, title, role, bill_pos)
 
     # Various title formats:
     # TODO - fold these into a tests
@@ -333,31 +363,45 @@ class ImdbParser(object):
         """
         m = re.compile(self.TITLE_RE).match(title)
         if m:
-            title = m.groupdict()
+            result = m.groupdict()
 
-            # A bug in TITLE_RE causes episodetitle to possibly chomp
-            # extra whitespace. Strip it manually here.
-            episode_title = title.get('episodetitle', None)
+            # A bug in TITLE_RE causes episodetitle to possibly chomp extra
+            # whitespace. Strip it manually here.
+            episode_title = result.get('episodetitle', None)
             if episode_title:
-                title['episodetitle'] = episode_title.rstrip()
+                result['episodetitle'] = episode_title.rstrip()
+
+            # Parse integers.
+            result['year'] = parse_int(result.get('year', None))
+            result['season'] = parse_int(result.get('season', None))
+            result['episode'] = parse_int(result.get('episode', None))
+
+            # Parse date as datetime object.
+            date = result.get('date', None)
+            if date:
+                try:
+                    date = datetime.strptime(date, '%Y-%m-%d')
+                except ValueError:
+                    date = None
+                result['date'] = date
 
             #guess the kind
             kind = None
             # if it has movie, then it is a movie
-            if title['movie']:
+            if result['movie']:
                 kind = models.KIND_MOVIE
             # if it has series, then it is a tv episode or tv series
-            elif title['series']:
+            elif result['series']:
                 # if it has an episode and season, then it is a tv episode
-                if title['episode'] is not None and title['season'] is not None:
+                if result['episode'] is not None and result['season'] is not None:
                     kind = models.KIND_TV
                 else: # otherwise it is probably a series
                     kind = models.KIND_SERIES
             if kind is None:
                 kind = models.KIND_UNKNOWN
-            title['kind'] = kind
+            result['kind'] = kind
 
-            return title
+            return result
         return None
 
     #============================ RATINGS ====================================#
@@ -366,8 +410,6 @@ class ImdbParser(object):
     #'      2..222...2       5   5.2  "#1 College Sports Show, The" (2004)'
 
     #RATINGS_RE = "^\s+([.*0-9]{10})\s+(\d+)\s+(\d+\.\d)\s+(.*)$"
-
-
 
     #This regular expression DOES NOT WORK ON ALL MOVIES. I have no clue why.
     #Example of failure: the movie 21 (made in 2008), is not matched.
@@ -409,6 +451,8 @@ class ImdbParser(object):
                     rating = int(rating.replace('.', ''))
                     yield (title, rating)
 
+    #============================= TIMES =====================================#
+
     # This is just quick thing I whipped up to match running times. It doesn't
     # work for TV shows, but it seems to work for movies.
 
@@ -438,6 +482,12 @@ class ImdbParser(object):
                         title = match.group('title').strip()
                         time = int(match.group('time'))
                         yield (title, time)
+
+    #============================= DATES =====================================#
+
+    def generate_release_dates(self):
+        # TODO(rnk): Parse the release-dates.list file.
+        raise NotImplementedError
 
 # TODO(rnk): This is totally broken right now...
 #def find_content_title(content, imdb):
@@ -531,23 +581,22 @@ def create_imdb_metadata(imdb_path):
 
     print 'creating IMDBMetadata nodes...'
     for title in parser.generate_movie_titles():
-        # TODO(rnk): Do something to try to guess which title is best.
+        # TODO(rnk): Do something to try to guess which title is best, for
+        # example using find_content_title.
         if title in title_to_video:
             meta = models.IMDBMetadata(imdb_canonical_title=title)
+            info = parser.parse_title(title)
+            date = info.get('date', None)
+            year = info.get('year', None)
+            if date:
+                meta.release_date = date
+                meta.release_year = date.year
+            elif year:
+                meta.release_year = year
             title_to_imdb[title] = meta
     print 'done.'
 
     # TODO(rnk): Refactor the below to be less repetetive.
-
-    print 'adding genres...'
-    genres = {}
-    for (title, genre) in parser.generate_genres():
-        if title in title_to_imdb:
-            gnode = genres.setdefault(genre, models.Genre(genre))
-            title_to_imdb[title].genres.add(gnode)
-    for gnode in genres.itervalues():
-        gnode.save()
-    print 'done.'
 
     print 'adding plots...'
     for (title, plots) in parser.generate_plots():
@@ -570,8 +619,20 @@ def create_imdb_metadata(imdb_path):
             title_to_imdb[title].rating = float(rating) / 10 / 2
     print 'done.'
 
+    print 'adding genres...'
+    genres = {}
+    models.Genre.objects.all().delete()
+    for (title, genre) in parser.generate_genres():
+        if title in title_to_imdb:
+            gnode = genres.setdefault(genre, models.Genre(genre))
+            title_to_imdb[title].genres.add(gnode)
+    for gnode in genres.itervalues():
+        gnode.save()
+    print 'done.'
+
     print 'adding directors...'
     directors = {}
+    models.Director.objects.all().delete()
     for (director, title) in parser.generate_directors():
         if title in title_to_imdb:
             dnode = directors.setdefault(director, models.Director(director))
@@ -582,9 +643,11 @@ def create_imdb_metadata(imdb_path):
 
     print 'adding actors...'
     actors = {}
-    for (actor, title) in parser.generate_actors():
+    models.Actor.objects.all().delete()
+    for (actor, title, role, bill_pos) in parser.generate_actors():
         if title in title_to_imdb:
-            anode = actors.setdefault(actor, models.Actor(actor))
+            anode = models.Actor(actor, role, bill_pos)
+            anode = actors.setdefault(actor, anode)
             title_to_imdb[title].actors.add(anode)
     for anode in actors.itervalues():
         anode.save()

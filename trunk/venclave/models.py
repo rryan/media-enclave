@@ -1,6 +1,7 @@
 # menclave/venclave/models.py
 
 import datetime
+import re
 
 from django.db import models
 from django.db.models import Min, Max
@@ -15,6 +16,17 @@ def datetime_string(dt):
     else: return dt.strftime('%d %b %Y %H:%M:%S')
 
 #================================== MODELS ===================================#
+
+
+def cleanup_name(name):
+    """
+    "Smith, John" => "John Smith"
+    "Smith, John (I)" => "John Smith"
+    """
+    name = re.sub('\([IVX]*\)$', '', name)
+    last, first = name.split(', ')
+    return "%s %s" % (first, last)
+
 
 # TODO(rryan) Should we replace this with django-tagging?
 class Tag(models.Model):
@@ -109,15 +121,17 @@ class Director(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
 
     def __unicode__(self):
-        return self.name
+        return cleanup_name(self.name)
 
 
 class Actor(models.Model):
 
     name = models.CharField(max_length=255, primary_key=True)
+    role = models.CharField(max_length=255, blank=True, null=True)
+    bill_pos = models.IntegerField(blank=True, null=True)
 
     def __unicode__(self):
-        return self.name
+        return cleanup_name(self.name)
 
 
 class Genre(models.Model):
@@ -157,9 +171,7 @@ class ContentMetadataSource(models.Model):
 
 
 class IMDBMetadata(ContentMetadataSource):
-    """
-    IMDB sourced metadata
-    """
+    """IMDB sourced metadata."""
 
     def __unicode__(self):
         return ("<IMDBMetadata: imdb_canonical_title=%s>" %
@@ -169,7 +181,6 @@ class IMDBMetadata(ContentMetadataSource):
     def source_name(cls):
         return "IMDB"
 
-    imdb_id = models.CharField(max_length=255, null=True, blank=True)
     imdb_canonical_title = models.CharField(max_length=255, null=True,
                                             primary_key=True)
     release_date = models.DateTimeField(blank=True, null=True)
@@ -180,6 +191,9 @@ class IMDBMetadata(ContentMetadataSource):
     plot_summary = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
     length = models.IntegerField(blank=True, null=True)
+
+    def get_important_actors(self):
+        return self.actors.order_by('bill_pos')[:4]
 
 
 class RottenTomatoesMetadata(ContentMetadataSource):

@@ -2,8 +2,6 @@
 
 from __future__ import division
 
-import os
-
 from django.template import Library
 from django.template import Context
 from django.template.loader import get_template
@@ -55,9 +53,3 @@ def mins_to_hours(mins):
     hours = mins // 60
     mins = mins % 60
     return "%d:%02d" % (hours, mins)
-
-
-@register.filter
-def basename(path):
-    path = unicode(path)
-    return os.path.basename(path)

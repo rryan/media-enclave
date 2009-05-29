@@ -83,12 +83,11 @@ def words_to_query(query_string):
     return full_query
 
 
-def browse_and_update_vals(query, query_string):
+def browse_and_update_vals(nodes, query_string):
     """Compute values common to browse and update_list.
 
     Returns a dict containing objects useful for browse and update_list.
     """
-    nodes = ContentNode.objects.filter(query)
     nodes = nodes.select_related('metadata__imdb')
     video_list = create_video_list(nodes)
     video_count = ContentNode.objects.all().count()
@@ -105,8 +104,9 @@ def browse(request):
     form = request.GET
     query_string = form.get('q', '')
     full_query = words_to_query(query_string)
+    nodes = ContentNode.objects.filter(full_query)
     facet_attributes = ContentNode.attributes
-    result = browse_and_update_vals(full_query, query_string)
+    result = browse_and_update_vals(nodes, query_string)
     result.update({'attributes': facet_attributes,
                    'search_query': query_string})
     return render_to_response('venclave/browse.html', result,
@@ -117,10 +117,11 @@ def browse(request):
 def update_list(request):
     facets = cjson.decode(request.POST['f'])
     query_string = request.POST.get('q', '')
-    full_query = words_to_query(query_string)
+    word_query = words_to_query(query_string)
+    nodes = ContentNode.objects.filter(word_query)
     for facet in facets:
         # Don't apply this filter on reset
-        if ('reset' in facet) and facet['reset']:
+        if facet.get('reset', False):
             continue
         query = Q()
         attribute = ContentNode.attrs_by_name[facet['name']]
@@ -129,19 +130,32 @@ def update_list(request):
             lo = facet['lo']
             hi = facet['hi']
             query = Qu(attribute.path, 'range', (lo, hi))
-        else:
+            nodes = nodes.filter(query)
+        elif facet['op'] == 'or':
             #kind = 'exact' if type == 'checkbox' else 'icontains'
             kind = 'contains'
             for value in facet['selected']:
                 subquery = Qu(attribute.path, kind, value)
-                if facet['op'] == 'or':
-                    query |= subquery
-                elif facet['op'] == 'and':
-                    raise NotImplementedError
-                else:
-                    raise ValueError, "op must be 'or' or 'and'"
-        full_query &= query
-    result = browse_and_update_vals(full_query, query_string)
+                query |= subquery
+            nodes = nodes.filter(query)
+        elif facet['op'] == 'and':
+            # Build up a recursive 'IN' queryset.  This is the only way we
+            # could figure out how to implement 'AND'ing.
+            # TODO(rnk): Evaluate the performance of these queries.  The Django
+            # docs recommend doing two queries instead of one for MySQL.
+            kind = 'contains'
+            # We do this whole dance with next_nodes to reduce the nesting
+            # level of 'IN' filters on the 'nodes' queryset.
+            next_nodes = nodes
+            for value in facet['selected']:
+                nodes = next_nodes
+                subquery = Qu(attribute.path, kind, value)
+                nodes = nodes.filter(subquery)
+                pks = nodes.values('pk')
+                next_nodes = ContentNode.objects.filter(pk__in=pks)
+        else:
+            raise ValueError("op must be 'slider', 'or', or 'and'")
+    result = browse_and_update_vals(nodes, query_string)
     return HttpResponse(cjson.encode(result))
 
 

@@ -46,20 +46,13 @@
         <td class="pane-downloads" rowspan="2" colspan="2">
           <table>
             <tr>
-              <td rowspan="2">
+              <td>
                 <img src="{% url venclave-images "dl_arrow_orange.png" %}" />
               </td>
               <td>
-                <a href="javascript:false">
-                  moviefile.avi
-                </a>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <a href="javascript:false">
-                  subtitles.srt
-                </a>
+                {% for url, base in node.get_child_urls %}
+                  <a href="{{url}}">{{ base|escape }}</a><br/>
+                {% endfor %}
               </td>
             </tr>
           </table>

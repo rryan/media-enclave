@@ -242,7 +242,7 @@ def banner_msg(video_count, results_count, search_string):
 @login_required
 def get_pane(request):
     id = request.GET['id']
-    node = ContentNode.objects.get(pk=id);
+    node = ContentNode.objects.get(pk=id)
     t = select_template(['venclave/panes/%s_pane.html' % node.kind,
                          'venclave/panes/default.html'])
     return HttpResponse(t.render(Context({'node': node})))

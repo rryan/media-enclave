@@ -1,8 +1,10 @@
 # menclave/venclave/models.py
 
 import datetime
+import os
 import re
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Min, Max
 
@@ -308,22 +310,33 @@ class ContentNode(models.Model):
     metadata = models.OneToOneField("ContentMetadata")
 
     #--------------------------------- Content Path --------------------------#
-    #TODO (jslocum) Path needs to be an absolute path.
-    path = models.FilePathField(path='venclave/content/',
-                                recursive=True,
-                                blank=True,
-                                max_length=512)
+
+    path = models.FilePathField(path=settings.VIDEO_PATH, recursive=True,
+                                blank=True, max_length=512)
+
+    def get_child_files(self):
+        """Return absolute paths of files under this ContentNode."""
+        path = self.path
+        paths = (os.path.join(path, p) for p in os.listdir(path))
+        paths = [p for p in paths if os.path.isfile(p)]
+        paths.sort()
+        return paths
+
+    def get_child_urls(self):
+        """Return (url, basename) pairs for each child file."""
+        # TODO(rnk): Make sure these are escaped correctly.
+        return [(p.replace(settings.VIDEO_PATH, settings.VIDEO_URL),
+                 os.path.basename(p))
+                for p in self.get_child_files()]
 
     #------------------------------- Cover Art -------------------------------#
 
     cover_art = models.ImageField(upload_to='venclave/cover_art/%Y/%m/%d',
-                                  blank=True,
-                                  null=True)
+                                  blank=True, null=True)
 
     #------------------------------ Download Count ---------------------------#
 
     downloads = models.IntegerField(default=0, editable=False)
-
 
     #--------------------------------- Tags ----------------------------------#
 

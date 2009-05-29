@@ -41,6 +41,8 @@ venclave.filter = {
      */
     update_success: function(data) {
         this.update_xhr = null;
+        // Reset the panes so that we don't hold onto stale DOM references.
+        venclave.videolist.panes = {};
         // This is performance critical, so we use the crazy replaceHtml
         // method.
         var td = $('#list-container').get(0);

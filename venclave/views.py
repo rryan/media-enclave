@@ -134,10 +134,10 @@ def update_list(request):
             kind = 'contains'
             for value in facet['selected']:
                 subquery = Qu(attribute.path, kind, value)
-                if facet['op'] == "or":
+                if facet['op'] == 'or':
                     query |= subquery
-                elif facet['op'] == "and":
-                    query &= subquery
+                elif facet['op'] == 'and':
+                    raise NotImplementedError
                 else:
                     raise ValueError, "op must be 'or' or 'and'"
         full_query &= query

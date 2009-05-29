@@ -11,21 +11,36 @@ venclave.filter = {
     },
 
     /**
+     * The last XHR returned by $.post.  If the user updates the slider twice
+     * quickly, we need to abort the first request before it finishes.  I'm not
+     * sure if JavaScript functions can be preempted, so there may or may not
+     * be race conditions.
+     */
+    update_xhr: null,
+
+    /**
      * Fire off the updated query to the server and load the results into the
      * TBODY.
      */
     update: function() {
+        // Abort any old XHR that might be running and only worry about the
+        // most recent query.
+        if (this.update_xhr) {
+            this.update_xhr.abort();
+        }
         var state = $.toJSON(this.get_state());
         var query = $('.search_query')[0].value;
-        $.post('/video/update_list/', {'f': state, 'q': query},
-               venclave.bound_func(this.update_success, this),
-               'json');
+        this.update_xhr = $.post('/video/update_list/',
+                                 {'f': state, 'q': query},
+                                 venclave.bound_func(this.update_success, this),
+                                 'json');
     },
 
     /**
      * Load the results of the new query into the TBODY.
      */
     update_success: function(data) {
+        this.update_xhr = null;
         // This is performance critical, so we use the crazy replaceHtml
         // method.
         var td = $('#list-container').get(0);

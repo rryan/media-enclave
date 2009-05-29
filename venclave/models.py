@@ -143,9 +143,9 @@ class Genre(models.Model):
 
 
 class ContentMetadata(models.Model):
-    """
-    Content metadata container
-    """
+
+    """Content metadata container."""
+
     imdb = models.ForeignKey("IMDBMetadata", blank=True, null=True)
     rotten_tomatoes = models.ForeignKey("RottenTomatoesMetadata",
                                            blank=True, null=True)
@@ -154,9 +154,9 @@ class ContentMetadata(models.Model):
 
 
 class ContentMetadataSource(models.Model):
-    """
-    Abstract base class for storing metadata
-    """
+
+    """Abstract base class for storing metadata."""
+
     def __unicode__(self): return "%s Metadata" % self.source_name()
 
     @classmethod
@@ -171,6 +171,7 @@ class ContentMetadataSource(models.Model):
 
 
 class IMDBMetadata(ContentMetadataSource):
+
     """IMDB sourced metadata."""
 
     def __unicode__(self):
@@ -197,9 +198,8 @@ class IMDBMetadata(ContentMetadataSource):
 
 
 class RottenTomatoesMetadata(ContentMetadataSource):
-    """
-    RottenTomatoes metadata
-    """
+
+    """RottenTomatoes metadata."""
 
     @classmethod
     def source_name(cls):
@@ -210,9 +210,8 @@ class RottenTomatoesMetadata(ContentMetadataSource):
 
 
 class FileMetadata(ContentMetadataSource):
-    """
-    File-based metadata
-    """
+
+    """File-based metadata."""
 
     @classmethod
     def source_name(cls):
@@ -220,9 +219,8 @@ class FileMetadata(ContentMetadataSource):
 
 
 class ManualMetadata(ContentMetadataSource):
-    """
-    Manually entered metadata
-    """
+
+    """Manually entered metadata."""
 
     @classmethod
     def source_name(cls):

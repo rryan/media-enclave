@@ -96,6 +96,10 @@ def login(request):
         # If the user isn't trying to log in, then just display the login page.
         if not form.get('login', False):
             goto = request.GET.get('goto', None)
+            if not goto:
+                # The Django login_required decorator passes 'next' as the
+                # redirect, so we look for that if 'goto' is missing.
+                goto = request.GET.get('next', None)
             context = RequestContext(request)
             return render_html_template('aenclave/login.html', request,
                                         {'redirect_to': goto},
@@ -124,17 +128,18 @@ def login(request):
     auth.login(request, user)
 
     # hack to try to pass them back to http land
-    goto = request.REQUEST.get('goto',reverse('aenclave-home'))
+    goto = request.REQUEST.get('goto', reverse('aenclave-home'))
 
     # hack to prevent infinite loop.
     if goto == '':
         goto = reverse('aenclave-home')
 
     if goto.startswith('https'):
-        goto = goto.replace('^https','http')
+        goto = goto.replace('^https', 'http')
 
     return HttpResponseRedirect(goto)
 
 def logout(request):
     auth.logout(request)
-    return HttpResponseRedirect(request.GET.get('goto',reverse('aenclave-home')))
+    goto = request.GET.get('goto', reverse('aenclave-home'))
+    return HttpResponseRedirect(goto)

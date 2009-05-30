@@ -75,7 +75,7 @@ def words_to_query(query_string):
     query_words = query_string.split()
     for word in query_words:
         word_query = Q()
-        for field in ContentNode.searchable_fields():
+        for field in ContentNode.SEARCHABLE_FIELDS:
             # Each word may appear in any field, so we use OR here.
             word_query |= Qu(field, 'icontains', word)
         # Each match must contain every word, so we use AND here.

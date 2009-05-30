@@ -6,7 +6,9 @@
 
 from __future__ import with_statement
 
+import codecs
 import datetime
+import os
 import re
 
 from menclave.venclave import models
@@ -40,6 +42,11 @@ class ImdbParser(object):
     def __init__(self, imdb_path):
         self.imdb_path = imdb_path
 
+    def open_list(self, list_file):
+        """Return a file handle of the specified .list file."""
+        path = os.path.join(self.imdb_path, list_file)
+        return codecs.open(path, encoding='latin-1')
+
     #============================ MOVIES =====================================#
 
     # parses a movies.list
@@ -49,9 +56,8 @@ class ImdbParser(object):
     def generate_movie_titles(self):
         """Parse movies.list and generate each movie title in turn."""
         movie_matcher = re.compile(self.MOVIE_RE)
-        with open(self.imdb_path + '/movies.list') as f:
+        with self.open_list('movies.list') as f:
             for line in f:
-                line = line.decode('latin1').encode('utf-8')
                 match = movie_matcher.match(line)
                 if match:
                     title = match.group('title').strip()
@@ -90,13 +96,12 @@ class ImdbParser(object):
 
         plot_index = {}
 
-        with open(self.imdb_path + "/plot.list") as f:
+        with self.open_list('plot.list') as f:
             current_title = None
             current_plot = []
             current_plots = []
 
             for line in f:
-                line = line.decode('latin1').encode('utf-8')
 
                 title_match = re_title.match(line)
                 plot_match = re_plot.match(line)
@@ -142,7 +147,7 @@ class ImdbParser(object):
         genre_index = {}
         all_genres = set()
 
-        with open(self.imdb_path + "/genres.list") as f:
+        with self.open_list('genres.list') as f:
 
             # Skip to the point in the file where the genres actually start.
             for line in f:
@@ -151,7 +156,6 @@ class ImdbParser(object):
 
             # Parse each genre line.
             for line in f:
-                line = line.decode('latin1').encode('utf-8')
                 match = genre_matcher.match(line)
 
                 if match:
@@ -183,15 +187,15 @@ class ImdbParser(object):
     # To skip the noise, we just hack it by detecting this line.
 
     # For grabbing the director's name max length (variable column size)
-    DIRECTOR_START_RE="^(?P<director>.+?)\t+(?P<title>.+)$"
-    DIRECTOR_CONTINUE_RE = "^\t+(?P<title>.+)$"
+    DIRECTOR_START_RE="^(?P<director>.+?)\t+(?P<title>.+?)( +\((TV|V|VG)\))?$"
+    DIRECTOR_CONTINUE_RE = "^\t+(?P<title>.+?)( +\((TV|V|VG)\))?$"
 
     def generate_directors(self):
         """Generates (title, director) pairs from directors.list."""
         start = re.compile(self.DIRECTOR_START_RE)
         continue_ = re.compile(self.DIRECTOR_CONTINUE_RE)
 
-        with open(self.imdb_path + "/directors.list") as f:
+        with self.open_list('directors.list') as f:
 
             # Skip to where the directors start.
             for line in f:
@@ -200,7 +204,6 @@ class ImdbParser(object):
                     break
 
             for line in f:
-                line = line.decode('latin1').encode('utf-8')
                 start_match = start.match(line)
 
                 # Skip empty or non-matching noise lines.
@@ -213,7 +216,6 @@ class ImdbParser(object):
 
                 # Generate titles following this line with the same director.
                 for line in f:
-                    line = line.decode('latin1').encode('utf-8')
                     continue_match = continue_.match(line)
                     if not continue_match:
                         break
@@ -227,7 +229,7 @@ class ImdbParser(object):
     # [xxxxx]        = character name
     # <xx>           = number to indicate billing position in credits
     # (TV)           = TV movie, or made for cable movie
-    # (V)            = made for video movie (this category does NOT include TV 
+    # (V)            = made for video movie (this category does NOT include TV
     #                  episodes repackaged for video, guest appearances in
     #                  variety/comedy specials released on video, or
     #                  self-help/physical fitness videos)
@@ -243,46 +245,50 @@ class ImdbParser(object):
     ACTOR_START_RE = "^(?P<actor>[^\t]+?)" + ACTOR_END_RE
 
     def generate_actors(self):
-        """Generate (actor, title) pairs from actors.list."""
+        """Generate (title, actor...) tuples from actors and actresses.list."""
+        with self.open_list('actors.list') as f:
+            for tup in self._generate_actors(f, 'M'):
+                yield tup
+        with self.open_list('actresses.list') as f:
+            for tup in self._generate_actors(f, 'F'):
+                yield tup
+
+    def _generate_actors(self, f, sex):
+        """Generate (title, actor...) tuples from the passed in file object."""
         start = re.compile(self.ACTOR_START_RE)
         continue_ = re.compile(self.ACTOR_CONTINUE_RE)
 
-        # TODO(rnk): This needs to do both actors and actresses.
-        with open(self.imdb_path + "/actors.list") as f:
+        # Skip until the actors start.
+        for line in f:
+            if line.strip() == "Name\t\t\tTitles":
+                f.next()  # Skip next line.
+                break
 
-            # Skip until the actors start.
+        # Parse and generate the pairs.
+        for line in f:
+            start_match = start.match(line)
+
+            # Skip nonsense lines.
+            if not start_match:
+                continue
+
+            # this line is the start of a actor
+            # TODO(jslocum): Figure out what to do with roles.
+            actor = start_match.group('actor')
+            title = start_match.group('title')
+            role = start_match.group('role')
+            bill_pos = parse_int(start_match.group('bill_pos'))
+            yield (title, actor, sex, role, bill_pos)
+
+            # grab all extra titles following this line
             for line in f:
-                if line.strip() == "Name\t\t\tTitles":
-                    f.next()  # Skip next line.
+                continue_match = continue_.match(line)
+                if not continue_match:
                     break
-
-            # Parse and generate the pairs.
-            for line in f:
-                line = line.decode('latin1').encode('utf-8')
-                start_match = start.match(line)
-
-                # Skip nonsense lines.
-                if not start_match:
-                    continue
-
-                # this line is the start of a actor
-                # TODO(jslocum): Figure out what to do with roles.
-                actor = start_match.group('actor')
-                title = start_match.group('title')
-                role = start_match.group('role')
-                bill_pos = parse_int(start_match.group('bill_pos'))
-                yield (title, actor, role, bill_pos)
-
-                # grab all extra titles following this line
-                for line in f:
-                    line = line.decode('latin1').encode('utf-8')
-                    continue_match = continue_.match(line)
-                    if not continue_match:
-                        break
-                    title = continue_match.group('title')
-                    role = continue_match.group('role')
-                    bill_pos = parse_int(continue_match.group('bill_pos'))
-                    yield (title, actor, role, bill_pos)
+                title = continue_match.group('title')
+                role = continue_match.group('role')
+                bill_pos = parse_int(continue_match.group('bill_pos'))
+                yield (title, actor, sex, role, bill_pos)
 
     # Various title formats:
     # TODO - fold these into a tests
@@ -364,47 +370,49 @@ class ImdbParser(object):
 
         """
         m = re.compile(self.TITLE_RE).match(title)
-        if m:
-            result = m.groupdict()
+        if not m:
+            return None
 
-            # A bug in TITLE_RE causes episodetitle to possibly chomp extra
-            # whitespace. Strip it manually here.
-            episode_title = result.get('episodetitle', None)
-            if episode_title:
-                result['episodetitle'] = episode_title.rstrip()
+        result = m.groupdict()
 
-            # Parse integers.
-            result['year'] = parse_int(result.get('year', None))
-            result['season'] = parse_int(result.get('season', None))
-            result['episode'] = parse_int(result.get('episode', None))
+        # A bug in TITLE_RE causes episodetitle to possibly chomp extra
+        # whitespace. Strip it manually here.
+        episode_title = result.get('episodetitle', None)
+        if episode_title:
+            result['episodetitle'] = episode_title.rstrip()
 
-            # Parse date as datetime object.
-            date = result.get('date', None)
-            if date:
-                try:
-                    date = datetime.strptime(date, '%Y-%m-%d')
-                except ValueError:
-                    date = None
-                result['date'] = date
+        # Parse integers.
+        result['year'] = parse_int(result.get('year', None))
+        result['season'] = parse_int(result.get('season', None))
+        result['episode'] = parse_int(result.get('episode', None))
 
-            #guess the kind
-            kind = None
-            # if it has movie, then it is a movie
-            if result['movie']:
-                kind = models.KIND_MOVIE
-            # if it has series, then it is a tv episode or tv series
-            elif result['series']:
-                # if it has an episode and season, then it is a tv episode
-                if result['episode'] is not None and result['season'] is not None:
-                    kind = models.KIND_TV
-                else: # otherwise it is probably a series
-                    kind = models.KIND_SERIES
-            if kind is None:
-                kind = models.KIND_UNKNOWN
-            result['kind'] = kind
+        # Parse date as datetime object.
+        date = result.get('date', None)
+        if date:
+            try:
+                date = datetime.strptime(date, '%Y-%m-%d')
+            except ValueError:
+                date = None
+            result['date'] = date
 
-            return result
-        return None
+        # Guess the kind.
+        kind = None
+        if result['movie']:
+            # If it has movie, then it is a movie.
+            kind = models.KIND_MOVIE
+        elif result['series']:
+            # If it has series, then it is a TV episode or TV series.
+            if result['episode'] is not None and result['season'] is not None:
+                # If it has an episode and season, then it is a TV episode.
+                kind = models.KIND_TV
+            else:
+                # Otherwise it is probably a series.
+                kind = models.KIND_SERIES
+        if kind is None:
+            kind = models.KIND_UNKNOWN
+        result['kind'] = kind
+
+        return result
 
     #============================ RATINGS ====================================#
 
@@ -428,21 +436,19 @@ class ImdbParser(object):
     #                  $                             # end of string
     #                  """
 
-
     #Somehow this works though? WTF?
     RATINGS_RE = """^\s+([.*0-9]{10})\s+(\d+)\s+(?P<rating>\d+\.\d)\s+(?P<title>.*)$"""
 
     def generate_ratings(self):
         """Generate (title, rating) pairs from ratings.list.
-        
+
         Ratings are floating point numbers out of 10.
         """
         matcher = re.compile(self.RATINGS_RE)
         title_matcher = re.compile(self.TITLE_RE)
 
-        with open(self.imdb_path + "/ratings.list") as f:
+        with self.open_list('ratings.list') as f:
             for line in f:
-                line = line.decode('latin1').encode('utf-8')
                 match = matcher.match(line)
                 if match:
                     title = match.group('title').strip()
@@ -470,9 +476,8 @@ class ImdbParser(object):
         title_matcher = re.compile(self.TITLE_RE)
         ratings_index = {}
 
-        with open(self.imdb_path + "/running-times.list") as f:
+        with self.open_list('running-times.list') as f:
             for line in f:
-                line = line.decode('latin1').encode('utf-8')
                 match = matcher.match(line)
                 if match:
                     title = match.group('title').strip()

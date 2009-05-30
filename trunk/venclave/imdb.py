@@ -209,15 +209,16 @@ class ImdbParser(object):
                 # This line is the start of a director section.
                 director = start_match.group('director').strip()
                 title = start_match.group('title').strip()
-                yield (director, title)
+                yield (title, director)
 
                 # Generate titles following this line with the same director.
                 for line in f:
+                    line = line.decode('latin1').encode('utf-8')
                     continue_match = continue_.match(line)
                     if not continue_match:
                         break
                     title = continue_match.group('title').strip()
-                    yield (director, title)
+                    yield (title, director)
 
     #============================= ACTORS ====================================#
 
@@ -270,17 +271,18 @@ class ImdbParser(object):
                 title = start_match.group('title')
                 role = start_match.group('role')
                 bill_pos = parse_int(start_match.group('bill_pos'))
-                yield (actor, title, role, bill_pos)
+                yield (title, actor, role, bill_pos)
 
                 # grab all extra titles following this line
                 for line in f:
+                    line = line.decode('latin1').encode('utf-8')
                     continue_match = continue_.match(line)
                     if not continue_match:
                         break
                     title = continue_match.group('title')
                     role = continue_match.group('role')
                     bill_pos = parse_int(continue_match.group('bill_pos'))
-                    yield (actor, title, role, bill_pos)
+                    yield (title, actor, role, bill_pos)
 
     # Various title formats:
     # TODO - fold these into a tests
@@ -566,103 +568,3 @@ class ImdbParser(object):
             #break
 
     #return found['title']
-
-
-def create_imdb_metadata(imdb_path):
-
-    # The number of ContentNodes should be much smaller than all the movies in
-    # IMDB, so we throw these in a dict and stream over IMDB instead of the
-    # other way around.
-    videos = models.ContentNode.objects.all()
-    title_to_video = dict((v.title, v) for v in videos)
-    title_to_imdb = {}
-
-    parser = ImdbParser(imdb_path)
-
-    print 'creating IMDBMetadata nodes...'
-    for title in parser.generate_movie_titles():
-        # TODO(rnk): Do something to try to guess which title is best, for
-        # example using find_content_title.
-        if title in title_to_video:
-            meta = models.IMDBMetadata(imdb_canonical_title=title)
-            info = parser.parse_title(title)
-            date = info.get('date', None)
-            year = info.get('year', None)
-            if date:
-                meta.release_date = date
-                meta.release_year = date.year
-            elif year:
-                meta.release_year = year
-            title_to_imdb[title] = meta
-    print 'done.'
-
-    # TODO(rnk): Refactor the below to be less repetetive.
-
-    print 'adding plots...'
-    for (title, plots) in parser.generate_plots():
-        if title in title_to_imdb:
-            # TODO(rnk): Come up with a better way to pick the plot summary.
-            # Perhaps pick the one with the best target size?  Not too long or
-            # short?
-            title_to_imdb[title].plot_summary = plots[0][1]
-    print 'done.'
-
-    print 'adding running times...'
-    for (title, time) in parser.generate_running_times():
-        if title in title_to_imdb:
-            title_to_imdb[title].length = time
-    print 'done.'
-
-    print 'adding ratings...'
-    for (title, rating) in parser.generate_ratings():
-        if title in title_to_imdb:
-            title_to_imdb[title].rating = float(rating) / 10 / 2
-    print 'done.'
-
-    print 'adding genres...'
-    genres = {}
-    models.Genre.objects.all().delete()
-    for (title, genre) in parser.generate_genres():
-        if title in title_to_imdb:
-            gnode = genres.setdefault(genre, models.Genre(genre))
-            title_to_imdb[title].genres.add(gnode)
-    for gnode in genres.itervalues():
-        gnode.save()
-    print 'done.'
-
-    print 'adding directors...'
-    directors = {}
-    models.Director.objects.all().delete()
-    for (director, title) in parser.generate_directors():
-        if title in title_to_imdb:
-            dnode = directors.setdefault(director, models.Director(director))
-            title_to_imdb[title].directors.add(dnode)
-    for dnode in directors.itervalues():
-        dnode.save()
-    print 'done.'
-
-    print 'adding actors...'
-    actors = {}
-    models.Actor.objects.all().delete()
-    for (actor, title, role, bill_pos) in parser.generate_actors():
-        if title in title_to_imdb:
-            anode = models.Actor(actor, role, bill_pos)
-            anode = actors.setdefault(actor, anode)
-            title_to_imdb[title].actors.add(anode)
-    for anode in actors.itervalues():
-        anode.save()
-    print 'done.'
-
-    # TODO(rnk): Do actresses.
-    #print 'creating ' + str(len(imdb['lists']['actresses'])) + ' actress nodes'
-    #for actress in imdb['lists']['actresses']:
-        #asnode = models.Actor(name=actress)
-        #asnode.save()
-        ##print "created actress:" + actress
-
-    for (title, node) in title_to_video.iteritems():
-        meta = title_to_imdb[title]
-        meta.save()
-        node.metadata.imdb = meta
-        node.metadata.save()
-        print "made IMDBMetadata for movie " + meta.imdb_canonical_title

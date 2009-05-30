@@ -194,19 +194,19 @@ Willis, Bruce		16 Blocks (2006)  [Det. Jack Mosley]  <1>
     def test_gen_actors(self):
         parser = imdb.ImdbParser("")
         actors = [
-            ('Aalami, Ali Reza', 'Shenasayi (1987)', None, None),
-            ('Aalami, Arash', 'Ansoo-ye ayene (1997)', None, 7),
-            ('50 Cent', '13 (2010)', 'Jimmy', None),
-            ('50 Cent', '2003 Radio Music Awards (2003)', 'Himself', None),
-            ('Owen, Clive', 'Ambush (2001)', 'The Driver', 1),
-            ('Owen, Clive', 'Bad Boy Blues (1995)', 'Paul', 1),
-            ('Owen, Clive', 'Beat the Devil (2002)', 'Driver', 1),
-            ('Owen, Clive', 'Shoot \'Em Up (2007)', 'Smith', 1),
-            ('Owen, Clive', 'Sin City (2005)', 'Dwight', 36),
-            ('Willis, Bruce', '16 Blocks (2006)', 'Det. Jack Mosley', 1),
-            ('Willis, Bruce', 'Apocalypse (1998)', 'Trey Kincaid', 1),
-            ('Willis, Bruce', 'Armageddon (1998/I)', 'Harry S. Stamper', 1),
-            ('Willis, Bruce', 'Die Hard (1988)', 'Officer John McClane', 1),
+            ('Shenasayi (1987)', 'Aalami, Ali Reza', None, None),
+            ('Ansoo-ye ayene (1997)', 'Aalami, Arash', None, 7),
+            ('13 (2010)',                      '50 Cent', 'Jimmy', None),
+            ('2003 Radio Music Awards (2003)', '50 Cent', 'Himself', None),
+            ('Ambush (2001)',         'Owen, Clive', 'The Driver', 1),
+            ('Bad Boy Blues (1995)',  'Owen, Clive', 'Paul', 1),
+            ('Beat the Devil (2002)', 'Owen, Clive', 'Driver', 1),
+            ('Shoot \'Em Up (2007)',  'Owen, Clive', 'Smith', 1),
+            ('Sin City (2005)',       'Owen, Clive', 'Dwight', 36),
+            ('16 Blocks (2006)',    'Willis, Bruce', 'Det. Jack Mosley', 1),
+            ('Apocalypse (1998)',   'Willis, Bruce', 'Trey Kincaid', 1),
+            ('Armageddon (1998/I)', 'Willis, Bruce', 'Harry S. Stamper', 1),
+            ('Die Hard (1988)',     'Willis, Bruce', 'Officer John McClane', 1),
         ]
         self.assertEqual(actors, list(parser.generate_actors()))
 

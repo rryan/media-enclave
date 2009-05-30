@@ -43,9 +43,19 @@ class ImdbParser(object):
         self.imdb_path = imdb_path
 
     def open_list(self, list_file):
-        """Return a file handle of the specified .list file."""
+        """Return a file handle of the specified .list file.
+
+        It's not clear what character set the files are encoded with.  In some
+        places, we believe it is the Windows codepage 1252 (look it up on
+        Wikipedia).  cp1252 is like latin-1, except that it has extra
+        characters, such as right single quote, which can be found in
+        actors.list under "Brill, Steven"/"Knocked Up (2007)".  In other places,
+        there are two byte control sequences which suggests UTF-8.
+        """
         path = os.path.join(self.imdb_path, list_file)
-        return codecs.open(path, encoding='latin-1')
+        # TODO(rnk): It would be really hardcore if we could register an error
+        # handler to try decoding with UTF-8 if cp1252 fails.
+        return codecs.open(path, encoding='cp1252', errors='ignore')
 
     #============================ MOVIES =====================================#
 
@@ -102,7 +112,6 @@ class ImdbParser(object):
             current_plots = []
 
             for line in f:
-
                 title_match = re_title.match(line)
                 plot_match = re_plot.match(line)
                 author_match = re_author.match(line)

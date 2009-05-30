@@ -129,6 +129,9 @@ class Director(models.Model):
 class Actor(models.Model):
 
     name = models.CharField(max_length=255, primary_key=True)
+
+    # TODO(rnk): This data should really live in a ManyToMany relationship
+    # table between movies and actors.
     role = models.CharField(max_length=255, blank=True, null=True)
     bill_pos = models.IntegerField(blank=True, null=True)
 
@@ -267,8 +270,8 @@ class ContentNode(models.Model):
                     (KIND_TV, 'TV episode'),
                     (KIND_SERIES, 'TV series'),
                     (KIND_SEASON, 'TV season'),
-                    (KIND_TRAILER, 'Trailer'),
-                    (KIND_RANDOMCLIP, 'Random clip'),
+                    #(KIND_TRAILER, 'Trailer'),
+                    #(KIND_RANDOMCLIP, 'Random clip'),
                     (KIND_UNKNOWN, 'Unknown'))
 
     kind = models.CharField(default=KIND_UNKNOWN,

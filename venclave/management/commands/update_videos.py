@@ -18,6 +18,9 @@ from menclave.venclave.models import (ContentNode, ContentMetadata, KIND_MOVIE,
                                       KIND_SEASON)
 
 
+VIDEO_EXTENSIONS = ('avi', 'mpeg', 'mpg', 'mov', 'mkv', 'iso')
+
+
 def listdir(dirpath):
     """Wraps os.listdir and prepends dirpath to the results."""
     for path in os.listdir(dirpath):
@@ -41,11 +44,7 @@ class Command(BaseCommand):
         # TODO(rnk): Maybe have a default user setting and an option to
         # override?
         self.owner = User.objects.all()[:1][0]
-        # Clear all existing content nodes.
-        # TODO(rnk): Later, we'll want to run this while we're online, so we
-        # should get or create content nodes instead of just creating.
-        for node in ContentNode.objects.all():
-            node.delete()
+        self.nodes = set()
         for path in listdir(video_path):
             if path.endswith("Movies"):
                 self.do_movies(path)
@@ -53,6 +52,10 @@ class Command(BaseCommand):
                 self.do_series(path)
             else:
                 self.do_unknown(path)
+        # Clear any ContentNodes that we didn't find files for.
+        for node in ContentNode.objects.all():
+            if node not in self.nodes:
+                node.delete()
 
     def do_movies(self, movies_path):
         for movdir in listdir(movies_path):
@@ -89,6 +92,8 @@ class Command(BaseCommand):
             if not os.path.isfile(ep_file):
                 logging.info('Skipping unexpected dir %r.', ep_file)
                 continue
+            if not any(ep_file.endswith(ext) for ext in VIDEO_EXTENSIONS):
+                continue
             ep_node = self.make_content_node(ep_file, KIND_TV)
             ep_node.parent = season_node
             ep_node.save()
@@ -102,10 +107,16 @@ class Command(BaseCommand):
             node.save()
 
     def make_content_node(self, path, kind):
-        meta = ContentMetadata()
-        meta.save()
         title = os.path.basename(path)
-        node = ContentNode(owner=self.owner, metadata=meta, title=title,
-                           path=path, kind=kind)
+        node = ContentNode.objects.get_or_create(path=path)
+        node.title = title
+        node.owner = self.owner
+        node.kind = kind
+        if not node.metadata:
+            meta = ContentMetadata()
+            meta.save()
+            node.metadata = meta
+        node.save()
+        self.nodes.add(node)
         print 'created node: %r; path %r' % (node, node.path)
         return node

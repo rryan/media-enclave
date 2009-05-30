@@ -111,12 +111,14 @@ class Command(BaseCommand):
 
     @_metadata_adder('generate_actors')
     def add_actors(self, meta, actor, sex, role, bill_pos):
-        (anode, _) = models.Actor.objects.get_or_create(name=actor)
-        anode.sex = sex
-        anode.role = role
-        anode.bill_pos = bill_pos
-        anode.save()
-        meta.actors.add(anode)
+        (actor_node, _) = models.Actor.objects.get_or_create(name=actor)
+        actor_node.sex = sex
+        actor_node.save()
+        (role_node, _) = models.Role.objects.get_or_create(actor=actor_node,
+                                                           imdb=meta)
+        role_node.role = role
+        role_node.bill_pos = bill_pos
+        role_node.save()
 
     def save_imdbmetadata(self):
         print 'save_imdbmetadata...'

@@ -135,11 +135,6 @@ class Actor(models.Model):
 
     sex = models.CharField(max_length=1, choices=SEXES, blank=True, null=True)
 
-    # TODO(rnk): This data should really live in a ManyToMany relationship
-    # table between movies and actors.
-    role = models.CharField(max_length=255, blank=True, null=True)
-    bill_pos = models.IntegerField(blank=True, null=True)
-
     def __unicode__(self):
         return cleanup_name(self.name)
 
@@ -190,21 +185,32 @@ class IMDBMetadata(ContentMetadataSource):
 
     @classmethod
     def source_name(cls):
-        return "IMDB"
+        return 'IMDB'
 
     imdb_canonical_title = models.CharField(max_length=255, null=True,
                                             primary_key=True)
     release_date = models.DateTimeField(blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
-    genres = models.ManyToManyField("Genre")
-    directors = models.ManyToManyField("Director")
-    actors = models.ManyToManyField("Actor")
+    genres = models.ManyToManyField('Genre')
+    directors = models.ManyToManyField('Director')
+    actors = models.ManyToManyField('Actor', through='Role')
     plot_summary = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
     length = models.IntegerField(blank=True, null=True)
 
     def get_important_actors(self):
-        return self.actors.order_by('bill_pos')[:4]
+        return self.actors.order_by('role__bill_pos')[:4]
+
+
+class Role(models.Model):
+
+    """A role played by an actor."""
+
+    actor = models.ForeignKey(Actor)
+    imdb = models.ForeignKey(IMDBMetadata)
+    
+    role = models.CharField(max_length=255, blank=True, null=True)
+    bill_pos = models.IntegerField(blank=True, null=True)
 
 
 class RottenTomatoesMetadata(ContentMetadataSource):
@@ -325,10 +331,13 @@ class ContentNode(models.Model):
     def get_child_files(self):
         """Return absolute paths of files under this ContentNode."""
         path = self.path
-        paths = (os.path.join(path, p) for p in os.listdir(path))
-        paths = [p for p in paths if os.path.isfile(p)]
-        paths.sort()
-        return paths
+        if os.path.isfile(path):
+            return [path]
+        else:
+            paths = (os.path.join(path, p) for p in os.listdir(path))
+            paths = [p for p in paths if os.path.isfile(p)]
+            paths.sort()
+            return paths
 
     def get_child_urls(self):
         """Return (url, basename) pairs for each child file."""

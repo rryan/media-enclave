@@ -108,7 +108,10 @@ class Command(BaseCommand):
 
     def make_content_node(self, path, kind):
         title = os.path.basename(path)
-        node = ContentNode.objects.get_or_create(path=path)
+        try:
+            node = ContentNode.objects.get(path=path)
+        except ContentNode.DoesNotExist:
+            node = ContentNode(path=path)
         node.title = title
         node.owner = self.owner
         node.kind = kind

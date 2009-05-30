@@ -61,6 +61,9 @@ class Command(BaseCommand):
                     meta.release_year = date.year
                 elif year:
                     meta.release_year = year
+                meta.genres.clear()
+                meta.actors.clear()
+                meta.directors.clear()
                 self.title_to_imdb[title] = meta
         print 'finished create_imdbmetadata.'
 
@@ -107,8 +110,9 @@ class Command(BaseCommand):
         meta.directors.add(dnode)
 
     @_metadata_adder('generate_actors')
-    def add_actors(self, meta, actor, role, bill_pos):
+    def add_actors(self, meta, actor, sex, role, bill_pos):
         (anode, _) = models.Actor.objects.get_or_create(name=actor)
+        anode.sex = sex
         anode.role = role
         anode.bill_pos = bill_pos
         anode.save()

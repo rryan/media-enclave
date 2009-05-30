@@ -130,6 +130,11 @@ class Actor(models.Model):
 
     name = models.CharField(max_length=255, primary_key=True)
 
+    SEXES = (('M', 'Male'),
+             ('F', 'Female'))
+
+    sex = models.CharField(max_length=1, choices=SEXES, blank=True, null=True)
+
     # TODO(rnk): This data should really live in a ManyToMany relationship
     # table between movies and actors.
     role = models.CharField(max_length=255, blank=True, null=True)
@@ -191,7 +196,7 @@ class IMDBMetadata(ContentMetadataSource):
                                             primary_key=True)
     release_date = models.DateTimeField(blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
-    genres = models.ManyToManyField("Genre") # TODO - rename to genres
+    genres = models.ManyToManyField("Genre")
     directors = models.ManyToManyField("Director")
     actors = models.ManyToManyField("Actor")
     plot_summary = models.TextField(blank=True, null=True)
@@ -310,7 +315,7 @@ class ContentNode(models.Model):
     parent = models.ForeignKey("self", related_name="children",
                                blank=True, null=True)
 
-    metadata = models.OneToOneField("ContentMetadata")
+    metadata = models.OneToOneField("ContentMetadata", blank=True, null=True)
 
     #--------------------------------- Content Path --------------------------#
 
@@ -351,7 +356,6 @@ class ContentNode(models.Model):
     def date_added_string(self): return datetime_string(self.created)
     date_added_string.short_description = 'date added'
 
-
     #------------------------------ Other Stuff ------------------------------#
 
     class Meta:
@@ -364,8 +368,5 @@ class ContentNode(models.Model):
                 (str(self.id),), {'queryset': ContentNode.objects,
                                   'template_name': 'content_detail.html'})
 
-    @classmethod
-    def searchable_fields(cls):
-        # TODO(rnk): Expand this to include the rest of the metadata.
-        return ('title', 'metadata__imdb__directors__name',
-                'metadata__imdb__actors__name')
+    SEARCHABLE_FIELDS = ('title', 'metadata__imdb__directors__name',
+                         'metadata__imdb__actors__name')

@@ -13,8 +13,8 @@ from menclave.aenclave.utils import get_int_list, get_song_list, get_integer
 from menclave.aenclave.xml import (simple_xml_response, xml_error,
                                    render_xml_to_response)
 from menclave.aenclave.html import html_error
-from menclave.aenclave.json import (render_json_response, json_error,
-                                    json_channel_info)
+from menclave.aenclave.json_response import (render_json_response, json_error,
+                                             json_channel_info)
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.control import ControlError
 from menclave.aenclave.models import Channel, Song

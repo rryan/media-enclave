@@ -5,7 +5,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from menclave.aenclave.json import json_channel_info
+from menclave.aenclave.json_response import json_channel_info
 from menclave.aenclave.models import Channel
 
 def render_html_template(template, request, options=None, *args, **kwargs):

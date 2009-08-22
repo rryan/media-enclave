@@ -7,7 +7,7 @@ from django.http import Http404
 from django.template import RequestContext
 
 from menclave import settings
-from menclave.aenclave.json import json_error, json_success
+from menclave.aenclave.json_response import json_error, json_success
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.models import Song, Playlist, PlaylistEntry
 from menclave.aenclave.utils import get_song_list

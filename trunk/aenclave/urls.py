@@ -1,5 +1,6 @@
 # menclave/aenclave/urls.py
 
+from django.conf import settings
 from django.conf.urls.defaults import url, patterns
 
 from menclave.aenclave.models import Song
@@ -19,17 +20,17 @@ urlpatterns = patterns(
 
     url(r'^scripts/(?P<path>.*)$',
         'django.views.static.serve',
-        {'document_root': 'aenclave/scripts/'},
+        {'document_root': settings._MENCLAVE_ROOT + 'aenclave/scripts/'},
         name='aenclave-scripts'),
 
     url(r'^styles/(?P<path>.*)$',
         'django.views.static.serve',
-        {'document_root': 'aenclave/styles/'},
+        {'document_root': settings._MENCLAVE_ROOT + 'aenclave/styles/'},
         name='aenclave-styles'),
 
     url(r'^images/(?P<path>.*)$',
         'django.views.static.serve',
-        {'document_root': 'aenclave/images/'},
+        {'document_root': settings._MENCLAVE_ROOT + 'aenclave/images/'},
         name='aenclave-images'),
 
     # Login/logout

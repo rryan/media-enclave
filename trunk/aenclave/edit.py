@@ -1,10 +1,9 @@
 
-from mutagen.easyid3 import EasyID3
-from mutagen.mp3 import MP3
+from mutagen.mp3 import EasyMP3
 
 from menclave.aenclave.login import permission_required_xml, permission_required_json
 from menclave.aenclave.xml import xml_error, render_xml_to_response
-from menclave.aenclave.json import json_error, render_json_template
+from menclave.aenclave.json_response import json_error, render_json_template
 from menclave.aenclave.utils import get_unicode, get_integer
 from menclave.aenclave.models import Song
 
@@ -16,7 +15,7 @@ def xml_edit(request):
     try: song = Song.objects.get(pk=int(form.get('id','')))
     except (ValueError, TypeError, Song.DoesNotExist), err:
         return xml_error(str(err))
-    audio = MP3(song.audio.path, ID3=EasyID3)
+    audio = EasyMP3(song.audio.path)
     # Update title.
     title = get_unicode(form, 'title')
     if title:  # Disallow empty titles.
@@ -53,7 +52,7 @@ def json_edit(request):
     try: song = Song.objects.get(pk=int(form.get('id','')))
     except (ValueError, TypeError, Song.DoesNotExist), err:
         return json_error(str(err))
-    audio = MP3(song.audio.path, ID3=EasyID3)
+    audio = EasyMP3(song.audio.path)
     # Update title.
     title = get_unicode(form, 'title')
     if title:  # Disallow empty titles.

@@ -1,6 +1,6 @@
 # venclave/views.py
 
-import cjson
+import json
 import cgi
 
 from django.contrib.auth import authenticate, login
@@ -115,7 +115,7 @@ def browse(request):
 
 @login_required
 def update_list(request):
-    facets = cjson.decode(request.POST['f'])
+    facets = json.loads(request.POST['f'])
     query_string = request.POST.get('q', '')
     word_query = words_to_query(query_string)
     nodes = ContentNode.objects.filter(word_query)
@@ -156,7 +156,7 @@ def update_list(request):
         else:
             raise ValueError("op must be 'slider', 'or', or 'and'")
     result = browse_and_update_vals(nodes, query_string)
-    return HttpResponse(cjson.encode(result))
+    return HttpResponse(json.dumps(result))
 
 
 def create_video_list(nodes):

@@ -2,7 +2,7 @@
 
 """JSON rendering functions."""
 
-import cjson
+import json
 
 from django.template import loader
 from django.http import HttpResponse
@@ -15,7 +15,7 @@ def render_json_template(*args, **kwargs):
     Renders a JSON template, and then calls render_json_response().
 
     Deprecated.  Don't use Django templates to send JSON, just use
-    cjson.encode().  It's faster and easier.
+    json.dumps().  It's faster and easier.
     """
     data = loader.render_to_string(*args, **kwargs)
     return render_json_response(data)
@@ -27,10 +27,10 @@ def render_json_response(data):
     return resp
 
 def json_success(message=""):
-    return render_json_response(cjson.encode({'success': message}))
+    return render_json_response(json.dumps({'success': message}))
 
 def json_error(message):
-    return render_json_response(cjson.encode({'error': message}))
+    return render_json_response(json.dumps({'error': message}))
 
 def json_channel_info(request, channel):
     """Return a JSON blob with the channel info.
@@ -64,4 +64,4 @@ def json_channel_info(request, channel):
     data['playlist_length'] = queue_length
     data['playlist_duration'] = snapshot.queue_duration
     data['playing'] = snapshot.status == 'playing'
-    return cjson.encode(data)
+    return json.dumps(data)

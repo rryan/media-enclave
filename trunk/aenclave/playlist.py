@@ -1,4 +1,4 @@
-import cjson
+import json
 
 from django.template import RequestContext
 from django.db.models import Count, Q
@@ -66,7 +66,7 @@ def json_user_playlists(request):
     playlist_data = [{'pid': pl.id, 'owner': pl.owner.username, 'name': pl.name}
                      for pl in playlists]
     print playlist_data
-    return render_json_response(cjson.encode(playlist_data))
+    return render_json_response(json.dumps(playlist_data))
 
 #----------------------------- Playlist Editing ------------------------------#
 

@@ -8,7 +8,8 @@ from django.core.urlresolvers import reverse
 from menclave.aenclave.login import permission_required
 from menclave.aenclave.html import render_html_template, html_error
 from menclave.aenclave.xml import render_xml_to_response
-from menclave.aenclave.json import render_json_response, json_error, json_success
+from menclave.aenclave.json_response import (render_json_response, json_error,
+                                             json_success)
 from menclave.aenclave.models import Playlist, PlaylistEntry, Song
 from menclave.aenclave.utils import get_integer, get_unicode, get_song_list
 

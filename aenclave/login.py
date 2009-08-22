@@ -6,7 +6,7 @@ from django.template import RequestContext
 
 from menclave import settings as settings
 from menclave.aenclave.html import html_error, render_html_template
-from menclave.aenclave.json import json_error
+from menclave.aenclave.json_response import json_error
 from menclave.aenclave.xml import xml_error
 
 #------------------------------- Permissions --------------------------------#

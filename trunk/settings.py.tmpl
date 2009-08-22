@@ -7,6 +7,11 @@
 ## DON'T RE-ADD SETTINGS.PY TO THE REPOSITORY!
 ## Not everybody has the same settings.
 
+## CUSTOMIZE ME
+# This is the root of your media enclave checkout.  This variable is used
+# throughout the rest of the settings for convenience.
+_MENCLAVE_ROOT = "/path-to-menclave/"
+
 #================================= DEBUGGING =================================#
 
 # Debug mode.  When enabled, makes pretty error pages and other useful things.
@@ -45,8 +50,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Don't leave cookies lying around.
 #================================= DATABASE ==================================#
 
 DATABASE_ENGINE = 'sqlite3'  # 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-## CUSTOMIZE ME
-DATABASE_NAME = '/path/to/database'
+DATABASE_NAME = _MENCLAVE_ROOT + 'db'
   # Or path to database file if using sqlite3.
 DATABASE_USER = ''      # Not used with sqlite3.
 DATABASE_PASSWORD = ''  # Not used with sqlite3.
@@ -70,10 +74,9 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = False
 
-## CUSTOMIZE ME
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/path/to/media'
+MEDIA_ROOT = _MENCLAVE_ROOT + 'media/'
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
@@ -88,19 +91,16 @@ AENCLAVE_SFTP_UPLOAD_DIR = "/path/to/sftp-upload"
 # directory of WAV or MP3 files.
 AENCLAVE_DEQUEUE_NOISES_DIR = "/path/to/dequeue-noise"
 
-### CUSTOMIZE ME
 # This is where venclave videos are stored on the filesystem.
-VIDEO_PATH = "/path/to/videos"
+VIDEO_PATH = MEDIA_ROOT + "venclave/videos"
 
-### CUSTOMIZE ME
 # This is the base URL where venclave videos are served from.  Django is not
 # configured to serve the videos, and you should configure your web server to
 # serve this URL.
-VIDEO_URL = "http://example.com/videos"
+VIDEO_URL = "file://" + VIDEO_PATH
 
-### CUSTOMIZE ME
 # Where to store the IMDB .list files for venclave.
-IMDB_PATH = "/path/to/imdb_data"
+IMDB_PATH = _MENCLAVE_ROOT + "imdb_data"
 
 ### CUSTOMIZE ME
 ### At the moment, only "mp3" and "m4a"
@@ -188,9 +188,7 @@ TIME_FORMAT = 'H:i:s'             # 15:34:12
 YEAR_MONTH_FORMAT = 'F Y'         # December 2006
 MONTH_DAY_FORMAT = 'j F'          # 3 December
 
-#=============================================================================#
-
-_MENCLAVE_ROOT = "/path-to-menclave/"
+#================================ MEDIA BUNDLES ===============================#
 
 # Enable these both to improve performance and hurt debugging.
 DEFER_JAVASCRIPT = False

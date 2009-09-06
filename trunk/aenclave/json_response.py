@@ -1,4 +1,4 @@
-# menclave/aenclave/json.py
+# menclave/aenclave/json_response.py
 
 """JSON rendering functions."""
 

@@ -11,6 +11,7 @@
   {% defer %}
     <script type="text/javascript">
       channels.channel_id = {{ channel.id }};
+      songlist.enable_dnd(channels.reorder_songs);
     </script>
   {% enddefer %}
 {% endblock %}

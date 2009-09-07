@@ -1,9 +1,5 @@
 // playlist -- functions for viewing a playlist in Audio Enclave
 
-$(document).ready(function() {
-  songlist.enable_dnd(playlist.save);
-});
-
 var playlist = {
 
   // These two attrs are set by an inline script.

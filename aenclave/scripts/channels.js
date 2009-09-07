@@ -1,36 +1,5 @@
 // channels -- functions for the Channels page
 
-$(document).ready(function() {
-  songlist.enable_dnd(function(table, row) {
-    row = jQuery(row);
-    var prev_row = row.prev("tr");
-    var playid = jQuery(".song_selected", row).attr('playid');
-    var after_playid = jQuery(".song_selected", prev_row).attr('playid');
-    // The current song will not have a checkbox input.
-    if (!after_playid) {
-      after_playid = -1;  // -1 is a sentinel value for beginning.
-    }
-    // The channel_id should be set.  If not, we can't actually do reordering.
-    if (!channels.channel_id) return;
-    jQuery.ajax({
-      url: '/audio/channels/' + channels.channel_id + '/reorder/',
-      type: 'get',
-      data: {'playid': playid, 'after_playid': after_playid},
-      dataType: 'json',
-      success: function(data) {
-        if (data.error) {
-          this.error(data.error);
-          return;
-        }
-        controls.update_playlist_info(data);
-      },
-      error: function(errorMsg) {
-        controls.error(String(errorMsg));
-      }
-    });
-  });
-});
-
 var channels = {
 
   // This value is set in the template via an inline script.  It will be set 
@@ -85,6 +54,35 @@ var channels = {
 
   recent: function() {
     songlist.error_message("This feature isn't done yet.");
+  },
+
+  reorder_songs: function(table, row) {
+    row = jQuery(row);
+    var prev_row = row.prev("tr");
+    var playid = jQuery(".song_selected", row).attr('playid');
+    var after_playid = jQuery(".song_selected", prev_row).attr('playid');
+    // The current song will not have a checkbox input.
+    if (!after_playid) {
+      after_playid = -1;  // -1 is a sentinel value for beginning.
+    }
+    // The channel_id should be set.  If not, we can't actually do reordering.
+    if (!channels.channel_id) return;
+    jQuery.ajax({
+      url: '/audio/channels/' + channels.channel_id + '/reorder/',
+      type: 'get',
+      data: {'playid': playid, 'after_playid': after_playid},
+      dataType: 'json',
+      success: function(data) {
+        if (data.error) {
+          this.error(data.error);
+          return;
+        }
+        controls.update_playlist_info(data);
+      },
+      error: function(errorMsg) {
+        controls.error(String(errorMsg));
+      }
+    });
   }
 
 };

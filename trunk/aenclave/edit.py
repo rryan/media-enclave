@@ -1,5 +1,12 @@
 
-from mutagen.mp3 import EasyMP3
+# Workaround for different versions of mutagen.
+try:
+    from mutagen.mp3 import EasyMP3
+except ImportError:
+    from mutagen.mp3 import MP3
+    from mutagen.easyid3 import EasyID3
+    def EasyMP3(*args, **kwargs):
+        return MP3(*args, ID3=EasyID3, **kwargs)
 
 from menclave.aenclave.login import permission_required_xml, permission_required_json
 from menclave.aenclave.xml import xml_error, render_xml_to_response

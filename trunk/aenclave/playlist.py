@@ -66,7 +66,6 @@ def json_user_playlists(request):
     else: playlists = Playlist.objects.none()
     playlist_data = [{'pid': pl.id, 'owner': pl.owner.username, 'name': pl.name}
                      for pl in playlists]
-    print playlist_data
     return render_json_response(json.dumps(playlist_data))
 
 #----------------------------- Playlist Editing ------------------------------#

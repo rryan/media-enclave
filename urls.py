@@ -10,6 +10,7 @@ urlpatterns = patterns(
     (r'^audio/', include('menclave.aenclave.urls')),
     (r'^video/', include('menclave.venclave.urls')),
     #(r'^games/', include('menclave.genclave.urls')),
+    (r'^log/', include('menclave.log.urls')),
     (r'^admin/(.*)', admin.site.root),
 )
 

@@ -7,6 +7,8 @@ The server that allows communication with a GstPlayer via Pyro.
 import gobject
 import logging
 import os
+os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"
+from menclave import settings
 # Pyro needs this variable before we import it, so we add it to the environment
 # like this.
 os.environ["PYRO_STORAGE"] = "/tmp/"
@@ -14,8 +16,6 @@ os.environ["PYRO_STDLOGGING"] = "1"
 os.environ["PYRO_TRACELEVEL"] = "2"
 import Pyro.core
 import threading
-os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"
-from menclave import settings
 from menclave.aenclave.gst_player import gst_backend
 from django.core import management
 

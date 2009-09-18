@@ -148,6 +148,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'menclave.aenclave.middleware.ChannelMiddleware',
+    'menclave.log.middleware.LoggingMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (

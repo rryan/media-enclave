@@ -17,28 +17,26 @@ def valid_song(name):
     ext = name.lower()[len(name)-3:]
     return ext in SUPPORTED_AUDIO
 
-def process_song(name, content):
-    """
-    Processes a song upload: saving it and reading the meta information
-    returns the song object and mutagen audio object
-    """
-    # Save the song into the database -- we'll fix the tags in a moment.
-    song = Song(track=0, time=0)
-    
-    song.audio.save(name, content)
-    
-    info = {}
-    
+def annotate_metadata(song):
+    path = song.audio.path
     audio = None
+    info = {}
+    ext = path.lower()[len(path)-3:]
 
-    if not valid_song(name):
-        raise BadContent(name)
-    
-    ext = name.lower()[len(name)-3:]
+    # Mutagen doesn't like unicode 
+    path_latin1 = path.encode('latin1')
+
+    # TODO(XXX) Once mutagen 1.17 makes it everywhere we can do away
+    # with this bother with extensions and figuring out the file
+    # format. We can use mutagen.File(filename) and it will hand us
+    # the correct Mutagen tag parse for it. We could do this today,
+    # but it's awkward because you can't specify you want EasyTags,
+    # it'll hand you the raw MP3 tags, which are butts. 1.17 is much
+    # much nicer, but not yet released.
 
     if ext == "mp3":
         # Now, open up the MP3 file and save the tag data into the database.
-        audio = MP3(song.audio.path, ID3=EasyID3)
+        audio = MP3(path_latin1, ID3=EasyID3)
         try: info['title'] = audio['title'][0]
         except (KeyError, IndexError): info['title'] = 'Unnamed Song'
         try: info['album'] = audio['album'][0]
@@ -53,7 +51,7 @@ def process_song(name, content):
     # http://atomicparsley.sourceforge.net/mpeg-4files.html
     elif ext == "m4a":
         # Now, open up the MP3 file and save the tag data into the database.
-        audio = MP4(song.audio.path)
+        audio = MP4(path_latin1)
         try: 
             info['title'] = audio['\xa9nam'][0]
         except (KeyError, IndexError): 
@@ -87,10 +85,26 @@ def process_song(name, content):
     song.artist = info['artist']
     song.track = info['track']
     song.time = info['time']
-    song.save()
 
     if not hasattr(audio.info, 'sketchy'):
         # Mutagen only checks mp3s for sketchiness
         audio.info.sketchy = False
+
+    return audio
+
+def process_song(name, content):
+    """
+    Processes a song upload: saving it and reading the meta information
+    returns the song object and mutagen audio object
+    """
+
+    if not valid_song(name):
+        raise BadContent(name)
+
+    # Save the song into the database -- we'll fix the tags in a moment.
+    song = Song(track=0, time=0)
+    song.audio.save(name, content)
+    audio = annotate_metadata(song)
+    song.save()
     
     return (song, audio)

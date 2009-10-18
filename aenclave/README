@@ -12,6 +12,7 @@ First, make sure the following dependencies are installed:
 - GStreamer (>= 0.10; this includes gstreamer-plugins-base/good/ugly)
 - pygst (spelled 'python-gst' by Ubuntu/Debian)
 - Pyro (python remote objects)
+- Mutagen
 - A database that Django supports.  To start, we recommend sqlite3 because it
   does not require a daemon running in the background.
 

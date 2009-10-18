@@ -639,3 +639,14 @@ var songlist = {
   }
 
 };
+
+// Add a keybinding for 'a' to toggle select all.
+(function() {
+  var options = {'combi': 'a', 'disableInInput': true};
+  jQuery(document).bind('keydown', options, function() {
+    var box = $('#checkall').get(0);
+    box.checked = !box.checked;
+    songlist.select_all(box);
+    return false;
+  });
+})();

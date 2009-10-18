@@ -9,11 +9,17 @@ import logging
 import os
 os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"
 from menclave import settings
+
 # Pyro needs this variable before we import it, so we add it to the environment
 # like this.
 os.environ["PYRO_STORAGE"] = "/tmp/"
 os.environ["PYRO_STDLOGGING"] = "1"
 os.environ["PYRO_TRACELEVEL"] = "2"
+
+# Ignore warnings before importing Pyro; it uses deprecated modules.
+import warnings
+warnings.simplefilter("ignore")
+
 import Pyro.core
 import threading
 from menclave.aenclave.gst_player import gst_backend

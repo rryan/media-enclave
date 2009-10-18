@@ -5,6 +5,9 @@ The client that communicates with the gst_server via Pyro.
 """
 
 import time
+# Ignore warnings before importing Pyro; it uses deprecated modules.
+import warnings
+warnings.simplefilter("ignore")
 import Pyro.core
 import os
 os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"

@@ -4,6 +4,9 @@
 
 import logging
 
+# Ignore warnings before importing Pyro; it uses deprecated modules.
+import warnings
+warnings.simplefilter("ignore")
 import Pyro.core
 
 from menclave import settings

@@ -285,3 +285,33 @@ var controls = {
   }
 
 };
+
+(function($) {
+  // Bind '/' to focusing on the search box.
+  var options = {'combi': '/', 'disableInInput': true};
+  $(document).bind('keydown', options, function() {
+    $('#search_box').focus();
+    return false;
+  });
+
+  // Navigation shortcuts.
+  var navs = {
+    'c': '/audio/channels/',
+    'p': '/audio/playlists/',
+    'b': '/audio/browse/',
+    'u': '/audio/upload/',
+    'r': '/audio/roulette/',
+    'h': '/audio/',
+  };
+  for (var key in navs) {
+    // We need a new scope here for the closure to work properly.
+    (function () {
+      var url = navs[key];
+      var options = {'combi': key, 'disableInInput': true};
+      $(document).bind('keydown', options, function() {
+        window.location = url;
+        return false;
+      });
+    })();
+  }
+})(jQuery);

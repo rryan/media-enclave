@@ -29,7 +29,7 @@ class VisibleManager(models.Manager):
 
 #-----------------------------------------------------------------------------#
 
-SONGS_ROOT = 'aenclave/songs/'
+SONGS_ROOT = 'aenclave/songs'
 SONG_AUDIO_UPLOAD_TO = SONGS_ROOT + '%Y/%m/%d/'
 
 class Song(models.Model):

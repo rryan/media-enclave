@@ -15,7 +15,8 @@
       <a href="{% url aenclave-roulette %}">Roulette</a>
     </div>
     <form method="get" action="{% url aenclave-normal-search %}">
-      <input type="text" name="q" size="50" value="{{search_query|escape}}"/>
+      <input id="search_box" type="text" name="q" size="50"
+          value="{{search_query|escape}}"/>
       <input type="submit" value="Search"/>
       <br/>
       Search from: 

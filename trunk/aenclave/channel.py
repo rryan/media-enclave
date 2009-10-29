@@ -22,9 +22,15 @@ from menclave.aenclave.models import Channel, Song
 #--------------------------------- Channels ----------------------------------#
 
 def channel_detail(request, channel_id=1):
-    try: channel = Channel.objects.get(pk=channel_id)
-    except Channel.DoesNotExist: raise Http404
-    snapshot = request.get_channel_snapshot(channel)
+    try:
+        channel = Channel.objects.get(pk=channel_id)
+    except Channel.DoesNotExist:
+        raise Http404
+    try:
+        snapshot = request.get_channel_snapshot(channel)
+    except ControlError, e:
+        msg = "Error while connecting to player: %s" % e.message
+        return html_error(request, msg)
     songs = Song.annotate_favorited(snapshot.song_queue, request.user)
     return render_html_template('aenclave/channels.html', request,
                                 {'channel': channel,
@@ -38,9 +44,15 @@ def channel_detail(request, channel_id=1):
                                 context_instance=RequestContext(request))
 
 def channel_history(request, channel_id=1):
-    try: channel = Channel.objects.get(pk=channel_id)
-    except Channel.DoesNotExist: raise Http404
-    snapshot = request.get_channel_snapshot(channel)
+    try:
+        channel = Channel.objects.get(pk=channel_id)
+    except Channel.DoesNotExist:
+        raise Http404
+    try:
+        snapshot = request.get_channel_snapshot(channel)
+    except ControlError, e:
+        msg = "Error while connecting to player: %s" % e.message
+        return html_error(request, msg)
     songs = Song.annotate_favorited(snapshot.song_history, request.user)
     return render_html_template("aenclave/list_songs.html", request,
                                 {'song_list': songs,

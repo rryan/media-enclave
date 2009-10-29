@@ -8,6 +8,7 @@ from django.template import loader
 from django.http import HttpResponse
 from django.conf import settings
 
+from menclave.aenclave import control
 from menclave.aenclave.models import Channel
 
 def render_json_template(*args, **kwargs):
@@ -40,7 +41,10 @@ def json_channel_info(request, channel):
     """
     data = {}
     ctrl = channel.controller()
-    snapshot = request.get_channel_snapshot(channel)
+    try:
+        snapshot = request.get_channel_snapshot(channel)
+    except control.ControlError, e:
+        return json.dumps({'error': e.message})
     songs = snapshot.song_queue
     current_song = snapshot.current_song
     queue_length = len(songs) + int(bool(current_song))

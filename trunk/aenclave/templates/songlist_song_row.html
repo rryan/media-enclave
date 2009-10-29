@@ -1,12 +1,16 @@
 {% load aenclave %}
+<td class="triangleselect">
+  <div class="triangle aenclave-sprites aenclave-sprites-triangleselect-png"
+      style="visibility: hidden;">&nbsp;</div>
+</td>
 <td class="select c">
   {% spaceless %}
     {% if current %}
       <div class="aenclave-sprites aenclave-sprites-speaker-png"
           id="currentsong" name="{{song.id}}">&nbsp;</div>
     {% else %}
-      <input class="song_selected" type="checkbox" name="{{song.id}}"
-          playid="{{song.playid}}"/>
+        <input class="song_selected" type="checkbox" name="{{song.id}}"
+            playid="{{song.playid}}"/>
     {% endif %}
   {% endspaceless %}
 </td>

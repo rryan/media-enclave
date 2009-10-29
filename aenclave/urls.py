@@ -9,9 +9,7 @@ urlpatterns = patterns(
     '',
 
     url(r'^$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'aenclave/index.html',
-         'extra_context': {'total_song_count': Song.visibles.count}},
+        'menclave.aenclave.views.home',
         name='aenclave-home'),
 
     # Static content -- These exist only for the test server.  In production,

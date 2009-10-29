@@ -7,12 +7,19 @@ from django.http import Http404
 from django.template import RequestContext
 
 from menclave import settings
-from menclave.aenclave.json_response import json_error, json_success
+from menclave.aenclave import json_response
 from menclave.aenclave.html import render_html_template
-from menclave.aenclave.models import Song, Playlist, PlaylistEntry
+from menclave.aenclave.models import Channel, Song, Playlist, PlaylistEntry
 from menclave.aenclave.utils import get_song_list
 
-#--------------------------------- Roulette ----------------------------------#
+#--------------------------------- Misc --------------------------------------#
+
+def home(request):
+    channel = Channel.objects.get(pk=1)  # 1 is the default channel.
+    playlist_info = json_response.json_channel_info(request, channel)
+    return render_html_template('aenclave/index.html', request,
+                                {'total_song_count': Song.visibles.count(),
+                                 'playlist_info': playlist_info})
 
 def roulette(request):
     # Choose six songs randomly.
@@ -22,13 +29,11 @@ def roulette(request):
                                 {'song_list': queryset},
                                 context_instance=RequestContext(request))
 
-#--------------------------------- Misc --------------------------------------#
-
 def json_email_song_link(request):
     form = request.POST
     email_address = form.get('email', '')
     if not re.match("^[-_a-zA-Z0-9.]+@[-_a-zA-Z0-9.]+$", email_address):
-        return json_error("Invalid email address.")
+        return json_response.json_error("Invalid email address.")
     songs = get_song_list(form)
     if songs:
         message = ["From: Audio Enclave <%s>\r\n" %
@@ -50,12 +55,13 @@ def json_email_song_link(request):
         # Ship it!
         send_mail("Link to " + subject, "".join(message),
                   settings.DEFAULT_FROM_EMAIL, (email_address,))
-        return json_success("An email has been sent to %s." % email_address)
-    else: return json_error("No matching songs were found.")
+        msg = "An email has been sent to %s." % email_address
+        return json_response.json_success(msg)
+    else: return json_response.json_error("No matching songs were found.")
 
 def favorite_song(request, song_id):
     if not request.user.is_authenticated():
-        return json_error('User not authenticated.')
+        return json_response.json_error('User not authenticated.')
     favorited = request.POST['favorited'] == 'true'
     try:
         song = Song.objects.get(pk=int(song_id))
@@ -70,6 +76,6 @@ def favorite_song(request, song_id):
         pl.append_songs([song])
     elif not favorited and fav:
         fav.delete()
-    return json_success("%s favorited: %r" % (song_id, favorited))
+    return json_response.json_success("%s favorited: %r" % (song_id, favorited))
 
 #=============================================================================#

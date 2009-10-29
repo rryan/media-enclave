@@ -3,6 +3,7 @@
 // www.jquery.com for documentation.
 
 $(document).ready(function() {
+  songlist.initialize_triangles();
   songlist.initialize_colpicker();
   songlist.initialize_favorites();
 });
@@ -636,17 +637,62 @@ var songlist = {
     var cols_on = $('li.col-off .aenclave-sprites', cols);
     cols_on.removeClass('aenclave-sprites-tick-png');
     cols_on.addClass('aenclave-sprites-cross-png');
+  },
+
+  show_triangle: function(triangle) {
+    triangle.addClass("tri_visible").css('visibility', '');
+  },
+
+  hide_triangle: function(triangle) {
+    triangle.removeClass("tri_visible").css('visibility', 'hidden');
+  },
+
+  initialize_triangles: function() {
+    songlist.show_triangle($($('.triangle').get(0)));
+  },
+
+  change_selection: function(direction) {
+    // Find the next or previous triangle.
+    var triangle = $('.triangle.tri_visible');
+    var tr = triangle.closest('tr');
+    var next_tr;
+    if (direction == 'j') {
+      next_tr = tr.next('tr');
+    } else {
+      next_tr = tr.prev('tr');
+    }
+    var next_triangle = $('.triangle', next_tr);
+
+    // If we're about to go off the end, don't hide the triangle.
+    if (next_tr.size() != 0) {
+      songlist.hide_triangle(triangle);
+      songlist.show_triangle(next_triangle);
+    }
+  },
+
+  queue_selection: function() {
+    var triangle = $('.triangle.tri_visible');
+    var queue_link = $('a', triangle.closest('td').nextAll('.title'));
+    queue_link.click();
   }
 
 };
 
 // Add a keybinding for 'a' to toggle select all.
-(function() {
+(function($) {
   var options = {'combi': 'a', 'disableInInput': true};
-  jQuery(document).bind('keydown', options, function() {
-    var box = $('#checkall').get(0);
-    box.checked = !box.checked;
-    songlist.select_all(box);
-    return false;
-  });
-})();
+  $(document).bind('keydown', {'combi': 'a', 'disableInInput': true},
+    function() {
+      var box = $('#checkall').get(0);
+      box.checked = !box.checked;
+      songlist.select_all(box);
+      return false;
+    }
+  );
+  $(document).bind('keydown', {'combi': 'j', 'disableInInput': true},
+    function() { songlist.change_selection('j'); });
+  $(document).bind('keydown', {'combi': 'k', 'disableInInput': true},
+    function() { songlist.change_selection('k'); });
+  $(document).bind('keydown', {'combi': 'return', 'disableInInput': true},
+    function() { songlist.queue_selection(); });
+})(jQuery);

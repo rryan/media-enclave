@@ -170,6 +170,12 @@ span.aenclave-sprites-selectcol-png {
 
 /***************************** SONGLIST COLUMNS ******************************/
 
+.triangleselect {
+    padding: 0px;
+    margin: 0px;
+    width: 0px;
+}
+
 .select {
     width: 1px;
 }

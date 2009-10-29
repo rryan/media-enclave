@@ -290,7 +290,7 @@ var controls = {
   // Bind '/' to focusing on the search box.
   var options = {'combi': '/', 'disableInInput': true};
   $(document).bind('keydown', options, function() {
-    $('#search_box').focus();
+    $('#search_box').focus().select();
     return false;
   });
 

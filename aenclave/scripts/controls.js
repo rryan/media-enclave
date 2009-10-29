@@ -128,16 +128,12 @@ var controls = {
       url: url,
       type: 'post',
       dataType: 'json',
-      error: function(transport) {
-        controls.error(String(transport.status));
+      error: function(transport, textStatus, exception) {
+        controls.error(textStatus);
       },
       success: function(response_json) {
         // Update the control panel with the response JSON.
-        if (response_json.error) {
-          controls.error(response_json.error);
-        } else {
-          controls.update_playlist_info(response_json);
-        }
+        controls.update_playlist_info(response_json);
       }
     };
     if (parameters) {
@@ -170,6 +166,12 @@ var controls = {
 
   // Updates the controls widget with new playlist information.
   update_playlist_info: function(playlist_info) {
+    // If we got an error, just display the message.
+    if (playlist_info.error) {
+      controls.error(playlist_info.error);
+      return;
+    }
+
     // If we're on channels, and the playlist changed, reload the page.
     var regex = /^\/audio\/channels\/(\d+\/)?$/;
     var on_channels = regex.test(window.location.pathname);
@@ -178,6 +180,7 @@ var controls = {
       window.location.reload();
       return;
     }
+
     controls.playlist_info = playlist_info;
     if (controls._playlist_empty(playlist_info)) {
       controls.clear_controls();

@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 
 from django.http import Http404
 from django.conf import settings
@@ -60,7 +61,8 @@ def delete_songs(request):
             new_path = os.path.join(settings.DELETED_FILES_DIRECTORY,
                                     filename)
             logging.info("Moving %s to %s" % (path, new_path))
-            os.rename(path, new_path)
+            # Use shutil.move instead of os.rename to move across filesystems.
+            shutil.move(path, new_path)
 
     return render_html_template('aenclave/delete_performed.html', request, {},
                                 context_instance=RequestContext(request))

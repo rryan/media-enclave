@@ -1,27 +1,27 @@
-UL {
+ul {
   list-style-type: none;
   margin: 0px;
   padding: 2px 15px 0px;
 }
 
-UL#filter {
+ul#filter {
   border: 1px #ddd solid;
   margin: 20px 0px 10px;
   padding: 5px 2px 3px;
 }
 
-UL#filter LI {
+ul#filter li {
   padding: 0px 6px 0px;
   margin: 0px;
   border-left: 2px black solid;
 }
-UL#filter LI#root { border: none; }
-UL#filter LI LI { border-left-color: #00c; }
-UL#filter LI LI LI { border-left-color: #0c0; }
-UL#filter LI LI LI LI { border-left-color: #c00; }
-UL#filter LI LI LI LI LI { border-left-color: #aaa; }
+ul#filter li#root { border: none; }
+ul#filter li li { border-left-color: #00c; }
+ul#filter li li li { border-left-color: #0c0; }
+ul#filter li li li li { border-left-color: #c00; }
+ul#filter li li li li li { border-left-color: #aaa; }
 
-UL#filter SELECT {
+ul#filter select {
   margin: 0px 3px;
   width: 140px;
 }

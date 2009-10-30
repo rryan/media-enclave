@@ -1,6 +1,6 @@
 /******************************* GLOBAL STYLES *******************************/
 
-BODY {
+body {
     background-color: #fff;
     color: #000;
     font-family: "Times New Roman", "Times", serif;
@@ -8,58 +8,58 @@ BODY {
     margin: 11px 27px 0px;
 }
 
-P {
+p {
   text-align: center;
 }
 
-P.warning {
+p.warning {
     margin: 40px auto 20px;
     text-align: center;
 }
 
-P.warning SPAN {
+p.warning span {
     background-color: #fcc;
     border: 1px #bbb solid;
     padding: 3px 10px;
 }
 
-TT {
+tt {
     font-family: "Andale Mono", monospace;
     font-size: 0.9em;
 }
 
-DIV.title {
+div.title {
     font-family: "Georgia", "Times New Roman", "Times", serif;
     font-size: 28px;
     text-align: center;
 }
 
-DIV.title A {
+div.title a {
     color: #000;
     text-decoration: none;
 }
-DIV.title A:active { color: #900; }
+div.title a:active { color: #900; }
 
-DIV#header {
+div#header {
     position: absolute;
     left: 20px;
     top: 20px;
     width: 200px;
 }
 
-DIV.subtitle {
+div.subtitle {
     font-size: 20px;
     margin: 10px 0px;
     text-align: center;
 }
 
-DIV#searchbar {
+div#searchbar {
     position: absolute;
     left: 240px;
     top: 32px;
 }
 
-DIV.links {
+div.links {
     border: 1px #bdc solid;
     margin: 0px auto 6px;
     padding: 2px 0px 1px;
@@ -67,22 +67,22 @@ DIV.links {
     width: 370px;
 }
 
-DIV.links A {
+div.links a {
     color: #9ba;
     padding: 0px 6px;
     text-decoration: none;
 }
 
-DIV.links A:hover {
+div.links a:hover {
     color: #9ad;
     text-decoration: underline;
 }
 
-DIV.links A:active { color: #d99; }
+div.links a:active { color: #d99; }
 
-DIV#headgap { height: 100px; }
+div#headgap { height: 100px; }
 
-DIV#login {
+div#login {
     font-size: 12px;
     position: absolute;
     right: 20px;
@@ -90,7 +90,7 @@ DIV#login {
     text-align: right;
 }
 
-DIV#copyright {
+div#copyright {
     font-size: 12px;
     margin: 10px;
     text-align: center;

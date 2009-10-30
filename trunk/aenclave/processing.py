@@ -1,3 +1,7 @@
+from __future__ import with_statement
+
+import hashlib
+
 from models import Song
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
@@ -8,6 +12,16 @@ from menclave.settings import SUPPORTED_AUDIO
 class BadContent(Exception):
     def __init__(self, extension):
         self.extension = extension
+
+def md5sum(filename):
+    """Takes the md5sum of a given file."""
+    m = hashlib.md5()
+    with open(filename, "r") as f:
+        bytes = f.read(4096)
+        while bytes != "":
+            m.update(bytes)
+            bytes = f.read(4096)
+    return m.hexdigest()
 
 def valid_song(name):
     """
@@ -92,6 +106,13 @@ def annotate_metadata(song):
 
     return audio
 
+def annotate_checksum(song):
+    try:
+        song.filechecksum = md5sum(song.audio.path)
+    except Exception, e: 
+        # This happens if the file doesn't exist, or some such.
+        song.filechecksum = ""
+
 def process_song(name, content):
     """
     Processes a song upload: saving it and reading the meta information
@@ -105,6 +126,7 @@ def process_song(name, content):
     song = Song(track=0, time=0)
     song.audio.save(name, content)
     audio = annotate_metadata(song)
+    annotate_checksum(song)
     song.save()
     
     return (song, audio)

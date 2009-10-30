@@ -20,7 +20,9 @@
       {% else %}
         playlist.allow_edit = false;
       {% endif %}
-      songlist.enable_dnd(playlist.save);
+      $(document).ready(function() {
+        songlist.enable_dnd(playlist.save);
+      });
     </script>
   {% enddefer %}
 {% endblock %}
@@ -32,6 +34,21 @@
     [<a href="{% url aenclave-user-playlist playlist.owner.username %}"><tt>{{playlist.owner.username}}</tt></a>{% if playlist.group %} / {{playlist.group.name}}{% endif %}]
     {% if allow_edit %}
       <br/>
+      <form id="group_choice_form" method="post"
+          action="/audio/playlists/edit_group/{{playlist.id}}/">
+        Group that can edit:
+        <select name="group">
+          <option value="">not group editable</option>
+          {% for group in groups %}
+            <option
+                {% ifequal group playlist.group %}
+                  selected="selected"
+                {% endifequal %}
+                value="{{group.id}}">{{group.name}}</option>
+          {% endfor %}
+        </select>
+        <input type="submit" value="Go"/>
+      </form>
       You can reorder the playlist order by dragging the blue up/down triangles.
     {% endif %}
   </div>

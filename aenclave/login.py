@@ -86,10 +86,10 @@ def user_debug(request):
 def login(request):
     form = request.POST
 
-    # If not using SSL, try redirecting.
-    if not request.is_secure():
-        url = 'https' + request.build_absolute_uri()[4:]
-        return HttpResponseRedirect(url)
+    ## If not using SSL, try redirecting.
+    #if not request.is_secure():
+        #url = 'https' + request.build_absolute_uri()[4:]
+        #return HttpResponseRedirect(url)
 
     # First try SSL Authentication
     user = auth.authenticate(request=request)

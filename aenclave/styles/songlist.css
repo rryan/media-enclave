@@ -5,6 +5,7 @@ table.data {
     border-collapse: collapse;
     margin: 20px 0px;
     width: 100%;
+    /*table-layout: fixed;*/
 }
 
 table.data th {
@@ -49,16 +50,19 @@ table.data th.drag {
     width: 16px;
 }
 
-table.data tbody TR.a {}
-table.data tbody TR.b { background-color: #f2f2ff; }
+table.data tbody tr.a {}
+table.data tbody tr.b { background-color: #f2f2ff; }
 /* TODO(rnk): 'c' means currently playing. Use a better name.  */
-table.data tbody TR.c { border-bottom: 3px #ccf double; }
+table.data tbody tr.c { border-bottom: 3px #ccf double; }
 
 table.data tbody td {
     font-size: 14px;  /* sometimes this gets overridden */
     text-align: left;
     padding: 3px 7px 4px;
     border-right: 1px #ddd solid;
+    /*overflow: hidden;*/
+    /*text-overflow: ellipsis;  [> Doesn't work in Gecko.  <]*/
+    /*white-space: nowrap;*/
 }
 
 table.data tbody td.r { text-align: right; }
@@ -120,6 +124,7 @@ table.data th.col-picker {
     margin: 2px;
     padding: 2px;
     border-spacing: 2px;
+    width: 13px;
 }
 
 th.col-picker div.cmDiv {
@@ -165,11 +170,11 @@ span.aenclave-sprites-selectcol-png {
 .triangleselect {
     padding: 0px;
     margin: 0px;
-    width: 0px;
+    width: 10px;
 }
 
 .select {
-    width: 1px;
+    width: 20px;
 }
 
 .drag {
@@ -177,7 +182,7 @@ span.aenclave-sprites-selectcol-png {
 }
 
 .track {
-    /*width: 40px;*/
+    width: 20px;
 }
 
 .title {
@@ -191,10 +196,22 @@ span.aenclave-sprites-selectcol-png {
 }
 
 .time {
-    width: 40px; 
+    width: 35px; 
+}
+
+.play-count {
+    width: 15px;
+}
+
+.skip-count {
+    width: 15px;
 }
 
 .date-added {
+    width: 130px;
+}
+
+.last-played {
     width: 130px;
 }
 

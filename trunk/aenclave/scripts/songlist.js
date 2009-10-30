@@ -6,6 +6,7 @@ $(document).ready(function() {
   songlist.initialize_triangles();
   songlist.initialize_colpicker();
   songlist.initialize_favorites();
+  songlist.initialize_hotkeys();
 });
 
 var songlist = {
@@ -674,25 +675,24 @@ var songlist = {
     var triangle = $('.triangle.tri_visible');
     var queue_link = $('a', triangle.closest('td').nextAll('.title'));
     queue_link.click();
+  },
+
+  initialize_hotkeys: function() {
+    var options = {'combi': 'a', 'disableInInput': true};
+    $(document).bind('keydown', {'combi': 'a', 'disableInInput': true},
+      function() {
+        var box = $('#checkall').get(0);
+        box.checked = !box.checked;
+        songlist.select_all(box);
+        return false;
+      }
+    );
+    $(document).bind('keydown', {'combi': 'j', 'disableInInput': true},
+      function() { songlist.change_selection('j'); });
+    $(document).bind('keydown', {'combi': 'k', 'disableInInput': true},
+      function() { songlist.change_selection('k'); });
+    $(document).bind('keydown', {'combi': 'return', 'disableInInput': true},
+      function() { songlist.queue_selection(); });
   }
 
 };
-
-// Add a keybinding for 'a' to toggle select all.
-(function($) {
-  var options = {'combi': 'a', 'disableInInput': true};
-  $(document).bind('keydown', {'combi': 'a', 'disableInInput': true},
-    function() {
-      var box = $('#checkall').get(0);
-      box.checked = !box.checked;
-      songlist.select_all(box);
-      return false;
-    }
-  );
-  $(document).bind('keydown', {'combi': 'j', 'disableInInput': true},
-    function() { songlist.change_selection('j'); });
-  $(document).bind('keydown', {'combi': 'k', 'disableInInput': true},
-    function() { songlist.change_selection('k'); });
-  $(document).bind('keydown', {'combi': 'return', 'disableInInput': true},
-    function() { songlist.queue_selection(); });
-})(jQuery);

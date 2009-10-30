@@ -151,6 +151,10 @@ urlpatterns = patterns(
         'menclave.aenclave.playlist.edit_playlist',
         name='aenclave-playlist-edit'),
 
+    url(r'^playlists/edit_group/(?P<playlist_id>\d+)/$',
+        'menclave.aenclave.playlist.edit_group_playlist',
+        name='aenclave-playlist-edit-group'),
+
     # Uploading
 
     url(r'^upload/$',

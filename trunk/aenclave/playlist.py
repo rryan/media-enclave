@@ -1,15 +1,15 @@
 import json
 
+from django.contrib.auth.models import Group
 from django.template import RequestContext
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
+from menclave.aenclave import json_response
 from menclave.aenclave.login import permission_required
 from menclave.aenclave.html import render_html_template, html_error
 from menclave.aenclave.xml import render_xml_to_response
-from menclave.aenclave.json_response import (render_json_response, json_error,
-                                             json_success)
 from menclave.aenclave.models import Playlist, PlaylistEntry, Song
 from menclave.aenclave.utils import get_integer, get_unicode, get_song_list
 
@@ -36,13 +36,15 @@ def playlist_detail(request, playlist_id):
     # Using the PlaylistEntry default order_by makes a godawful query.
     songs = playlist.songs.order_by('playlistentry__position')
     songs = Song.annotate_favorited(songs, request.user)
+    groups = Group.objects.all()
     return render_html_template('aenclave/playlist_detail.html', request,
                                 {'playlist': playlist,
                                  'song_list': songs,
                                  'force_actions_bar': can_cede,
                                  'allow_cede': can_cede,
                                  'allow_edit': can_edit,
-                                 'allow_dragging': can_edit},
+                                 'allow_dragging': can_edit,
+                                 'groups': groups},
                                 context_instance=RequestContext(request))
 
 def user_playlists(request, username):
@@ -66,7 +68,7 @@ def json_user_playlists(request):
     else: playlists = Playlist.objects.none()
     playlist_data = [{'pid': pl.id, 'owner': pl.owner.username, 'name': pl.name}
                      for pl in playlists]
-    return render_json_response(json.dumps(playlist_data))
+    return json_response.render_json_response(json.dumps(playlist_data))
 
 #----------------------------- Playlist Editing ------------------------------#
 
@@ -148,12 +150,36 @@ def edit_playlist(request, playlist_id):
     form = request.POST
     try: playlist = Playlist.objects.get(pk=playlist_id)
     except Playlist.DoesNotExist:
-        return json_error('That playlist does not exist.')
+        return json_response.json_error('That playlist does not exist.')
     # Check that they can edit it.
     if not playlist.can_edit(request.user):
-        return json_error('You are not authorized to edit this playlist.')
+        return json_response.json_error('You are not authorized to edit this'
+                                        ' playlist.')
     songs = get_song_list(form)
     if songs:
         playlist.set_songs(songs)
         playlist.save()
-    return json_success('Successfully edited "%s".' % playlist.name)
+    return json_response.json_success('Successfully edited "%s".' %
+                                      playlist.name)
+
+@permission_required('aenclave.change_playlist', 'Edit Playlist')
+def edit_group_playlist(request, playlist_id):
+    # Get the playlist.
+    form = request.POST
+    try: playlist = Playlist.objects.get(pk=playlist_id)
+    except Playlist.DoesNotExist:
+        return html_error('That playlist does not exist.')
+    # Check that they can edit it.
+    if not playlist.can_edit(request.user):
+        return html_error('You are not authorized to edit this playlist.')
+    # Set the group.
+    group_id = form.get('group', '')
+    try:
+        group = Group.objects.get(pk=int(group_id))
+    except (Group.DoesNotExist, TypeError, ValueError):
+        playlist.group = None
+    else:
+        playlist.group = group
+    playlist.save()
+    return HttpResponseRedirect(reverse('aenclave-playlist',
+                                        args=[playlist_id]))

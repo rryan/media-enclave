@@ -9,7 +9,7 @@ First, make sure the following dependencies are installed:
 - Python (>= 2.6)
 - Django (>= 1.0)
 - django-media-bundler (http://github.com/rnk/django-media-bundler/tree/master)
-- GStreamer (>= 0.10; this includes gstreamer-plugins-base/good/ugly)
+- GStreamer (>= 0.10; this includes gstreamer-plugins-base/good/ugly/bad)
 - pygst (spelled 'python-gst' by Ubuntu/Debian)
 - Pyro (python remote objects)
 - Mutagen

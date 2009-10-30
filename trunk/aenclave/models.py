@@ -3,6 +3,7 @@
 from calendar import timegm
 import datetime
 from math import exp
+import os
 import re
 
 from django.db import models
@@ -30,7 +31,7 @@ class VisibleManager(models.Manager):
 #-----------------------------------------------------------------------------#
 
 SONGS_ROOT = 'aenclave/songs'
-SONG_AUDIO_UPLOAD_TO = SONGS_ROOT + '%Y/%m/%d/'
+SONG_AUDIO_UPLOAD_TO = os.path.join(SONGS_ROOT, '%Y/%m/%d/')
 
 class Song(models.Model):
 

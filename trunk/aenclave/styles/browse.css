@@ -1,18 +1,18 @@
 /******************************* BROWSER INDEX *******************************/
 
-TABLE.index {
+table.index {
   border-collapse: separate;
   font-size: 16px;
   margin: 30px auto 20px;
   text-align: center;
 }
 
-TABLE.index TD.spacer {
+table.index td.spacer {
   padding: 0;
   width: 100px;
 }
 
-TABLE.index TH {
+table.index th {
   background-color: #eee;
   border: 1px #aaa solid;
   color: #005;
@@ -21,41 +21,41 @@ TABLE.index TH {
   padding: 0.4em 0.7em;
 }
 
-TABLE.index TBODY TD {
+table.index tbody td {
   height: 30px;
   width: 55px;
 }
 
-TABLE.index A {
+table.index a {
   display: block;
   padding: 7px 0px;
   width: 65px;
   text-decoration: none;
 }
 
-TABLE.index A:hover {
+table.index a:hover {
   background-color: #ececec;
 }
 
 /***************************** BROWSE BY LETTER ******************************/
 
-TABLE.matches {
+table.matches {
   margin: 20px auto;
   text-align: center;
   width: 90%;
 }
 
-TABLE.matches TD {
+table.matches td {
   border: 1px #aaa solid;
   padding: 0.25em 0.70em 0.30em;
 }
 
-TABLE.matches TD A {
+table.matches td a {
   color: #000;
   text-decoration: none;
 }
 
-TABLE.matches TD A:hover {
+table.matches td a:hover {
   color: #00f;
   text-decoration: underline;
 }

@@ -548,13 +548,19 @@ var songlist = {
   insert_row: function(row) {
     jQuery('#songlist tbody').append(row);
     tablesort.recolor_rows();
+    songlist.on_songlist_updated();
   },
 
   /********************************** MISC ***********************************/
 
+  on_songlist_updated: function() {
+    songlist.initialize_favorites();
+  },
+
   initialize_favorites: function() {
-    // Add event handlers to the hearts.
-    var hearts = $('.fav-heart');
+    // Add event handlers to the hearts -- only select those that have
+    // not had event handlers added already.
+    var hearts = $('.fav-heart:not(.fav-touched)');
     hearts.click(songlist.toggle_favorite);
     hearts.hover(function() {
       var heart = $(this);
@@ -565,6 +571,9 @@ var songlist = {
       heart.attr('hovering', 'false');
       songlist.update_heart_sprite(heart);
     });
+    // Add a tag to each heart we processed so that we dont do it in
+    // the future.
+    hearts.addClass('fav-touched');
   },
 
   toggle_favorite: function() {

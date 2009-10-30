@@ -106,6 +106,19 @@ IMDB_PATH = _MENCLAVE_ROOT + "imdb_data"
 ### At the moment, only "mp3" and "m4a"
 SUPPORTED_AUDIO = ("mp3", "m4a")
 
+# When deleting files from Media-Enclave, should we actually delete
+# the files?
+ACTUALLY_DELETE_FILES = False
+
+# If ACTUALLY_DELETE_FILES is False, deleted files will be moved to
+# the following directory. If it is left blank then nothing will
+# happen to the file, but it will be registered as an orphan and
+# re-added by the add_orphans management command, so you probably want
+# to make a deleted files directory if you are not actually deleting
+# files.
+DELETED_FILES_DIRECTORY = ""
+
+
 # The host that the gst player will be running on.
 GST_PLAYER_HOST = "localhost"
 

@@ -16,10 +16,13 @@ class Command(NoArgsCommand):
     help = 'Checks through the Song database for orphaned fles.'
 
     def add_song_by_path(self, path, **options):
-        song = Song(track=0, time=0)
-        song.audio = path
-        audio = processing.annotate_metadata(song)
-        song.save()
+        try:
+            song = Song(track=0, time=0)
+            song.audio = path
+            audio = processing.annotate_metadata(song)
+            song.save()
+        except Exception, e:
+            print "Got exception while adding orphan", e
         
     def handle_noargs(self, **options):
         verbose = options.get('verbose', False)
@@ -45,5 +48,8 @@ class Command(NoArgsCommand):
                     orphans += 1
                     print "Orphan: %s" % (filename)
                     self.add_song_by_path(filename)
+                except Exception, e:
+                    print "Got exception for", filename, ":", e
+                    
                 
         print 'Done -- %d files orphaned of %d' % (orphans, total)

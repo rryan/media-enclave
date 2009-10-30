@@ -191,6 +191,10 @@ urlpatterns = patterns(
         'menclave.aenclave.views.roulette',
         name='aenclave-roulette'),
 
+    url(r'^help/$',
+        'menclave.aenclave.views.help',
+        name='aenclave-help'),
+
     # Deletion and Delete Requests
 
     url(r'^delete-songs/$',

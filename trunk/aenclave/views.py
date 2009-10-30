@@ -21,6 +21,12 @@ def home(request):
                                 {'total_song_count': Song.visibles.count(),
                                  'playlist_info': playlist_info})
 
+def help(request):
+    channel = Channel.objects.get(pk=1)  # 1 is the default channel.
+    playlist_info = json_response.json_channel_info(request, channel)
+    return render_html_template('aenclave/help.html', request,
+                                {'playlist_info': playlist_info})
+
 def roulette(request):
     # Choose six songs randomly.
     queryset = Song.visibles.order_by('?')[:6]

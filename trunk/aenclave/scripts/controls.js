@@ -229,7 +229,7 @@ var controls = {
 
   error: function(msg) {
     controls.clear_controls();
-    jQuery('#current-song').text('ERROR: ' + msg);
+    jQuery('#current-song').html(msg);
   },
 
   clear_controls: function() {

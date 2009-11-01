@@ -170,6 +170,10 @@ urlpatterns = patterns(
         'menclave.aenclave.upload.upload_http_fancy',
         name='aenclave-http-upload-fancy'),
 
+    url(r'^upload/youtube/receive/$',
+        'menclave.aenclave.upload.upload_youtube_receiver',
+        name='aenclave-youtube-receiver'),
+
     url(r'^upload/fancy/receive/$',
         'menclave.aenclave.upload.upload_http_fancy_receiver',
         name='aenclave-http-upload-fancy-receiver'),

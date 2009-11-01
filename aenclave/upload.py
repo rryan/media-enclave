@@ -1,5 +1,6 @@
 import os
 
+from django.conf import settings
 from django.core.files import File
 from django.http import Http404, HttpResponseRedirect
 from django.core.urlresolvers import reverse
@@ -8,7 +9,7 @@ from django.template import RequestContext
 from menclave.aenclave.login import permission_required_redirect
 from menclave.aenclave.html import html_error, render_html_template
 from menclave.aenclave import processing
-from django.conf import settings
+from menclave.aenclave import youtuberip
 
 #---------------------------------- Upload -----------------------------------#
 
@@ -123,4 +124,29 @@ def upload_http_fancy_receiver(request):
 
     return render_html_template('aenclave/songlist_song_row.html', request,
                                 {'song': song},
+                                context_instance=RequestContext(request))
+
+@permission_required_redirect('aenclave.add_song', 'goto')
+def upload_youtube_receiver(request):
+    url = request.POST.get('youtube-url', '')
+    if not url:
+        return html_error("URL required.")
+    try:
+        audio_pp = youtuberip.rip_video(url)
+    except Exception, e:
+        return html_error(e.message)
+    audio_file = audio_pp.audio_file
+    song, audio = processing.process_song(audio_file, File(open(audio_file)))
+
+    # Fill in these defaults on the tags.  It would be better to tag the file
+    # as we rip it, but then we'd have to deal with teaching gstreamer to tag
+    # MP3 and M4As.
+    song.title = audio_pp.title
+    song.artist = audio_pp.uploader
+    song.album = 'YouTube'
+    song.save()
+
+    return render_html_template('aenclave/upload_http.html', request,
+                                {'song_list': [song],
+                                 'sketchy_upload': audio.info.sketchy},
                                 context_instance=RequestContext(request))

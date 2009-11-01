@@ -1,3 +1,4 @@
+import logging
 import os
 
 from django.conf import settings
@@ -6,6 +7,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 
+from menclave.log.util import enable_logging
 from menclave.aenclave.login import permission_required_redirect
 from menclave.aenclave.html import html_error, render_html_template
 from menclave.aenclave import processing
@@ -13,6 +15,7 @@ from menclave.aenclave import youtuberip
 
 #---------------------------------- Upload -----------------------------------#
 
+@enable_logging
 @permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http(request):
     # Nab the file and make sure it's legit.
@@ -67,7 +70,6 @@ def upload_sftp(request):
 
 @permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http_fancy(request):
-
     # HTTPS is way slowed down..
     if request.is_secure():
         return HttpResponseRedirect("http://" + request.get_host() +
@@ -104,9 +106,11 @@ def load_session_from_request(handler):
         return handler(request, *args, **kwargs)
     return func
 
+@enable_logging
 @load_session_from_request
 @permission_required_redirect('aenclave.add_song', 'goto')
 def upload_http_fancy_receiver(request):
+    logging.info("Got fancy receiver request.")
     audio = None
     # The key is generally 'Filedata' but this is just easier.
     for k,f in request.FILES.items():
@@ -115,10 +119,16 @@ def upload_http_fancy_receiver(request):
     # SWFUpload does not properly fill out the song's mimetype, so
     # just use the extension.
     if audio is None:
+        logging.error("Did not find any file uploaded.")
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
-    elif not processing.valid_song(audio.name):
-        return html_error(request, 'You may only upload MP3 files.',
+
+    logging.info("Received upload of %s" % audio.name)
+    
+    if not processing.valid_song(audio.name):
+        logging.error("Rejecting upload due to unsupported filetype")
+        return html_error(request, 'This filetype is unsupported.',
                           'HTTP Upload')
+
     # Save the song into the database -- we'll fix the tags in a moment.
     song, audio = processing.process_song(audio.name, audio)
 
@@ -130,13 +140,18 @@ def upload_http_fancy_receiver(request):
 def upload_youtube_receiver(request):
     url = request.POST.get('youtube-url', '')
     if not url:
-        return html_error("URL required.")
-    try:
-        audio_pp = youtuberip.rip_video(url)
-    except Exception, e:
-        return html_error(e.message)
+        return html_error(request, "URL required.")
+    #try:
+        #audio_pp = youtuberip.rip_video(url, path="/tmp/")
+    #except Exception, e:
+        #return html_error(request, e.message)
+    audio_pp = youtuberip.rip_video(url, path="/tmp/")
     audio_file = audio_pp.audio_file
     song, audio = processing.process_song(audio_file, File(open(audio_file)))
+    try:
+        sketchy = audio.info.sketchy
+    except AttributeError:
+        sketchy = True
 
     # Fill in these defaults on the tags.  It would be better to tag the file
     # as we rip it, but then we'd have to deal with teaching gstreamer to tag
@@ -148,5 +163,5 @@ def upload_youtube_receiver(request):
 
     return render_html_template('aenclave/upload_http.html', request,
                                 {'song_list': [song],
-                                 'sketchy_upload': audio.info.sketchy},
+                                 'sketchy_upload': sketchy},
                                 context_instance=RequestContext(request))

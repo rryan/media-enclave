@@ -5,6 +5,7 @@ The server that allows communication with a GstPlayer via Pyro.
 """
 
 import gobject
+gobject.threads_init()
 import logging
 import os
 os.environ["DJANGO_SETTINGS_MODULE"] = "menclave.settings"
@@ -52,7 +53,6 @@ def main():
     logging.info("The object URI: %s" % uri)
     # Run the event loop in another daemon thread.  Marking it as a daemon
     # allows us to respond to SIGTERM properly.
-    gobject.threads_init()
     event_thread = threading.Thread(target=gobject.MainLoop().run)
     event_thread.setDaemon(True)  # TODO(rnk): For 2.6+ switch to the below.
     #event_thread.daemon = True

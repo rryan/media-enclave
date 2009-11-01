@@ -23,6 +23,15 @@
           <a href="{% url aenclave-http-upload-fancy %}">here</a>.</strong></p>
     </div>    
 
+    <div align="center" class="upload">
+      <div>YouTube Audio Upload</div>
+      <form method="post" action="/audio/upload/youtube/receive/">
+        Rip the audio from a YouTube video (this takes a while):
+        <input type="text" name="youtube-url"/>
+        <input type="submit" value="Submit"/>
+      </form>
+    </div>
+
     <!-- HTTP upload -->
     <div class="upload">
       <div>HTTP Upload</div>

@@ -171,13 +171,28 @@ def rip_video_audio(video_file):
     return audio_file
 
 
-class ConvertToMp3PP(youtubedl.PostProcessor):
+class RipAudioPP(youtubedl.PostProcessor):
 
     def __init__(self):
         self.audio_file = None
+        self.title = None
+        self.uploader = None
 
     def run(self, info):
         self.audio_file = rip_video_audio(info['filepath'])
+        # Replace the pluses with spaces, the most common thing we want.  The
+        # title will suck anyway, there's nothing we can do.
+        self.title = info['title'].replace('+', ' ')
+        self.uploader = info['uploader']
+        return info
+
+
+class MyFileDownloader(youtubedl.FileDownloader):
+
+    def report_progress(self, percent_str, data_len_str, speed_str, eta_str):
+        # TODO(rnk): If anyone ever wants to implement a progress bar, do so
+        # here.
+        pass
 
 
 def rip_video(url):
@@ -186,11 +201,11 @@ def rip_video(url):
     youtube_ie = youtubedl.YoutubeIE()
 
     # File downloader
-    fd = youtubedl.FileDownloader({
+    fd = MyFileDownloader({
         'usenetrc': False,
         'username': None,
         'password': None,
-        'quiet': True,  # TODO(rnk): Adjust this later.
+        'quiet': True,
         'forceurl': None,
         'forcetitle': None,
         'simulate': False,
@@ -202,10 +217,11 @@ def rip_video(url):
         'continuedl': False,
         })
     fd.add_info_extractor(youtube_ie)
-    mp3_pp = ConvertToMp3PP()
-    fd.add_post_processor(mp3_pp)
+    audio_pp = RipAudioPP()
+    fd.add_post_processor(audio_pp)
     retcode = fd.download([url])
     assert retcode == 0
+    return audio_pp
 
 
 if __name__ == "__main__":

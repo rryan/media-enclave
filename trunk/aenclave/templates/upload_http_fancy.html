@@ -72,6 +72,16 @@
     <div id="divStatus">0 Files Uploaded</div>
   </div>
 
+  <p>
+    <div align="center">
+      <form method="post" action="/audio/upload/youtube/receive/">
+        Rip the audio from a YouTube video (this takes a while):
+        <input type="text" name="youtube-url"/>
+        <input type="submit" value="Submit"/>
+      </form>
+    </div>
+  </p>
+
   <p>(If this page doesn't work for you, you can use the old,
     <a href="{% url aenclave-upload-home %}">single-file upload</a>
     or <a href="{% url aenclave-sftp-info %}">SFTP</a>.)</p>

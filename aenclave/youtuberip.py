@@ -2,6 +2,7 @@
 
 """This module rips YouTube into MP3s with Gstreamer and youtube-dl."""
 
+import logging
 import os
 import time
 import threading
@@ -150,12 +151,14 @@ def rip_video_audio(video_file):
     finished_event = threading.Event()
     bus = pipe.get_bus()
     bus.add_signal_watch()
+    error_message = None
     def on_message(bus, message):
         t = message.type
         if t == gst.MESSAGE_EOS:
             finished_event.set()
         elif t == gst.MESSAGE_ERROR:
-            print "ERROR:", message
+            logging.exception(message)
+            error_message = str(message)
             finished_event.set()
     bus.connect("message", on_message)
 
@@ -168,6 +171,8 @@ def rip_video_audio(video_file):
     while not finished_event.is_set():
         finished_event.wait(timeout=120)
     pipe.set_state(gst.STATE_NULL)
+    if error_message:
+        raise youtubedl.PostProcessingError(error_message)
     return audio_file
 
 
@@ -195,12 +200,13 @@ class MyFileDownloader(youtubedl.FileDownloader):
         pass
 
 
-def rip_video(url):
+def rip_video(url, path="."):
     """Download a video from a URL and convert it to an MP3."""
     # Information extractors
     youtube_ie = youtubedl.YoutubeIE()
 
     # File downloader
+    outtmpl = os.path.join(path, u'%(stitle)s-%(id)s.%(ext)s')
     fd = MyFileDownloader({
         'usenetrc': False,
         'username': None,
@@ -210,7 +216,7 @@ def rip_video(url):
         'forcetitle': None,
         'simulate': False,
         'format': '0',  # Means best quality possible.
-        'outtmpl': u'%(stitle)s-%(id)s.%(ext)s',  # Output filename.
+        'outtmpl': outtmpl,
         'ignoreerrors': False,
         'ratelimit': None,
         'nooverwrites': False,
@@ -225,4 +231,5 @@ def rip_video(url):
 
 
 if __name__ == "__main__":
-    rip_video(sys.argv[1])
+    #rip_video(sys.argv[1])
+    rip_video_audio(sys.argv[1])

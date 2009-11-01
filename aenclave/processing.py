@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import hashlib
+import logging
 
 from models import Song
 from mutagen.mp3 import MP3
@@ -50,7 +51,11 @@ def annotate_metadata(song):
 
     if ext == "mp3":
         # Now, open up the MP3 file and save the tag data into the database.
-        audio = MP3(path_latin1, ID3=EasyID3)
+        try:
+            audio = MP3(path_latin1, ID3=EasyID3)
+        except Exception, e:
+            logging.exception(e.message)
+            audio = {}
         try: info['title'] = audio['title'][0]
         except (KeyError, IndexError): info['title'] = 'Unnamed Song'
         try: info['album'] = audio['album'][0]
@@ -59,13 +64,19 @@ def annotate_metadata(song):
         except (KeyError, IndexError): info['artist'] = ''
         try: info['track'] = int(audio['tracknumber'][0].split('/')[0])
         except (KeyError, IndexError, ValueError): info['track'] = 0
-        info['time'] = int(ceiling(audio.info.length))
+        try: info['time'] = int(ceiling(audio.info.length))
+        except AttributeError:
+            info['time'] = 0
 
     # omfg: iTunes tags... hate. hate. hate.
     # http://atomicparsley.sourceforge.net/mpeg-4files.html
     elif ext == "m4a":
         # Now, open up the MP3 file and save the tag data into the database.
-        audio = MP4(path_latin1)
+        try:
+            audio = MP4(path_latin1)
+        except Exception, e:
+            logging.exception(e.message)
+            audio = {}
         try: 
             info['title'] = audio['\xa9nam'][0]
         except (KeyError, IndexError): 
@@ -90,7 +101,9 @@ def annotate_metadata(song):
         try: info['track'] = int(audio['trkn'][0][0])
         except (KeyError, IndexError, ValueError, TypeError): 
             info['track'] = 0
-        info['time'] = int(ceiling(audio.info.length))
+        try: info['time'] = int(ceiling(audio.info.length))
+        except AttributeError:
+            info['time'] = 0
     else:
         raise BadContent(ext)
 
@@ -100,9 +113,12 @@ def annotate_metadata(song):
     song.track = info['track']
     song.time = info['time']
 
-    if not hasattr(audio.info, 'sketchy'):
+    if hasattr(audio, 'info') and not hasattr(audio.info, 'sketchy'):
         # Mutagen only checks mp3s for sketchiness
         audio.info.sketchy = False
+
+    if audio == {}:
+        audio = None
 
     return audio
 
@@ -116,7 +132,8 @@ def annotate_checksum(song):
 def process_song(name, content):
     """
     Processes a song upload: saving it and reading the meta information
-    returns the song object and mutagen audio object
+    returns the song object and mutagen audio object, or None if it couldn't
+    parse the file.
     """
 
     if not valid_song(name):
@@ -128,5 +145,5 @@ def process_song(name, content):
     audio = annotate_metadata(song)
     annotate_checksum(song)
     song.save()
-    
+
     return (song, audio)

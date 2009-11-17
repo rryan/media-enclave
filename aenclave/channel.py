@@ -17,7 +17,7 @@ from menclave.aenclave.json_response import (render_json_response, json_error,
                                              json_channel_info)
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.control import ControlError
-from menclave.aenclave.models import Channel, Song
+from menclave.aenclave.models import Channel, Song, PlayHistory
 
 #--------------------------------- Channels ----------------------------------#
 
@@ -140,6 +140,9 @@ def queue_songs(request):
             return json_error(str(err))
         else:
             return html_error(request, str(err))
+    for song in songs:
+        history_entry = PlayHistory(song=song)
+        history_entry.save()
     if 'getupdate' in form:
         # Send back an updated playlist status.
         return _json_control_update(request, channel)

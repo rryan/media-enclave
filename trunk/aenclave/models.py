@@ -331,6 +331,13 @@ class Channel(models.Model):
 
     def controller(self): return Controller(self)
 
+
+class PlayHistory(models.Model):
+
+    song = models.ForeignKey(Song)
+    queued_time = models.DateTimeField(auto_now_add=True, editable=False)
+
+
 # This import goes at the end to avoid circularity.
 from control import Controller
 

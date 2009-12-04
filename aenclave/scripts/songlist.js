@@ -392,6 +392,30 @@ var songlist = {
     addform.submit();
   },
 
+  // For 6.867 / recommendations:
+  report_bad_recs: function() {
+    // *****
+    var ids = songlist.gather_ids(true); // true -> queue nothing if nothing
+    var options = {
+      type: 'post',
+      dataType: 'json',
+      url: "/audio/recommendations/feedback/",
+      data: { original_songs: songlist.original_songs,
+	      bad_songs: ids },
+      error: function(transport) {
+	alert("Error while reporting bad recommendations.");
+      },
+      success: function(response_json) {
+	jQuery('#songlist .song_selected:checked').closest('tr').remove();
+	tablesort.recolor_rows();
+	jQuery('#feedback_msg').text("Thank you for your feedback!");
+	setTimeout(function() {jQuery('#feedback_msg').html("&nbsp;")},
+		   3000);
+      }
+    };
+    jQuery.ajax(options);
+  },
+
   /******************************* DRAG & DROP *******************************/
 
   enable_dnd: function(opt_onDrop) {

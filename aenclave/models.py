@@ -331,12 +331,27 @@ class Channel(models.Model):
 
     def controller(self): return Controller(self)
 
+#---------------------------- For 6.867 --------------------------------
 
 class PlayHistory(models.Model):
 
     song = models.ForeignKey(Song)
     queued_time = models.DateTimeField(auto_now_add=True, editable=False)
 
+class Cluster(models.Model):
+
+    weight = models.FloatField(editable=True)
+    songs = models.ManyToManyField(Song)
+
+# just a count of recommendation songs that were selected for queueing.
+class GoodRecs(models.Model):
+    
+    good_recs = models.IntegerField(editable=False)
+    
+# just a count of recommendation songs that were reported as bad.
+class BadRecs(models.Model):
+
+    bad_recs = models.IntegerField(editable=False)
 
 # This import goes at the end to avoid circularity.
 from control import Controller

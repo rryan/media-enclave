@@ -203,6 +203,11 @@ urlpatterns = patterns(
         'menclave.aenclave.views.help',
         name='aenclave-help'),
 
+    # Recommendations
+    url(r'^recommendations/$',
+        'menclave.aenclave.recommendations.view_recommendations',
+        name='aenclave-recommendations'),
+
     # Deletion and Delete Requests
 
     url(r'^delete-songs/$',
@@ -251,5 +256,13 @@ urlpatterns = patterns(
 
     (r'^json/favorite_song/(?P<song_id>\d+)/$',
      'menclave.aenclave.views.favorite_song'),
+
+
+    # For Recommendations (6.867)
+
+    (r'^recommendations/feedback/$',
+     'menclave.aenclave.recommendations.bad_recommendations'),
+    
+
 
 )

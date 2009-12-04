@@ -53,6 +53,15 @@
     Recently played</a>
 {% endblock %}
 
+{% block postsonglist %}
+  {% if song_list %}
+  <center>
+    See <a href="{% url aenclave-recommendations %}">recommendations</a>
+    based on these songs. 
+  </center>
+  {% endif %}
+{% endblock %}
+
 {% block postcopyright %}{{block.super}}
   {% if song_list %}
     <form name="dequeueform" action="{% url aenclave-dequeue-songs %}" method="POST">

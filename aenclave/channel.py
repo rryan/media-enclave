@@ -15,9 +15,12 @@ from menclave.aenclave.xml import (simple_xml_response, xml_error,
 from menclave.aenclave.html import html_error
 from menclave.aenclave.json_response import (render_json_response, json_error,
                                              json_channel_info)
+from menclave.aenclave.recommendations import good_recommendations
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.control import ControlError
 from menclave.aenclave.models import Channel, Song, PlayHistory
+
+import urlparse
 
 #--------------------------------- Channels ----------------------------------#
 
@@ -133,6 +136,10 @@ def queue_songs(request):
     # Queue the songs.
     channel = Channel.default()
     ctrl = channel.controller()
+    referrer = request.META.get('HTTP_REFERER', '')
+    referrer_path = urlparse.urlparse(referrer).path
+    if 'recommendations' in referrer_path:
+        good_recommendations(request)        
     try:
         ctrl.add_songs(songs)
     except ControlError, err:

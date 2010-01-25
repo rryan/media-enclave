@@ -8,9 +8,11 @@ from django.template import RequestContext
 
 from menclave import settings
 from menclave.aenclave import json_response
+from menclave.aenclave import wami_grammar
 from menclave.aenclave.html import render_html_template
 from menclave.aenclave.models import Channel, Song, Playlist, PlaylistEntry
 from menclave.aenclave.utils import get_song_list
+import json
 
 #--------------------------------- Misc --------------------------------------#
 
@@ -83,5 +85,15 @@ def favorite_song(request, song_id):
     elif not favorited and fav:
         fav.delete()
     return json_response.json_success("%s favorited: %r" % (song_id, favorited))
+    
+def speech_page(request):
+    grammar = wami_grammar.generate()
+    return render_html_template('aenclave/speech_page.html', request,
+                                {
+                                'WAMI_KEY' : settings.WAMI_API_KEY[request.META['HTTP_HOST']],
+                                'grammar' : grammar
+                                })
+
+
 
 #=============================================================================#

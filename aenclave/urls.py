@@ -256,7 +256,14 @@ urlpatterns = patterns(
 
     (r'^json/favorite_song/(?P<song_id>\d+)/$',
      'menclave.aenclave.views.favorite_song'),
+ 
+ 
+    # Speech recognition parts
+    # (r'^wami-grammar$',
+    #       'menclave.aenclave.wami_grammar.generate_grammar'),
 
+  	(r'^speech_page/$',
+        'menclave.aenclave.views.speech_page'),
 
     # For Recommendations (6.867)
 

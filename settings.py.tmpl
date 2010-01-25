@@ -210,6 +210,15 @@ USE_BUNDLES = False
 #DEFER_JAVASCRIPT = True
 #USE_BUNDLES = True
 
+# WAMI voice rec does javascript checks to make 
+# sure you're using the right api key for your domain
+# if you use multiple domains, specify each one in this dict
+# get api key here:
+# http://wami.csail.mit.edu:8080/portal/login.html
+WAMI_API_KEY = {
+'example.com' : 'md5-api-developer-hash-here'
+}
+
 # Enable this to support bundle versioning and cache busting.
 #BUNDLE_VERSION_FILE = _MENCLAVE_ROOT + "bundle_versions.py"
 

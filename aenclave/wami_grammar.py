@@ -30,7 +30,14 @@ def generate():
     
     ret = ''
     i = 0
-    for song in Song.objects.order_by("-play_count")[:300]:
+    
+    ids = set()
+    
+    ids.update([x[0] for x in Song.objects.order_by("-play_count")[:300].values_list('id')])
+    ids.update([x[0] for x in Song.objects.order_by("-last_played")[:200].values_list('id')])
+    ids.update([x[0] for x in Song.objects.order_by("-date_added")[:200].values_list('id')])
+    
+    for song in Song.objects.in_bulk(list(ids)):
         i += 1
         
         if i > 1 :

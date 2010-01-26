@@ -30,9 +30,11 @@ def generate():
     
     ret = ''
     i = 0
-    l = len(Song.objects.all())
-    for song in Song.objects.all():
+    for song in Song.objects.order_by("-play_count")[:300]:
         i += 1
+        
+        if i > 1 :
+            ret += ' | '
         
         title = cleanup(song.title)
         artist = cleanup(song.artist)
@@ -41,8 +43,6 @@ def generate():
         
         ret += title + ' [by '+artist+'] [from [the album] '+album+'] {[id='+id+']}'
 
-        if i != l:
-            ret += ' | '
     
     ret = ret+' ; '
     

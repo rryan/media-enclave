@@ -30,6 +30,13 @@ public <top> = <prefixes> <commands>;
 
 		<script>
 		var myWamiApp; 
+		
+		window.onmousedown = function() {
+			myWamiApp.startRecording();
+		}
+		window.onmouseup = function() {
+			myWamiApp.stopRecording();
+		}
 
 		var _englishjsgf = document.getElementById('jsgfarea').value;
 		function onLoad() {
@@ -104,11 +111,6 @@ public <top> = <prefixes> <commands>;
 			clearChildren(hypsDiv);
 			if(result.hyps && result.hyps.length > 0) {
 				hypsDiv.appendChild(document.createTextNode("Top Hyp: " + result.hyps[0].text));
-
-				if(result.hyps[0].aggregate) {
-					hypsDiv.appendChild(document.createElement("br"));
-					hypsDiv.appendChild(document.createTextNode("N=" + result.hyps[0].aggregate.kvs.n));		  
-				}
 			}	 
 
 			//print some debugging information

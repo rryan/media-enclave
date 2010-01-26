@@ -148,6 +148,11 @@ class Controller(object):
         """Add some songs to the queue."""
         self.channel.touch()
 
+    @delegate_rpc
+    def queue_to_front(self, song, rpc_retval=None):
+        """Stop playing current song and start playing new song."""
+        self.channel.touch()
+
     def remove_song(self, playid, rpc_retval=None):
         """Remove the song with playid from the queue."""
         self.remove_songs([playid])

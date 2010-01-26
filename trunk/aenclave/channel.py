@@ -127,6 +127,38 @@ def _json_control_update(request, channel):
         return json_error(str(err))
     else:
         return render_json_response(channel_info)
+        
+        
+@permission_required('aenclave.can_queue', 'Queue Song')
+def queue_to_front(request):
+    form = request.REQUEST
+    songs = get_song_list(form)
+    if len(songs) != 1:
+        raise json_error("Can only queue one song to front")
+        
+    song = songs[0]
+    channel = Channel.default()
+    ctrl = channel.controller()
+    
+    try:
+        ctrl.queue_to_front(song)
+        
+    except ControlError, err:
+        if 'getupdate' in form:
+            return json_error(str(err))
+        else:
+            return html_error(request, str(err))
+            
+    history_entry = PlayHistory(song=song)
+    history_entry.save()
+
+    if 'getupdate' in form:
+        # Send back an updated playlist status.
+        return _json_control_update(request, channel)
+    else:
+        # Redirect to the channels page.
+        return HttpResponseRedirect(reverse('aenclave-default-channel'))
+
 
 @permission_required('aenclave.can_queue', 'Queue Song')
 def queue_songs(request):

@@ -51,6 +51,10 @@ urlpatterns = patterns(
         'menclave.aenclave.channel.queue_songs',
         name='aenclave-queue-songs'),
 
+    url(r'^queue_to_front/$',
+        'menclave.aenclave.channel.queue_to_front',
+        name='aenclave-queue-to-front'),
+
     url(r'^dequeue/$',
         'menclave.aenclave.channel.dequeue_songs',
         name='aenclave-dequeue-songs'),
@@ -259,8 +263,6 @@ urlpatterns = patterns(
  
  
     # Speech recognition parts
-    # (r'^wami-grammar$',
-    #       'menclave.aenclave.wami_grammar.generate_grammar'),
 
   	(r'^speech_page/$',
         'menclave.aenclave.views.speech_page'),

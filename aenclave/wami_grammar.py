@@ -36,8 +36,9 @@ def generate():
     ids.update([x[0] for x in Song.objects.order_by("-play_count")[:300].values_list('id')])
     ids.update([x[0] for x in Song.objects.order_by("-last_played")[:200].values_list('id')])
     ids.update([x[0] for x in Song.objects.order_by("-date_added")[:200].values_list('id')])
-    
-    for song in Song.objects.in_bulk(list(ids)):
+        
+    for pk,song in Song.objects.in_bulk(list(ids)).items():
+        
         i += 1
         
         if i > 1 :
@@ -46,9 +47,8 @@ def generate():
         title = cleanup(song.title)
         artist = cleanup(song.artist)
         album = cleanup(song.album)
-        id = str(song.id)
         
-        ret += title + ' [by '+artist+'] [from [the album] '+album+'] {[id='+id+']}'
+        ret += title + ' [by '+artist+'] [from [the album] '+album+'] {[id='+str(pk)+']}'
 
     
     ret = ret+' ; '

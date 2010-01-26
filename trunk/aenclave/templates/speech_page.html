@@ -29,6 +29,7 @@ public <top> = <prefixes> <commands>;
 		<script src="http://wami.csail.mit.edu/portal/wami.js?devKey={{WAMI_KEY}}"></script>
 
 		<script>
+		// all this is copied and pasted from wami, so it's a littl messy
 		var myWamiApp; 
 		
 		window.onmousedown = function() {
@@ -174,13 +175,20 @@ public <top> = <prefixes> <commands>;
 		    e.removeChild(e.childNodes[0]);
 		  }
 		}
+		
+		// make sure WAMI doesn't time out by turning the mic
+		// on and off every 4 minutes
+		setInterval(function() {
+			
+			myWamiApp.startRecording();
+			setTimeout(function() { myWamiApp.stopRecording(); }, 50);
+			
+		}, 1000 * 60 * 4);
 
 
 		</script>
 		</head>
 
-		<!--  Your web page goes here.  Set the onload attribute to make sure the onLoad() function
-		      defined above is called.  -->
 		<body onload="onLoad()">
 		<div id="AudioContainer"></div> <!--  Audio button will be put here -->
 		<div id="hyps">&nbsp;</div> <!--  Speech recognition hypotheses go here -->

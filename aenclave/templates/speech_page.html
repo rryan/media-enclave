@@ -96,16 +96,39 @@ public <top> = <prefixes> <commands>;
 		//this will get called many times as the user speaks
 		function onWamiRecognitionResult(result) {
 			
-			console.log(result);
-			var img = new Image();
 			var data = result.hyps[0].aggregate.kvs;
 			
-			console.log(data,controls);
-			if (data.hasOwnProperty('controls'))
-				controls[data.controls]();
-			else
-				img.src = '../queue/?ids='+result.hyps[0].aggregate.kvs.id+'&getupdate=1';
+			if (data.hasOwnProperty('controls')) {
 			
+				controls[data.controls]();
+			
+			} else {
+				
+				
+			    jQuery.ajax({
+					url: "/audio/queue_to_front/",
+					type: 'post',
+					data: {
+					  'ids' : data.id,
+					  'getupdate' : '1'
+					},
+					dataType: 'json',
+					success: function(json) {
+					  if("error" in json) {
+					    songlist.error_message(json.error);
+					  } else {
+					    songlist._update_edited_song(target,json);
+					  }
+					},
+					error: function() {
+					  songlist._edit_column_error(target);
+					  songlist.error_message("Got no reponse from server.");
+					}
+			    });
+			
+
+			}
+					
 			var hyp = result.hyps[0].text;  //what we think the user said
 			var hypsDiv = document.getElementById("hyps");
 			clearChildren(hypsDiv);

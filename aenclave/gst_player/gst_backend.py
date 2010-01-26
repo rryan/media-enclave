@@ -284,7 +284,7 @@ class GstPlayer(object):
         """Stop the player and clear the queue."""
         self._stop()
         self.song_queue.clear()
-
+        
     @synchronized
     @logged
     def pause(self):
@@ -356,6 +356,15 @@ class GstPlayer(object):
             except Exception:
                 # Not worth propagating error.
                 logging.exception("Unable to save song model to db.")
+
+    @synchronized
+    def queue_to_front(self, song):
+        """Dequeue the current song and start playing the new song."""
+        self._stop()
+        song.noise = False
+        song.playid = self._get_next_playid()
+        self.song_queue.appendleft(song)
+        self.start()
 
     @synchronized
     def remove_song(self, playid):

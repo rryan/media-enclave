@@ -16,7 +16,7 @@ public <top> = <prefixes> <commands>;
 	);
 <controls> = (
 			(dequeue|skip) {[controls=skip]}
-			| pause {[controls=pause]}
+			| pozz {[controls=pause]}
 			| shuffle {[controls=shuffle]}
 			| (restart|play|wake up) {[controls=play]}
 		)
@@ -32,12 +32,12 @@ public <top> = <prefixes> <commands>;
 		// all this is copied and pasted from wami, so it's a littl messy
 		var myWamiApp; 
 		
-		window.onmousedown = function() {
-			myWamiApp.startRecording();
-		}
-		window.onmouseup = function() {
-			myWamiApp.stopRecording();
-		}
+		// window.onmousedown = function() {
+		// 	myWamiApp.startRecording();
+		// }
+		// window.onmouseup = function() {
+		// 	myWamiApp.stopRecording();
+		// }
 
 		var _englishjsgf = document.getElementById('jsgfarea').value;
 		function onLoad() {

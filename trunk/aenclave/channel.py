@@ -87,7 +87,7 @@ def xml_update(request):
 
 #---------------------------------- Control ----------------------------------#
 
-@permission_required_json('aenclave.can_control')
+# @permission_required_json('aenclave.can_control')
 def json_control(request):
     action = request.POST.get('action','')
     channel = Channel.default()
@@ -160,7 +160,7 @@ def queue_to_front(request):
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
 
-@permission_required('aenclave.can_queue', 'Queue Song')
+# @permission_required('aenclave.can_queue', 'Queue Song')
 def queue_songs(request):
     form = request.REQUEST
     # Get the selected songs.
@@ -189,7 +189,7 @@ def queue_songs(request):
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
 
-@permission_required('aenclave.can_queue', 'Dequeue Song')
+# @permission_required('aenclave.can_queue', 'Dequeue Song')
 def dequeue_songs(request):
     form = request.POST
     # Get the selected playids.

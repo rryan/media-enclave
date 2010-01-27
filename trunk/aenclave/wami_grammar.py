@@ -14,7 +14,8 @@ import json
 # - let 'a' and 'the' be optional
 def cleanup(s):
     s = s.lower()
-    s = re.sub("[^a-z ']+", ' ', s) 
+    s = re.sub("'", "", s)
+    s = re.sub("[^a-z ]+", ' ', s) 
     s = re.sub('^a ', ' [a] ', s)
     s = re.sub('^the ', ' [the] ', s)
     return s
@@ -33,9 +34,9 @@ def generate():
     
     ids = set()
     
-    ids.update([x[0] for x in Song.objects.order_by("-play_count")[:500].values_list('id')])
-    ids.update([x[0] for x in Song.objects.order_by("-last_played")[:300].values_list('id')])
-    ids.update([x[0] for x in Song.objects.order_by("-date_added")[:400].values_list('id')])
+    ids.update([x[0] for x in Song.objects.order_by("-play_count")[:400].values_list('id')])
+    ids.update([x[0] for x in Song.objects.order_by("-last_played")[:200].values_list('id')])
+    ids.update([x[0] for x in Song.objects.order_by("-date_added")[:200].values_list('id')])
         
     for pk,song in Song.objects.in_bulk(list(ids)).items():
         
@@ -48,8 +49,8 @@ def generate():
         artist = cleanup(song.artist)
         album = cleanup(song.album)
         
-        # ret += title + ' [by '+artist+'] {[id='+str(pk)+']}'
-        ret += title + ' [by '+artist+'] [from [the album] '+album+'] {[id='+str(pk)+']}'
+        ret += title + ' [by '+artist+'] {[id='+str(pk)+']}'
+	# ret += title + ' [by '+artist+'] [from [the album] '+album+'] {[id='+str(pk)+']}'
 
     
     ret = ret+' ; '

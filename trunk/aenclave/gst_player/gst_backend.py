@@ -206,7 +206,7 @@ class GstPlayer(object):
     #---------------------------- STATUS METHODS -----------------------------#
 
     @synchronized
-    # @logged
+    @logged
     def get_channel_snapshot(self):
         """Get a snapshot of the channel state."""
         song_queue = list(self.song_queue)
@@ -249,7 +249,7 @@ class GstPlayer(object):
     #--------------------------- PLAYBACK CONTROL ----------------------------#
 
     @synchronized
-    # @logged
+    @logged
     def start(self):
         """
         Start playback.
@@ -271,7 +271,7 @@ class GstPlayer(object):
             self.player.set_property("uri", "file://" + song.audio.path)
             self.player.set_state(gst.STATE_PLAYING)
 
-    # @logged
+    @logged
     def _stop(self):
         """Stop the player."""
         if self.current_song and not self.current_song.noise:
@@ -279,20 +279,20 @@ class GstPlayer(object):
         self.player.set_state(gst.STATE_NULL)
 
     @synchronized
-    # @logged
+    @logged
     def stop(self):
         """Stop the player and clear the queue."""
         self._stop()
         self.song_queue.clear()
         
     @synchronized
-    # @logged
+    @logged
     def pause(self):
         """Pause the player."""
         self.player.set_state(gst.STATE_PAUSED)
 
     @synchronized
-    # @logged
+    @logged
     def unpause(self):
         """Unpause the player."""
         if self._get_status() == "paused":
@@ -307,7 +307,7 @@ class GstPlayer(object):
         return Noise(os.path.join(settings.AENCLAVE_DEQUEUE_NOISES_DIR, deq))
 
     @synchronized
-    # @logged
+    @logged
     @transaction.autocommit
     def skip(self):
         """Skip the current song and play a dequeue noise."""
@@ -339,7 +339,7 @@ class GstPlayer(object):
         self.add_songs([song])
 
     @synchronized
-    # @logged
+    @logged
     def add_songs(self, songs):
         """Add some songs to the queue."""
         logging.info("Queuing songs: %r" % songs)
@@ -372,7 +372,7 @@ class GstPlayer(object):
         self.remove_songs([playid])
 
     @synchronized
-    # @logged
+    @logged
     def remove_songs(self, playids):
         """Remove the songs with playids in playids from the queue."""
         playids = set(playids)
@@ -381,7 +381,7 @@ class GstPlayer(object):
                                 if song.playid not in playids)
 
     @synchronized
-    # @logged
+    @logged
     def move_song(self, playid, after_playid):
         """Move the first song to after the second song in the queue."""
         logging.info('playid: %i, after_playid: %i', playid, after_playid)
@@ -406,7 +406,7 @@ class GstPlayer(object):
         self.song_queue = deque(songs)
 
     @synchronized
-    # @logged
+    @logged
     def shuffle(self):
         """Shuffle the songs in the queue."""
         random.shuffle(self.song_queue)

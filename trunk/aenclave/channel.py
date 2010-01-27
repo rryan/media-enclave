@@ -129,7 +129,7 @@ def _json_control_update(request, channel):
         return render_json_response(channel_info)
         
         
-@permission_required('aenclave.can_queue', 'Queue Song')
+# @permission_required('aenclave.can_queue', 'Queue Song')
 def queue_to_front(request):
     form = request.REQUEST
     songs = get_song_list(form)

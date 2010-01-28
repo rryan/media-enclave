@@ -10,27 +10,27 @@
 grammar EnglishSandboxExample;
 public <top> = <prefixes> <commands>;
 <commands> = (
-	  (queue {[command=queue]}| play {[command=play]}) [song] <songs>
-	| play the worst song ever {[id=36311]}
-	| <controls>
+	  (queue {[command=queue]}| play {[command=play]}) [song] <songs> | <controls>
 	);
 <controls> = (
 			(dee q|skip) {[controls=skip]}
 			| pozz {[controls=pause]}
 			| shuffle {[controls=shuffle]}
-			| (drop a beat | play me a song | play a better song) {[lucky=1]}
+			| (drop a beat | play [me] a song | play a better song) {[lucky=1]}
 			| (restart|play|wake up|resume) {[controls=play]}
 		)
 			[this [(shit | song)]];
 			
 <prefixes> = [(yo|hey|[uh yes] hello)] [mister] [(dee jay|nice rack|en are)] [please];
-<songs> = {{grammar}}
+<songs> = the worst song ever {[id=36311]} |
+	femto mats favorite song {[id=36640]} |
+	{{grammar}};
 </textarea>
 
 		<script src="http://wami.csail.mit.edu/portal/wami.js?devKey={{WAMI_KEY}}"></script>
 
 		<script>
-		// all this is copied and pasted from wami, so it's a littl messy
+		// all this is copied and pasted from wami, so it's a little messy
 		var myWamiApp; 
 		
 		// window.onmousedown = function() {

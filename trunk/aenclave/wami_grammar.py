@@ -50,11 +50,7 @@ def generate():
         album = cleanup(song.album)
         
         ret += title + ' [by '+artist+'] {[id='+str(pk)+']}'
-	# ret += title + ' [by '+artist+'] [from [the album] '+album+'] {[id='+str(pk)+']}'
 
-    
-    ret = ret+' ; '
-    
     return ret
 
 # print '''#JSGF V1.0;

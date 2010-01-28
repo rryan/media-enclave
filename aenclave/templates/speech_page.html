@@ -10,15 +10,16 @@
 grammar EnglishSandboxExample;
 public <top> = <prefixes> <commands>;
 <commands> = (
-	  (queue | play) [song] {[command=queue]} <songs>
-	| play the worst song ever {[id=10]}
+	  (queue {[command=queue]}| play {[command=play]}) [song] <songs>
+	| play the worst song ever {[id=36311]}
 	| <controls>
 	);
 <controls> = (
-			(dequeue|skip) {[controls=skip]}
+			(dee q|skip) {[controls=skip]}
 			| pozz {[controls=pause]}
 			| shuffle {[controls=shuffle]}
-			| (restart|play|wake up) {[controls=play]}
+			| (drop a beat | play me a song | play a better song) {[lucky=1]}
+			| (restart|play|wake up|resume) {[controls=play]}
 		)
 			[this [(shit | song)]];
 			
@@ -102,32 +103,28 @@ public <top> = <prefixes> <commands>;
 			if (data.hasOwnProperty('controls')) {
 			
 				controls[data.controls]();
-			
-			} else {
 				
+			} else if (data.hasOwnProperty('lucky')) {
+				
+				jQuery.ajax({
+					url: "/audio/search/",
+					type: 'get',
+					data: {
+					  'lucky' : '1'
+					}
+			    });
+				
+			} else if (data.hasOwnProperty('command')) {
 				
 			    jQuery.ajax({
-					url: "/audio/queue_to_front/",
-					type: 'post',
+					url: "/audio/"+(data.command == 'play' ? 'queue_to_front' : 'queue')+"/",
+					type: 'get',
 					data: {
 					  'ids' : data.id,
 					  'getupdate' : '1'
-					},
-					dataType: 'json',
-					success: function(json) {
-					  if("error" in json) {
-					    songlist.error_message(json.error);
-					  } else {
-					    songlist._update_edited_song(target,json);
-					  }
-					},
-					error: function() {
-					  songlist._edit_column_error(target);
-					  songlist.error_message("Got no reponse from server.");
 					}
-			    });
+				});
 			
-
 			}
 					
 			var hyp = result.hyps[0].text;  //what we think the user said

@@ -54,7 +54,7 @@ def normal_search(request):
     if form.get('lucky', False):
         if queryset is ():
             queryset = Song.visibles
-        song_id = queryset.order_by('?').values('id')[0]
+        song_id = queryset.order_by('?').values('id')[0]['id']
         song = Song.objects.get(pk=song_id)
         channel = Channel.default()
         ctrl = channel.controller()

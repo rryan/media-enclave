@@ -204,10 +204,17 @@ class Playlist(models.Model):
         Note that the caller should open a transaction before calling this
         helper because we make many queries and they should be atomic.
         """
-        for (i, song) in enumerate(songs):
-            pos = start_pos + i
-            entry = PlaylistEntry(playlist=self, song=song, position=pos)
-            entry.save()
+        index = start_pos
+        for song in songs:
+            try:
+                entry = PlaylistEntry(playlist=self, song=song, position=index)
+                entry.save()
+                index += 1
+            except Exception, e:
+                # Most likely the song is already in this playlist. Ignore the
+                # exception, and use the index on the next song since it won't
+                # be incremented.
+                pass
 
     @transaction.commit_on_success
     def append_songs(self, songs):
@@ -345,9 +352,9 @@ class Cluster(models.Model):
 
 # just a count of recommendation songs that were selected for queueing.
 class GoodRecs(models.Model):
-    
+
     good_recs = models.IntegerField(editable=False)
-    
+
 # just a count of recommendation songs that were reported as bad.
 class BadRecs(models.Model):
 

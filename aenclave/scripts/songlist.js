@@ -575,6 +575,14 @@ var songlist = {
     songlist.on_songlist_updated();
   },
 
+  sort_column: function(sort_header, order) {
+    if (order == 'asc') {
+      tablesort.sorta(sort_header[0]);
+    } else if (order == 'desc') {
+      tablesort.sortd(sort_header[0]);
+    }
+  },
+
   /********************************** MISC ***********************************/
 
   on_songlist_updated: function() {

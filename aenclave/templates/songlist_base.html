@@ -13,6 +13,23 @@
   {% javascript "aenclave-scripts" "jquery.columnmanager.js" %}
   {% javascript "aenclave-scripts" "tablesort.js" %}
   {% javascript "aenclave-scripts" "songlist.js" %}
+  <script>
+    {% if sort %}
+    jQuery(document).ready(function() {
+      var sort_key = '{{ sort }}';
+      var order = 'asc';
+      if (sort_key.substr(0, 1) == '-') {
+        order = 'desc';
+        sort_key = sort_key.substr(1);
+      }
+
+      var sort_column = jQuery('.sort').filter('.' + sort_key);
+      if (sort_column.length == 1) {
+        songlist.sort_column(sort_column, order);
+      }
+    });
+    {% endif %}
+  </script>
 {% endblock %}
 
 {% block content %}

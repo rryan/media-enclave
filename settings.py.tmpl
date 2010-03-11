@@ -152,6 +152,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 	"django.core.context_processors.debug",
 	"django.core.context_processors.i18n",
 	"django.core.context_processors.media",
+        "menclave.aenclave.context_processors.songlist_sort",
 )
 
 MIDDLEWARE_CLASSES = (
@@ -210,7 +211,7 @@ USE_BUNDLES = False
 #DEFER_JAVASCRIPT = True
 #USE_BUNDLES = True
 
-# WAMI voice rec does javascript checks to make 
+# WAMI voice rec does javascript checks to make
 # sure you're using the right api key for your domain
 # if you use multiple domains, specify each one in this dict
 # get api key here:

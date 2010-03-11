@@ -28,7 +28,8 @@ def help(request):
     channel = Channel.objects.get(pk=1)  # 1 is the default channel.
     playlist_info = json_response.json_channel_info(request, channel)
     return render_html_template('aenclave/help.html', request,
-                                {'playlist_info': playlist_info})
+                                {'playlist_info': playlist_info},
+                                context_instance=RequestContext(request))
 
 def roulette(request):
     # Choose six songs randomly.
@@ -89,11 +90,13 @@ def favorite_song(request, song_id):
 
 def speech_page(request):
     grammar = wami_grammar.generate()
-    return render_html_template('aenclave/speech_page.html', request,
-                                {
-                                'WAMI_KEY' : settings.WAMI_API_KEY[request.META['HTTP_HOST']],
-                                'grammar' : grammar
-                                })
+    return render_html_template(
+        'aenclave/speech_page.html', request,
+        {
+            'WAMI_KEY' : settings.WAMI_API_KEY[request.META['HTTP_HOST']],
+            'grammar' : grammar
+        },
+        context_instance=RequestContext(request))
 
 
 

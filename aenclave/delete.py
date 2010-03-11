@@ -15,22 +15,25 @@ from menclave.log.util import enable_logging
 
 def delete_songs_by_policy(songs):
     for song in songs:
-        path = song.audio.path
-        # Set audio to None so that Django does not automatically
-        # delete the file.
-        song.audio = None
-        logging.info("Deleting %s" % song)
-        song.delete()
-        if settings.ACTUALLY_DELETE_FILES:
-            logging.info("Actually deleting file %s" % path)
-            os.remove(path)
-        elif settings.DELETED_FILES_DIRECTORY != "":
-            _,filename = os.path.split(path)
-            new_path = os.path.join(settings.DELETED_FILES_DIRECTORY,
+        try:
+            path = song.audio.path
+            # Set audio to None so that Django does not automatically
+            # delete the file.
+            song.audio = None
+            logging.info("Deleting %s" % song)
+            if settings.ACTUALLY_DELETE_FILES:
+                logging.info("Actually deleting file %s" % path)
+                os.remove(path)
+            elif settings.DELETED_FILES_DIRECTORY != "":
+                _,filename = os.path.split(path)
+                new_path = os.path.join(settings.DELETED_FILES_DIRECTORY,
                                     filename)
-            logging.info("Moving %s to %s" % (path, new_path))
-            # Use shutil.move instead of os.rename to move across filesystems.
-            shutil.move(path, new_path)
+                logging.info("Moving %s to %s" % (path, new_path))
+                # Use shutil.move instead of os.rename to move across filesystems.
+                shutil.move(path, new_path)
+            song.delete()
+        except Exception, e:
+            logging.error("Failed to delete song: %s" % e)
 
 @enable_logging
 @permission_required('aenclave.delete_song', 'Delete Song')

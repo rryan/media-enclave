@@ -21,7 +21,8 @@ def home(request):
     playlist_info = json_response.json_channel_info(request, channel)
     return render_html_template('aenclave/index.html', request,
                                 {'total_song_count': Song.visibles.count(),
-                                 'playlist_info': playlist_info})
+                                 'playlist_info': playlist_info},
+                                context_instance=RequestContext(request))
 
 def help(request):
     channel = Channel.objects.get(pk=1)  # 1 is the default channel.
@@ -85,7 +86,7 @@ def favorite_song(request, song_id):
     elif not favorited and fav:
         fav.delete()
     return json_response.json_success("%s favorited: %r" % (song_id, favorited))
-    
+
 def speech_page(request):
     grammar = wami_grammar.generate()
     return render_html_template('aenclave/speech_page.html', request,

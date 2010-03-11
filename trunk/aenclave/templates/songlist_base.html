@@ -13,6 +13,7 @@
   {% javascript "aenclave-scripts" "jquery.columnmanager.js" %}
   {% javascript "aenclave-scripts" "tablesort.js" %}
   {% javascript "aenclave-scripts" "songlist.js" %}
+  {% defer %}
   <script>
     {% if sort %}
     jQuery(document).ready(function() {
@@ -30,6 +31,7 @@
     });
     {% endif %}
   </script>
+  {% enddefer %}
 {% endblock %}
 
 {% block content %}

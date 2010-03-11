@@ -127,6 +127,10 @@ urlpatterns = patterns(
         'menclave.aenclave.playlist.all_playlists',
         name='aenclave-playlists-home'),
 
+    url(r'^playlists/favorites/$',
+        'menclave.aenclave.playlist.favorites',
+        name='aenclave-playlists-favorites'),
+
     url(r'^playlists/normal/(?P<playlist_id>\d+)/$',
         'menclave.aenclave.playlist.playlist_detail',
         name='aenclave-playlist'),
@@ -260,8 +264,8 @@ urlpatterns = patterns(
 
     (r'^json/favorite_song/(?P<song_id>\d+)/$',
      'menclave.aenclave.views.favorite_song'),
- 
- 
+
+
     # Speech recognition parts
 
   	(r'^speech_page/$',
@@ -271,7 +275,7 @@ urlpatterns = patterns(
 
     (r'^recommendations/feedback/$',
      'menclave.aenclave.recommendations.bad_recommendations'),
-    
+
 
 
 )

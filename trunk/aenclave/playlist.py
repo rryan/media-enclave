@@ -1,10 +1,11 @@
 import json
 
 from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponseRedirect
-from django.core.urlresolvers import reverse
 
 from menclave.aenclave import json_response
 from menclave.aenclave.login import permission_required
@@ -52,6 +53,11 @@ def user_playlists(request, username):
     return render_html_template('aenclave/playlist_list.html', request,
                                 {'playlist_list': plists},
                                 context_instance=RequestContext(request))
+
+@login_required
+def favorites(request):
+    favorites = Playlist.get_favorites(request.user, create=True)
+    return playlist_detail(request, favorites.id)
 
 def xml_user_playlists(request):
     if request.user.is_authenticated():

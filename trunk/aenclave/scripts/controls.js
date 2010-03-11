@@ -141,7 +141,7 @@ var controls = {
     }
     jQuery.ajax(options);
   },
-  
+
   _playlist_empty: function(playlist_info) {
     return !Boolean(playlist_info &&
                     playlist_info.songs &&
@@ -301,8 +301,9 @@ var controls = {
   var navs = {
     'c': '/audio/channels/',
     'p': '/audio/playlists/',
+    'f': '/audio/playlists/favorites/',
     'b': '/audio/browse/',
-    'u': '/audio/upload/',
+    'u': '/audio/upload/fancy/',
     'r': '/audio/roulette/',
     'h': '/audio/',
   };

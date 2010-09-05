@@ -265,11 +265,13 @@ urlpatterns = patterns(
     (r'^json/favorite_song/(?P<song_id>\d+)/$',
      'menclave.aenclave.views.favorite_song'),
 
+    (r'^json/search/$',
+     'menclave.aenclave.search.json_search'),
 
     # Speech recognition parts
 
-  	(r'^speech_page/$',
-        'menclave.aenclave.views.speech_page'),
+    (r'^speech_page/$',
+     'menclave.aenclave.views.speech_page'),
 
     # For Recommendations (6.867)
 

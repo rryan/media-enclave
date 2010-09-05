@@ -1,5 +1,6 @@
 package menclave.android.aenclave;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 
 public class SearchActivity extends ListActivity {
   /** Called when the activity is first created. */
@@ -24,7 +28,9 @@ public class SearchActivity extends ListActivity {
     List<Song> songs;
     if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
       String query = intent.getStringExtra(SearchManager.QUERY);
-      songs = filterSongsByQuery(SONGS, query);
+      Type type = new TypeToken<List<Song>>(){}.getType();
+      songs = new Gson().fromJson(SONGS_JSON, type);
+      songs = filterSongsByQuery(songs, query);
     } else {
       songs = Arrays.asList(new Song("No search query", "", ""));
     }
@@ -41,7 +47,7 @@ public class SearchActivity extends ListActivity {
     });
   }
 
-  private List<Song> filterSongsByQuery(Song[] songs, String query) {
+  private List<Song> filterSongsByQuery(List<Song> songs, String query) {
     List<Song> results = new ArrayList<Song>();
     String[] words = query.split("\\s");
     for (Song song : songs) {
@@ -63,11 +69,11 @@ public class SearchActivity extends ListActivity {
     return results;
   }
 
-  static final Song[] SONGS = new Song[] {
-    new Song("Glorious Dawn",       "", "Carl Sagan"),
-    new Song("Semi-Charmed",        "", "Third Eye Blind"),
-    new Song("Rainbow Stalin",      "", "The Similou"),
-    new Song("Double Rainbow Song", "", "Double Rainbow Guy"),
-    new Song("Rapist Song",         "", "Antoine Dodson")
-  };
+  static final String SONGS_JSON = "[" +
+      "{'title': 'Glorious Dawn',       'album': '', 'artist': 'Carl Sagan'}," +
+      "{'title': 'Semi-Charmed',        'album': '', 'artist': 'Third Eye Blind'}," +
+      "{'title': 'Rainbow Stalin',      'album': '', 'artist': 'The Similou'}," +
+      "{'title': 'Double Rainbow Song', 'album': '', 'artist': 'Double Rainbow Guy'}," +
+      "{'title': 'Rapist Song',         'album': '', 'artist': 'Antoine Dodson'}" +
+      "]";
 }

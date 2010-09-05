@@ -33,11 +33,18 @@ public class AudioEnclaveActivity extends TabActivity {
     spec.setContent(intent);
     tabHost.addTab(spec);
 
-    // Register roulette intent.
-    intent = new Intent().setClass(this, RouletteActivity.class);
-    spec = tabHost.newTabSpec("roulette");
-    spec.setIndicator("Roulette", res.getDrawable(R.drawable.ic_tab_search));
-    spec.setContent(intent);
-    tabHost.addTab(spec);
+    //// Register search intent.
+    //intent = new Intent().setClass(this, SearchActivity.class);
+    //spec = tabHost.newTabSpec("search");
+    //spec.setIndicator("Search", res.getDrawable(R.drawable.ic_tab_search));
+    //spec.setContent(intent);
+    //tabHost.addTab(spec);
+
+    //// Register roulette intent.
+    //intent = new Intent().setClass(this, RouletteActivity.class);
+    //spec = tabHost.newTabSpec("roulette");
+    //spec.setIndicator("Roulette", res.getDrawable(R.drawable.ic_tab_search));
+    //spec.setContent(intent);
+    //tabHost.addTab(spec);
   }
 }

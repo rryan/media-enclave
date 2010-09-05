@@ -7,6 +7,10 @@ public class Song {
   //private int track;
   //private int time;
 
+  public Song() {
+    this("", "", "");
+  }
+
   public Song(String title, String album, String artist) {
     this.title = title;
     this.album = album;

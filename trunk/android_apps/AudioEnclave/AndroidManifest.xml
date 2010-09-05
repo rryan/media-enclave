@@ -12,7 +12,18 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name=".SearchActivity"></activity>
+    <activity android:name=".NowPlayingActivity"></activity>
+    <activity android:name=".PlaylistsActivity"></activity>
+    <activity android:name=".SearchActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.SEARCH" />
+      </intent-filter>
+      <meta-data android:name="android.app.searchable"
+        android:resource="@xml/searchable"/>
+    </activity>
     <activity android:name=".RouletteActivity"></activity>
+    <!-- Declare the default searchable activity for the whole app. -->
+    <meta-data android:name="android.app.default_searchable"
+               android:value=".SearchActivity" />
   </application>
-</manifest> 
+</manifest>

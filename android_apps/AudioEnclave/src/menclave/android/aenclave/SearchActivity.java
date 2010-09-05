@@ -1,16 +1,16 @@
 package menclave.android.aenclave;
 
-import android.app.Activity;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.ListActivity;
+import android.app.SearchManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -20,18 +20,47 @@ public class SearchActivity extends ListActivity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    setListAdapter(new SongAdapter(this));
+    Intent intent = getIntent();
+    List<Song> songs;
+    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+      String query = intent.getStringExtra(SearchManager.QUERY);
+      songs = filterSongsByQuery(SONGS, query);
+    } else {
+      songs = Arrays.asList(new Song("No search query", "", ""));
+    }
 
-    ListView lv = getListView();
-    lv.setTextFilterEnabled(true);
-
-    lv.setOnItemClickListener(new OnItemClickListener() {
+    final SongAdapter adapter = new SongAdapter(this, songs);
+    setListAdapter(adapter);
+    getListView().setOnItemClickListener(new OnItemClickListener() {
       public void onItemClick(AdapterView<?> parent, View view, int position,
                               long id) {
-        Toast.makeText(getApplicationContext(), SONGS[position].getTitle(),
+        Toast.makeText(getApplicationContext(),
+                       adapter.getItem(position).getTitle(),
                        Toast.LENGTH_SHORT).show();
       }
     });
+  }
+
+  private List<Song> filterSongsByQuery(Song[] songs, String query) {
+    List<Song> results = new ArrayList<Song>();
+    String[] words = query.split("\\s");
+    for (Song song : songs) {
+      boolean skip = false;
+      for (String word : words) {
+        word = word.toLowerCase();
+        if (!(song.getTitle().toLowerCase().contains(word) ||
+              song.getArtist().toLowerCase().contains(word) ||
+              song.getAlbum().toLowerCase().contains(word))) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) {
+        continue;
+      }
+      results.add(song);
+    }
+    return results;
   }
 
   static final Song[] SONGS = new Song[] {
@@ -41,23 +70,4 @@ public class SearchActivity extends ListActivity {
     new Song("Double Rainbow Song", "", "Double Rainbow Guy"),
     new Song("Rapist Song",         "", "Antoine Dodson")
   };
-
-  class SongAdapter extends ArrayAdapter<Song> {
-    private Activity context;
-
-    SongAdapter(Activity context) {
-      super(context, R.layout.song, R.id.songName, SONGS);
-      this.context = context;
-    }
-
-    public View getView(int position, View convertView, ViewGroup parent) {
-      Song song = SONGS[position];
-      View songView = context.getLayoutInflater().inflate(R.layout.song, null);
-      TextView songName = (TextView)songView.findViewById(R.id.songName);
-      songName.setText(song.getTitle());
-      TextView artistName = (TextView)songView.findViewById(R.id.artistName);
-      artistName.setText(song.getArtist());
-      return songView;
-    }
-  }
 }

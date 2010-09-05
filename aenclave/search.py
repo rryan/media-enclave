@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import json
 
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
@@ -10,48 +11,52 @@ from menclave.aenclave.models import Channel, Song
 from menclave.aenclave.utils import (parse_date, parse_time, parse_integer,
                                      get_unicode)
 from menclave.aenclave.html import render_html_template, html_error
+from menclave.aenclave import json_response
 
 def Qu(field, op, value):
     return Q(**{(str(field) + '__' + str(op)): str(value)})
 
 #------------------------------- Normal Search -------------------------------#
 
-def normal_search(request):
-    form = request.GET
-    # Get the query.
-    query_string = form.get('q','')
+def get_search_results(query_string, user, select_from):
     query_words = query_string.split()
+    # If no query was provided, then yield no results.
     if not query_words:
-        # If no query was provided, then yield no results.
-        (queryset, query_string) = ((), '')
-    else:
-        # Otherwise, get matching songs.
-        full_query = Q()
-        for word in query_words:
-            word_query = Q()
-            for field in ('title', 'album', 'artist'):
-                # Each word may appear in any field, so we use OR here.
-                word_query |= Qu(field, 'icontains', word)
-            # Each match must contain every word, so we use AND here.
-            full_query &= word_query
-        queryset = Song.visibles.filter(full_query)
-        select_from = form.get('from', 'all_songs')
-        if select_from == 'all_songs':
-            select_from = ''  # This makes template logic easier.
-        elif select_from == 'play_count':
-            queryset = queryset.filter(play_count__gt=0)
-        elif select_from == 'playlists':
-            queryset = queryset.annotate(playlist_count=Count('playlistentry'))
-            queryset = queryset.filter(playlist_count__gt=0)
-        elif select_from == 'my_playlists':
-            user = request.user
-            queryset = queryset.filter(playlistentry__playlist__owner=user)
-            queryset = queryset.annotate(playlist_count=Count('playlistentry'))
-            queryset = queryset.filter(playlist_count__gt=0)
-        else:
-            select_from = ''  # This makes template logic easier.
+        return ()
+    # Otherwise, get matching songs.
+    full_query = Q()
+    for word in query_words:
+        word_query = Q()
+        for field in ('title', 'album', 'artist'):
+            # Each word may appear in any field, so we use OR here.
+            word_query |= Qu(field, 'icontains', word)
+        # Each match must contain every word, so we use AND here.
+        full_query &= word_query
+    queryset = Song.visibles.filter(full_query)
+    if select_from == 'play_count':
+        queryset = queryset.filter(play_count__gt=0)
+    elif select_from == 'playlists':
+        queryset = queryset.annotate(playlist_count=Count('playlistentry'))
+        queryset = queryset.filter(playlist_count__gt=0)
+    elif select_from == 'my_playlists':
+        # Django doesn't like you using the AnonymousUser sometimes, so we just
+        # give 0 results.
+        if not user.is_authenticated():
+            return ()
+        queryset = queryset.filter(playlistentry__playlist__owner=user)
+        queryset = queryset.annotate(playlist_count=Count('playlistentry'))
+        queryset = queryset.filter(playlist_count__gt=0)
+    return queryset
+
+
+def normal_search(request):
+    # Get the query.
+    query_string = request.GET.get('q','')
+    select_from = request.GET.get('from', 'all_songs')
+    # Get the result set.
+    queryset = get_search_results(query_string, request.user, select_from)
     # If we're feeling lucky, queue a random result.
-    if form.get('lucky', False):
+    if request.GET.get('lucky', False):
         if queryset is ():
             queryset = Song.visibles
         song_id = queryset.order_by('?').values('id')[0]['id']
@@ -61,13 +66,24 @@ def normal_search(request):
         ctrl.add_song(song)
         # Redirect to the channels page.
         return HttpResponseRedirect(reverse('aenclave-default-channel'))
-    queryset = Song.annotate_favorited(queryset, request.user)
-    # Otherwise, display the search results.
+    # Otherwise, display the search results.  Limit to 500, and add favorite
+    # hearts.
+    queryset = Song.annotate_favorited(queryset[:500], request.user)
     return render_html_template('aenclave/search_results.html', request,
-                                {'song_list': queryset[:500],  # limit to 500
+                                {'song_list': queryset,
                                  'search_query': query_string,
                                  'select_from': select_from},
                                 context_instance=RequestContext(request))
+
+#------------------------------- Filter Search -------------------------------#
+
+def json_search(request):
+    query_string = request.GET.get('q','')
+    songs = get_search_results(query_string, request.user, 'all_songs')
+    fields = ('title', 'album', 'artist')
+    json_obj = [dict((k, v) for (k, v) in song.__dict__.items() if k in fields)
+                for song in songs]
+    return json_response.render_json_response(json.dumps(json_obj))
 
 #------------------------------- Filter Search -------------------------------#
 

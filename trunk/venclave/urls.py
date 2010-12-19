@@ -13,6 +13,18 @@ urlpatterns = patterns(
         'menclave.venclave.views.browse',
         name='venclave-browse' ),
 
+    url(r'^exhibit/$',
+        'menclave.venclave.views.exhibit',
+        name='venclave-exhibit'),
+
+    url(r'^exhibit/content/$',
+        'menclave.venclave.views.exhibit_content',
+        name='venclave-exhibit-content'),
+
+    url(r'^exhibit/__history__.html',
+        'menclave.venclave.views.exhibit_history',
+        name='venclave-exhibit-history'),
+
     url(r'^upload/$',
         'menclave.venclave.views.upload',
         name='venclave-upload'),

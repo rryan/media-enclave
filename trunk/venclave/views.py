@@ -1,6 +1,7 @@
 # venclave/views.py
 
 import json
+import re
 import cgi
 
 from django.contrib.auth import authenticate, login
@@ -15,7 +16,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import select_template
 from django.template import Context, RequestContext
 
-from menclave.venclave.models import ContentNode
+from menclave.venclave.models import ContentNode, KIND_MOVIE, KIND_SERIES, KIND_SEASON
 from menclave.venclave.templatetags import venclave_tags
 
 
@@ -111,6 +112,221 @@ def browse(request):
                    'search_query': query_string})
     return render_to_response('venclave/browse.html', result,
                               context_instance=RequestContext(request))
+
+def exhibit(request):
+    result = {}
+    return render_to_response('venclave/exhibit.html', result,
+                              context_instance=RequestContext(request))
+
+def exhibit_history(request):
+    return HttpResponse('<html><body></body></html>')
+
+def exhibit_content(request):
+    content_nodes = ContentNode.objects.filter(kind__in=[KIND_MOVIE, KIND_SERIES]).select_related()
+    kinds = {KIND_MOVIE: 'Movie',
+             KIND_SERIES: 'TV Show',}
+    items = []
+    titleyearPattern = re.compile("^(.*) \((\d{4})\)$")
+
+    # for i in range(15):
+    #     items.append({'type': 'Season',
+    #                   'label': ,
+    #                   'Label': 'Season %d' % (i+1),
+    #                   'href': '/tvseasons'})
+
+
+    for node in content_nodes:
+        name = node.simple_name()
+        item = {'type': kinds.get(node.kind, 'Unknown'),
+                'label': node.simple_name(),
+                'Title': node.simple_name(),
+                'Year': ''}
+        missing = []
+
+        match = titleyearPattern.search(name)
+        if match:
+            item['Title'] = match.group(1)
+            item['Year'] = match.group(2)
+
+
+        is_tv_series = node.kind == KIND_SERIES
+        is_movie = node.kind == KIND_MOVIE
+
+        if is_tv_series:
+            seasons = []
+
+            for child in node.children.all():
+                seasons.append({'type': 'Season',
+                                'label': str(child.id),
+                                'title': child.title,
+                                'link': '<a href="%s">%s</a>' % ('/foolio', child.title),
+                                'href': '/tvseasons/%d' % child.id})
+            items.extend(seasons)
+
+            item['Seasons'] = [str(child.id) for child in node.children.all() if child.kind == KIND_SEASON]
+            # item['Seasons'] = [{'type': 'Season',
+            #                     'label': child.title,
+            #                     'href': '/tvseasons'}
+            #                    for child in node.children.all() if child.kind == KIND_SEASON]
+
+        item['Downloads'] = node.downloads
+
+        metadata = node.metadata
+        imdb = metadata.imdb if metadata else None
+        rt = metadata.rotten_tomatoes if metadata else None
+        mc = metadata.metacritic if metadata else None
+
+        if metadata and metadata.nyt_review:
+            item['NYTReviewURL'] = metadata.nyt_review
+        else:
+            missing.append('NYTReviewURL')
+
+        if imdb:
+            imdb = node.metadata.imdb
+            item['IMDbNumber'] = imdb.imdb_id
+            item['IMDbURL'] = 'http://www.imdb.com/title/tt%s' % imdb.imdb_id
+            item['IMDbGenres'] = [genre.name for genre in imdb.genres.all()]
+
+            if imdb.rating is not None:
+                item['IMDbRating'] = imdb.rating
+            else:
+                missing.append('IMDbRating')
+
+            if imdb.length is not None:
+                item['IMDbRuntime'] = imdb.length
+            else:
+                missing.append('IMDbRuntime')
+
+            if imdb.plot_outline is not None:
+                item['IMDbPlotOutline'] = imdb.plot_outline
+            else:
+                missing.append('IMDbPlotOutline')
+
+            item['IMDbGenres'] = [genre.name for genre in imdb.genres.all()]
+            item['IMDbDirectors'] = [director.name for director in imdb.directors.all()]
+
+            # Limit to top 4
+            item['IMDbActors'] = [actor.name for actor in imdb.actors.all()][:4]
+
+            if imdb.thumb_image:
+                item['ThumbURL'] = imdb.thumb_image.url
+
+            # if imdb.thumb_uri is not None:
+            #     item['ThumbURL'] = imdb.thumb_uri
+            #     item['ThumbWidth'] = imdb.thumb_width
+            #     item['ThumbHeight'] = imdb.thumb_height
+        else:
+            missing.append('IMDbNumber')
+
+        if rt:
+            item['RTID'] = rt.rt_id
+            item['RTURL'] = rt.rt_uri
+
+            if rt.thumb_uri and 'ThumbURL' not in item:
+                item['ThumbURL'] = rt.thumb_uri
+                item['ThumbWidth'] = rt.thumb_width
+                item['ThumbHeight'] = rt.thumb_height
+
+            if rt.top_critics_percent:
+                item['RTRating'] = rt.top_critics_percent
+                if rt.top_critics_fresh is None:
+                    item['RTNA'] = '1'
+                elif rt.top_critics_fresh is True:
+                    item['RTFresh'] = '1'
+                else:
+                    item['RTRotten'] = '1'
+            elif rt.all_critics_percent:
+                item['RTRating'] = rt.all_critics_percent
+                if rt.all_critics_fresh is None:
+                    item['RTNA'] = '1'
+                elif rt.all_critics_fresh is True:
+                    item['RTFresh'] = '1'
+                else:
+                    item['RTRotten'] = '1'
+            else:
+                item['RTNA'] = '1'
+                missing.append('RTRating')
+        else:
+            missing.append('RTID')
+
+        if mc:
+            item['MCID'] = mc.mc_id
+            item['MCURL'] = 'http://www.metacritic.com%s' % mc.mc_uri
+            if mc.score:
+                item['MCRating'] = mc.score
+            else:
+                missing.append('MCRating')
+            if mc.status:
+                if mc.status == 'tbd':
+                    item['MCNA'] = 1
+                elif mc.status in ['terrible', 'unfavorable']:
+                    item['MCUnfavorable'] = 1
+                elif mc.status in ['mixed']:
+                    item['MCMixed'] = 1
+                elif mc.status in ['favorable', 'outstanding']:
+                    item['MCFavorable'] = 1
+            else:
+                item['MCNA'] = 1
+        else:
+            missing.append('MCID')
+
+        item['Missing'] = missing
+        items.append(item)
+
+    properties = {
+        'Title': { 'valueType': 'text' },
+        'Year': { 'valueType': 'number' },
+        'Seasons': { 'valueType': 'item' },
+        'ThumbURL': { 'valueType': 'url' },
+        'ThumbWidth': { 'valueType': 'number' },
+        'ThumbHeight': { 'valueType': 'number' },
+        'IMDbNumber': { 'valueType': 'text', 'label': 'IMDb ID Number' },
+        'IMDbRating': { 'valueType': 'number', 'label': 'IMDb User Rating' },
+        'IMDbURL': { 'valueType': 'url', 'label': 'IMDb URL' },
+        'IMDbGenres': { 'valueType': 'text', 'label': 'Genres' },
+        'IMDbDirectors': { 'valueType': 'text', 'label': 'Directors' },
+        'IMDbActors': { 'valueType': 'text', 'label': 'Actors' },
+        'IMDbRuntime': { 'valueType': 'number', 'label': 'Runtime' },
+        'IMDbReleaseDate': { 'valueType': 'date', 'label': 'Release Date' },
+        'IMDbAKA': { 'valueType': 'text', 'label': 'Alternate Titles' },
+        'IMDbProduction': { 'valueType': 'text', 'label': 'Production Companies' },
+        'IMDbPlotOutline': { 'valueType': 'text', 'label': 'Plot Outline' },
+        'RTID': { 'valueType': 'text', 'label': 'RottenTomatoes ID' },
+        'RTRating': { 'valueType': 'number', 'label': 'RottenTomatoes Rating' },
+        'RTURL': { 'valueType': 'url', 'label': 'RottenTomatoes URL' },
+        'RTActors': { 'valueType': 'text', 'label': 'Actors' },
+        'RTDirectors': { 'valueType': 'text', 'label': 'Directors' },
+        'RTWriters': { 'valueType': 'text', 'label': 'Writers' },
+        'RTFresh': { 'valueType': 'url', 'label': 'RT Fresh' },
+        'RTRotten': { 'valueType': 'url', 'label': 'RT Rotten' },
+        'RTNA': { 'valueType': 'url', 'label': 'RT No Rating' },
+        'RTBoxOffice': { 'valueType': 'number', 'label': 'Box Office' },
+        'MCID': { 'valueType': 'text', 'label': 'MetaCritic ID' },
+        'MCURL': { 'valueType': 'url', 'label':' MetaCritic URL' },
+        'MCRating': { 'valueType': 'number', 'label': 'Metacritic Rating' },
+        'MCNA': { 'valueType': 'boolean', 'label': 'MC No Rating' },
+        'MCFavorable': { 'valueType': 'boolean', 'label': 'MC Favorable Ratings' },
+        'MCMixed': { 'valueType': 'boolean', 'label': 'MC Mixed Ratings' },
+        'MCUnfavorable': { 'valueType': 'boolean', 'label': 'MC Unfavorable Ratings' },
+        'NYTReviewURL': { 'valueType': 'url', 'label': 'NYT Review URL' },
+        'DateAdded': { 'valueType': 'date', 'label': 'Date Added' },
+        'Downloads': { 'valueType': 'number', 'label': 'Downloads' },
+        'Random': { 'valueType': 'number', 'label': 'Random' },
+        'Missing': { 'valueType': 'text', 'label': 'Missing Fields' },
+        }
+
+    types = {
+        'Movie': { 'pluralLabel': 'Movies' },
+        'TV Show': { 'pluralLabel': 'TV Shows' },
+        'Season': { 'pluralLabel': 'Seasons' },
+    }
+
+    result = {'types': types,
+              'properties': properties,
+              'items': items }
+
+    return HttpResponse(json.dumps(result, indent=2))
+
 
 
 @login_required

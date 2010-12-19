@@ -1,0 +1,478 @@
+{% extends "venclave/base.html" %}
+
+{% load venclave_tags %}
+{% load bundler_tags %}
+
+{% block styles %}
+  {{ block.super }}
+  {% css "venclave-styles" "jquery-ui-1.7.1.custom.css" %}
+  {% css "venclave-styles" "browse.css" %}
+
+
+  <style>
+    .content {
+      width: 100%;
+      /* margin-top: 30px; */
+    }
+    .facets {
+      vertical-align: top;
+      padding: 0 0 0 30px;
+      width: 250px;
+    }
+    .results {
+      /* padding: 0 15px 0 0;*/
+      vertical-align: top;
+    }
+
+.exhibit-collectionView-header
+{
+  padding: 0 0 5px 50px;
+  text-align: left;
+  width: 100%;
+  font-family: monospace;
+}
+
+.exhibit-collectionView-footer {
+    font-family: monospace;
+}
+
+.exhibit-facet-header, .exhibit-flowingFacet-header {
+    font-family: monospace;
+}
+
+.exhibit-facet-value, .exhibit-flowingFacet-value {
+    font-family: monospace;
+}
+
+.exhibit-facet-value-link, .exhibit-flowingFacet-value-link {
+    color: black;
+    text-decoration: none;
+}
+
+.exhibit-facet-value-link:hover, .exhibit-flowingFacet-value-link:hover {
+    color: black;
+    text-decoration: underline;
+}
+
+.exhibit-collectionView-header-sortControls {
+    text-align: left;
+    margin: 0px;
+}
+
+.exhibit-action, .exhibit-collectionView-pagingControls-page a {
+    color: black;
+    text-decoration: none;
+}
+
+.exhibit-action:hover, .exhibit-collectionView-pagingControls-page a:hover {
+    color: black;
+    text-decoration: underline;
+}
+
+.exhibit-collectionSummaryWidget-results
+{
+  padding: 0 0 0 0;
+  font-size: 1.5em !important;
+}
+
+.exhibit-collectionSummaryWidget-count
+{
+  font-size: 1em !important;
+}
+
+.exhibit-collectionView-header-groupControl
+{
+  display: none;
+  visibility: hidden;
+}
+
+.exhibit-slider-display
+{
+  padding-left: 50px;
+}
+
+.content-item {
+  width: 100%;
+  min-height: 70px;
+  background-color: #FFF;
+  margin: 5px;
+  border: 1px solid #AAA;
+  padding: 5px;
+}
+
+.content-item:hover
+{
+  background-color: #F4F4F4;
+  border: 1px solid #888;
+}
+
+.poster
+{
+  width: 100px;
+  text-align: center;
+}
+
+.scores {
+    list-style: none;
+    padding-left: 0px;
+}
+.scores li {
+    display: inline;
+    margin-right: 10px;
+}
+.imdb, .rt, .mc, .nyt { padding-left: 5px; }
+.imdb img, .rt img, .mc img, .nyt img { margin: 0 .1em -.1em 0; }
+
+.content-title {
+    font-size: 1.4em;
+}
+
+.content-name a, .rt a, .imdb a, .mc a, .nyt a {
+    color: black;
+    text-decoration: none;
+}
+
+.content-name a:hover, .rt a:hover, .imdb a:hover, .mc a:hover, .nyt a:hover {
+    border-bottom: 1px solid black;
+}
+
+/* Get rid of numbers for items. */
+.exhibit-tileView-body {
+  list-style: none;
+}
+
+
+  </style>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% javascript "venclave-scripts" "jquery.json-1.3.min.js" %}
+  {% javascript "venclave-scripts" "jquery-ui-1.7.1.custom.min.js" %}
+  {% javascript "venclave-scripts" "filter.js" %}
+  {% javascript "venclave-scripts" "video-list.js" %}
+
+
+<link href="/video/exhibit/content/" type="application/json" rel="exhibit/data" charset="UTF-8" />
+
+<script src="/video/scripts/exhibit-api/exhibit-api.js?bundle=false" type="text/javascript"></script>
+{% comment %}
+<script src="http://simile-widgets.googlecode.com/svn/exhibit/trunk/src/webapp/api/exhibit-api.js?bundle=false"
+            type="text/javascript"></script>
+  {% javascript "venclave-scripts" "exhibit-api.js" %}
+<link href="/video/scripts/movies.js" type="application/json" rel="exhibit/data" charset="UTF-8" />
+
+{% endcomment %}
+
+{% endblock scripts %}
+
+{% block content %}
+
+<table class="content">
+  <tr>
+    <td class="facets">
+      <div ex:role="facet"
+           ex:facetClass="TextSearch"
+           ex:expressions=".Title, .IMDbAKA"
+           ex:facetLabel="Search by Title"></div><br>
+
+      <div ex:role="facet"
+           ex:facetClass="TextSearch"
+           ex:expressions=".IMDbActors, .IMDbDirectors"
+           ex:facetLabel="Search by Cast and Crew"></div><br>
+
+      <div ex:role="facet"
+           ex:facetClass="TextSearch"
+           ex:expressions=".IMDbPlotOutline"
+           ex:facetLabel="Search in Plot"></div><br>
+
+      <div ex:role="facet"
+           ex:showMissing="false"
+           ex:facetLabel="Choose Content Types"
+           ex:expression=".type"
+           ex:scroll="false"
+           ex:sortMode="count"
+           ex:sortDirection="forward"></div><br>
+
+      <div ex:role="facet"
+           ex:showMissing="false"
+           ex:facetLabel="Choose Genres"
+           ex:expression=".IMDbGenres"
+           ex:height="200px"
+           ex:sortMode="count"
+           ex:intersect="true"
+           ex:sortDirection="forward"></div><br>
+
+      <div ex:role="facet"
+           ex:facetClass="Slider"
+           ex:expression=".Year"
+           ex:facetLabel="Release Year"
+           ex:horizontal="true"
+           ex:precision="1"
+           ex:histogram="true"
+           ex:width="200px"></div><br/>
+
+      <div ex:role="facet"
+           ex:facetClass="Slider"
+           ex:expression=".IMDbRating"
+           ex:facetLabel="IMDb User Rating"
+           ex:horizontal="true"
+           ex:precision=".1"
+           ex:histogram="true"
+           ex:width="200px"></div><br>
+
+      <div ex:role="facet"
+           ex:facetClass="Slider"
+           ex:expression=".RTRating"
+           ex:facetLabel="RottenTomatoes Rating"
+           ex:horizontal="true"
+           ex:precision="1"
+           ex:histogram="true"
+           ex:width="200px"></div>
+      <br>
+
+      <div ex:role="facet"
+           ex:facetClass="Slider"
+           ex:expression=".MCRating"
+           ex:facetLabel="Metacritic Rating"
+           ex:horizontal="true"
+           ex:precision="1"
+           ex:histogram="true"
+           ex:width="200px"></div>
+      <br>
+
+      <div ex:role="facet"
+           ex:showMissing="false"
+           ex:facetLabel="Actors"
+           ex:expression=".IMDbActors"
+           ex:height="200px"
+           ex:sortMode="count"
+           ex:sortDirection="forward"></div><br>
+
+      <div ex:role="facet"
+           ex:showMissing="false"
+           ex:facetLabel="Directors"
+           ex:expression=".IMDbDirectors"
+           ex:height="200px"
+           ex:sortMode="count"
+           ex:sortDirection="forward"></div><br>
+
+
+      <div ex:role="facet"
+           ex:showMissing="false"
+           ex:facetLabel="Missing Data"
+           ex:expression=".Missing"
+           ex:height="200px"
+           ex:sortMode="count"
+           ex:sortDirection="forward"></div><br>
+
+    </td>
+    <td class="results">
+      <div ex:role="exhibit-collection" ex:itemTypes="Movie,TV Show"></div>
+
+      <div ex:role="view"
+           ex:orders=".DateAdded"
+           ex:directions="descending"
+           ex:possibleOrders=".Title,.Year,.Downloads,.IMDbRating,.RTRating,.MCRating,.IMDbRuntime,.DateAdded,.IMDbReleaseDate,.Random,.RTBoxOffice"
+           ex:possibleDirections="ascending,ascending,descending,descending,descending,descending,descending,descending,descending,ascending,descending"
+           ex:grouped="false"
+           ex:paginate="true"
+           ex:itemTypes="Movie"
+           >
+        <!-- ex:showAll="true">-->
+
+        <div class="season" ex:role="lens" style="display: none;" ex:itemTypes="Season">
+          <a ex:href-content=".href"><span ex:content=".Label"></span></a>
+        </div>
+
+        <table class="content-item" ex:role="lens" style="display: none;" ex:itemTypes="TV Show">
+          <tr>
+            <td class="poster" rowspan="3">
+              <a ex:href-subcontent="../TV/{{.label}}/">
+                <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL" width="150"></a>
+            </td>
+            <td class="content-name">
+              <a ex:href-subcontent="../TV/{{.label}}/">
+                <img src="/video/images/tv_icon.png"/>
+                <span class="content-title" ex:content=".Title"></span>
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <ul class="scores">
+                <li class="imdb" ex:if-exists=".IMDbNumber">
+                  <a ex:href-content=".IMDbURL" target="_blank">
+                    <img src="/video/images/exhibit/imdb.jpg" height="14">
+                    <span class="imdbrating" ex:content=".IMDbRating"></span>
+                  </a>
+                </li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="data">
+              <table>
+                <tr>
+                  <td class="imdbdata">
+                    <span ex:if-exists=".IMDbGenres" class="genres">
+                      <b>Genres:</b> <span ex:content=".IMDbGenres"></span>
+                    </span><br ex:if-exists=".IMDbGenres"/>
+
+                    <span ex:if-exists=".Seasons" class="seasons">
+                      <b>Seasons:</b> <span ex:content=".Seasons.link"></span>
+                    </span><br ex:if-exists=".Seasons"/>
+
+                    <span ex:if-exists=".IMDbRuntime" class="runtime">
+                      <b>Runtime:</b> <span ex:content=".IMDbRuntime"></span> min
+                    </span><br ex:if-exists=".IMDbRuntime"/>
+
+                    <span ex:if-exists=".IMDbDirectors" class="directors">
+                      <b>Directed by:</b> <span ex:content=".IMDbDirectors"></span>
+                    </span><br ex:if-exists=".IMDbDirectors"/>
+
+                    <span ex:if-exists=".IMDbActors" class="actors">
+                      <b>Starring:</b> <span ex:content=".IMDbActors"></span>
+                    </span><br ex:if-exists=".IMDbActors"/>
+
+                    <span ex:if-exists=".IMDbPlotOutline" class="outline">
+                      <b>Plot:</b> <span ex:content=".IMDbPlotOutline"></span>
+                    </span><br ex:if-exists=".IMDbPlotOutline"/>
+
+                    <span ex:if-exists=".IMDbReleaseDate" class="releasedate">
+                      <b>Release Date:</b> <span ex:content=".IMDbReleaseDate" ex:formats="date { template: 'd MMMM yyyy'}"></span>
+                    </span>
+                  </td>
+                  <td class="rtdata">
+                    <span ex:if-exists=".RTDirectors" class="directors">
+                      <b>Directed by<b> <span ex:content=".RTDirectors"></span>
+                    </span>
+                    <br/>
+                    <span ex:if-exists=".RTActors" class="actors">
+                      <b>Starring</b> <span ex:content=".RTActors"></span>
+                    </span>
+                    <br/>
+                    <span ex:if-exists=".RTWriters" class="writers">
+                      <b>Written by</b> <span ex:content=".RTWriters"></span>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <table class="content-item" ex:role="lens" style="display: none;" ex:itemTypes="Movie">
+          <tr>
+            <td class="poster" rowspan="3">
+              <a ex:href-subcontent="../Movies/{{.label}}/">
+                <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL" width="150"></a>
+            </td>
+            <td class="content-name">
+              <a ex:href-subcontent="../Movies/{{.label}}/">
+                <img src="/video/images/mo_icon.png"/>
+                <span class="content-title" ex:content=".Title"></span>
+                <span class="content-year">(<span ex:content=".Year"></span>)</span>
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <ul class="scores">
+                <li class="imdb" ex:if-exists=".IMDbNumber">
+                  <a ex:href-content=".IMDbURL" target="_blank">
+                    <img src="/video/images/exhibit/imdb.jpg" height="14">
+                    <span class="imdbrating" ex:content=".IMDbRating"></span>
+                  </a>
+                </li>
+                <li class="rt" ex:if-exists=".RTURL">
+                  <a ex:href-content=".RTURL" target="_blank">
+                    <img width="14" height="14" src="/video/images/exhibit/fresh.gif" ex:if-exists=".RTFresh" />
+                    <img width="14" height="14" src="/video/images/exhibit/rotten.gif" ex:if-exists=".RTRotten" />
+                    <img width="14" height="14" src="/video/images/exhibit/na.gif" ex:if-exists=".RTNA" />
+                    <span class="rtrating" ex:content=".RTRating" ex:if-exists=".RTRating"></span>
+                    <span ex:if-exists=".RTRating">%</span>
+                    <span class="rtna" ex:if-exists=".RTNA">N/A</span>
+                  </a>
+                </li>
+                <li class="mc" ex:if-exists=".MCURL">
+                  <a ex:href-content=".MCURL" target="_blank">
+                    <img width="14" height="14" src="/video/images/exhibit/metacritic-red.gif" ex:if-exists=".MCUnfavorable" />
+                    <img width="14" height="14" src="/video/images/exhibit/metacritic-yellow.gif" ex:if-exists=".MCMixed" />
+                    <img width="14" height="14" src="/video/images/exhibit/metacritic-green.gif" ex:if-exists=".MCFavorable" />
+                    <img width="14" height="14" src="/video/images/exhibit/metacritic-gray.gif" ex:if-exists=".MCNA" />
+                    <span ex:if-exists=".MCRating" ex:content=".MCRating"></span>
+                    <span class="mcna" ex:if-exists=".MCNA">N/A</span>
+                  </a>
+                </li>
+
+                <li class="nyt" ex:if-exists=".NYTReviewURL">
+                  <a ex:href-content=".NYTReviewURL" target="_blank">
+                    <img src="/video/images/exhibit/nyt_logo.png" width="14" height="14" alt="NYT Review Link"/>
+                    Review
+                  </a>
+                </li>
+
+                <li class="downloads" ex:if-exists=".Downloads">
+                  <img src="/video/images/exhibit/dl.png" width="14" height="14" alt="Download Count"/>
+                  <span ex:content=".Downloads"></span>
+                </li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="data">
+              <table>
+                <tr>
+                  <td class="imdbdata">
+                    <span ex:if-exists=".IMDbGenres" class="genres">
+                      <b>Genres:</b> <span ex:content=".IMDbGenres"></span>
+                    </span><br ex:if-exists=".IMDbGenres"/>
+
+                    <span ex:if-exists=".IMDbRuntime" class="runtime">
+                      <b>Runtime:</b> <span ex:content=".IMDbRuntime"></span> min
+                    </span><br ex:if-exists=".IMDbRuntime"/>
+
+                    <span ex:if-exists=".IMDbDirectors" class="directors">
+                      <b>Directed by:</b> <span ex:content=".IMDbDirectors"></span>
+                    </span><br/>
+
+                    <span ex:if-exists=".IMDbActors" class="actors">
+                      <b>Starring:</b> <span ex:content=".IMDbActors"></span>
+                    </span><br/>
+
+                    <span ex:if-exists=".IMDbPlotOutline" class="outline">
+                      <b>Plot:</b> <span ex:content=".IMDbPlotOutline"></span>
+                    </span><br ex:if-exists=".IMDbPlotOutline"/>
+
+                    <span ex:if-exists=".IMDbReleaseDate" class="releasedate">
+                      <b>Release Date:</b> <span ex:content=".IMDbReleaseDate" ex:formats="date { template: 'd MMMM yyyy'}"></span>
+                    </span>
+                  </td>
+                  <td class="rtdata">
+                    <span ex:if-exists=".RTDirectors" class="directors">
+                      <b>Directed by<b> <span ex:content=".RTDirectors"></span>
+                    </span>
+                    <br/>
+                    <span ex:if-exists=".RTActors" class="actors">
+                      <b>Starring</b> <span ex:content=".RTActors"></span>
+                    </span>
+                    <br/>
+                    <span ex:if-exists=".RTWriters" class="writers">
+                      <b>Written by</b> <span ex:content=".RTWriters"></span>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+
+      </div>
+    </td>
+  </tr>
+</table>
+
+{% endblock %}

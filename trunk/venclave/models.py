@@ -25,7 +25,7 @@ def cleanup_name(name):
     "Smith, John" => "John Smith"
     "Smith, John (I)" => "John Smith"
     """
-    name = re.sub('\([IVX]*\)$', '', name)
+    name = re.sub(u'\([IVX]*\)$', '', name)
     last, first = name.split(', ')
     return "%s %s" % (first, last)
 
@@ -71,7 +71,7 @@ class ActorFacet(Facet):
     name = "Actor"
     path = "metadata__imdb__actors__name"
     facet_type = "searchbar"
-    
+
     @classmethod
     def get_choices(cls):
         return Actor.objects.order_by('name')
@@ -81,7 +81,7 @@ class DirectorFacet(Facet):
     name = "Director"
     path = "metadata__imdb__directors__name"
     facet_type = "searchbar"
-    
+
     @classmethod
     def get_choices(cls):
         return Director.objects.order_by('name')
@@ -91,7 +91,7 @@ class TypeFacet(Facet):
     name = "Type"
     path = "kind"
     facet_type = "checkbox"
-    
+
     @classmethod
     def get_choices(cls):
         return ContentNode.KIND_CHOICES
@@ -112,7 +112,7 @@ class RatingFacet(Facet):
     name = "Rating"
     path = "metadata__imdb__rating"
     facet_type = "slider"
-    
+
     @classmethod
     def get_choices(cls):
         return {'min':0, 'max':5}
@@ -123,7 +123,8 @@ class Director(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
 
     def __unicode__(self):
-        return cleanup_name(self.name)
+        return self.name
+        #return cleanup_name(self.name)
 
 
 class Actor(models.Model):
@@ -153,7 +154,11 @@ class ContentMetadata(models.Model):
 
     imdb = models.ForeignKey("IMDBMetadata", blank=True, null=True)
     rotten_tomatoes = models.ForeignKey("RottenTomatoesMetadata",
-                                           blank=True, null=True)
+                                        blank=True, null=True)
+    metacritic = models.ForeignKey('MetaCriticMetadata',
+                                   blank=True, null=True)
+    nyt_review = models.URLField(verify_exists=False, null=True)
+
     manual = models.OneToOneField("ManualMetadata", blank=True, null=True)
     file = models.OneToOneField("FileMetadata", blank=True, null=True)
 
@@ -180,27 +185,41 @@ class IMDBMetadata(ContentMetadataSource):
     """IMDB sourced metadata."""
 
     def __unicode__(self):
-        return ("<IMDBMetadata: imdb_canonical_title=%s>" %
-                self.imdb_canonical_title)
+        return ("<IMDBMetadata: imdb_id=%s imdb_canonical_title=%s>" %
+                (self.imdb_id, self.imdb_canonical_title))
 
     @classmethod
     def source_name(cls):
         return 'IMDB'
 
-    imdb_canonical_title = models.CharField(max_length=255, null=True,
-                                            primary_key=True)
+    imdb_id = models.CharField(max_length=255)
+    imdb_uri = models.URLField(verify_exists=False)
+    imdb_canonical_title = models.CharField(max_length=255)
+
+    thumb_uri = models.URLField(verify_exists=False, null=True)
+    thumb_image = models.ImageField(max_length=255,
+                                    upload_to='venclave/covers/imdb',
+                                    width_field='thumb_width',
+                                    height_field='thumb_height',
+                                    null=True)
+    thumb_width = models.IntegerField(default=0)
+    thumb_height = models.IntegerField(default=0)
+
     release_date = models.DateTimeField(blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
     genres = models.ManyToManyField('Genre')
     directors = models.ManyToManyField('Director')
     actors = models.ManyToManyField('Actor', through='Role')
+    plot_outline = models.TextField(blank=True, null=True)
     plot_summary = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
     length = models.IntegerField(blank=True, null=True)
 
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    updated = models.DateTimeField(auto_now=True, editable=False)
+
     def get_important_actors(self):
         return self.actors.order_by('role__bill_pos')[:4]
-
 
 class Role(models.Model):
 
@@ -208,7 +227,7 @@ class Role(models.Model):
 
     actor = models.ForeignKey(Actor)
     imdb = models.ForeignKey(IMDBMetadata)
-    
+
     role = models.CharField(max_length=255, blank=True, null=True)
     bill_pos = models.IntegerField(blank=True, null=True)
 
@@ -221,8 +240,32 @@ class RottenTomatoesMetadata(ContentMetadataSource):
     def source_name(cls):
         return "RottenTomatoes"
 
-    percent_rating = models.IntegerField()
-    average_rating = models.FloatField()
+    rt_id = models.CharField(max_length=255)
+    rt_uri = models.URLField(verify_exists=False)
+
+    thumb_uri = models.URLField(verify_exists=False, null=True)
+    thumb_width = models.IntegerField(default=0)
+    thumb_height = models.IntegerField(default=0)
+
+    top_critics_percent = models.IntegerField(null=True)
+    top_critics_fresh = models.NullBooleanField()
+
+    all_critics_percent = models.IntegerField(null=True)
+    all_critics_fresh = models.NullBooleanField()
+
+class MetaCriticMetadata(ContentMetadataSource):
+
+    """MetaCritic metadata."""
+
+    @classmethod
+    def source_name(cls):
+        return "MetaCritic"
+
+    mc_id = models.CharField(max_length=255)
+    mc_uri = models.URLField(verify_exists=False)
+
+    score = models.IntegerField(null=True)
+    status = models.CharField(max_length=64, null=True)
 
 
 class FileMetadata(ContentMetadataSource):
@@ -350,10 +393,12 @@ class ContentNode(models.Model):
 
     cover_art = models.ImageField(upload_to='venclave/cover_art/%Y/%m/%d',
                                   blank=True, null=True)
+    cover_art_url = models.URLField(blank=True, null=True)
 
     #------------------------------ Download Count ---------------------------#
 
     downloads = models.IntegerField(default=0, editable=False)
+    views = models.IntegerField(default=0, editable=False)
 
     #--------------------------------- Tags ----------------------------------#
 

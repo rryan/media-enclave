@@ -8,6 +8,7 @@ Run this command when there are new video files to add to the database.
 
 import logging
 import os
+import datetime
 
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
@@ -115,6 +116,11 @@ class Command(BaseCommand):
         node.title = title
         node.owner = self.owner
         node.kind = kind
+
+        # Set the creation date to the file modification time.
+        mtime = os.path.getmtime(path)
+        node.created = datetime.datetime.fromtimestamp(mtime)
+
         if not node.metadata:
             meta = ContentMetadata()
             meta.save()

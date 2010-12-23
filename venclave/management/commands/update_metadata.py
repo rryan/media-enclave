@@ -50,13 +50,20 @@ class Command(BaseCommand):
         # For now, only deal w/ movies.
         movies = models.ContentNode.objects.filter(kind=models.KIND_MOVIE)
 
-        for node in movies:
-            logging.info("Updating metadata for '%s'" % node)
-            metadata.update_metadata(node,
-                                     force=options['force'],
-                                     force_imdb=options['force_imdb'],
-                                     force_rt=options['force_rt'],
-                                     force_mc=options['force_mc'],
-                                     force_nyt=options['force_nyt'])
+        metadata.update_contentnodes_metadata(movies,
+                                              force=options['force'],
+                                              force_imdb=options['force_imdb'],
+                                              force_rt=options['force_rt'],
+                                              force_mc=options['force_mc'],
+                                              force_nyt=options['force_nyt'])
+
+        # for node in movies:
+        #     logging.info("Updating metadata for '%s'" % node)
+        #     metadata.update_metadata(node,
+        #                              force=options['force'],
+        #                              force_imdb=options['force_imdb'],
+        #                              force_rt=options['force_rt'],
+        #                              force_mc=options['force_mc'],
+        #                              force_nyt=options['force_nyt'])
 
 

@@ -139,8 +139,10 @@ def exhibit_content(request):
         name = node.simple_name()
         item = {'type': kinds.get(node.kind, 'Unknown'),
                 'label': node.simple_name(),
+                'DateAdded': str(node.created),
                 'Title': node.simple_name(),
-                'Year': ''}
+                'Year': '',
+                }
         missing = []
 
         match = titleyearPattern.search(name)

@@ -25,6 +25,7 @@ def get_bundles(_MENCLAVE_ROOT):
              'jquery-ui-1.7.1.custom.css',
              'base.css',
              'browse.css',
+             'exhibit.css',
          )},
 
         {"type": "png-sprite",

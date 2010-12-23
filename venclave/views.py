@@ -208,7 +208,13 @@ def exhibit_content(request):
             item['IMDbDirectors'] = [director.name for director in imdb.directors.all()]
 
             # Limit to top 4
+
             item['IMDbActors'] = [actor.name for actor in imdb.actors.all()][:4]
+
+            # Don't provide it if we don't have any. It's easier to check after
+            # the query.
+            if len(item['IMDbActors']) == 0:
+                del item['IMDbActors']
 
             if imdb.thumb_image:
                 item['ThumbURL'] = imdb.thumb_image.url
@@ -224,6 +230,7 @@ def exhibit_content(request):
             item['RTID'] = rt.rt_id
             item['RTURL'] = rt.rt_uri
 
+            # Prefer IMDb (local) thumbnails.
             if rt.thumb_uri and 'ThumbURL' not in item:
                 item['ThumbURL'] = rt.thumb_uri
                 item['ThumbWidth'] = rt.thumb_width

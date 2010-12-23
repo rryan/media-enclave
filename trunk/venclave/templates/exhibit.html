@@ -141,7 +141,7 @@
       <div ex:role="view"
            ex:orders=".DateAdded"
            ex:directions="descending"
-           ex:possibleOrders=".Title,.Year,.Downloads,.IMDbRating,.RTRating,.MCRating,.IMDbRuntime,.DateAdded,.IMDbReleaseDate,.Random,.RTBoxOffice"
+           ex:possibleOrders=".Title,.Year,.DL,.IMDbRating,.RTRating,.MCRating,.IMDbRuntime,.DateAdded,.IMDbReleaseDate,.Random,.RTBoxOffice"
            ex:possibleDirections="ascending,ascending,descending,descending,descending,descending,descending,descending,descending,ascending,descending"
            ex:grouped="false"
            ex:paginate="true"
@@ -169,7 +169,7 @@
           <tr>
             <td>
               <ul class="scores">
-                <li class="imdb" ex:if-exists=".IMDbNumber">
+                <li class="imdb" ex:if-exists=".IMDbURL">
                   <a ex:href-content=".IMDbURL" target="_blank">
                     <img src="/video/images/exhibit/imdb.jpg" height="14">
                     <span class="imdbrating" ex:content=".IMDbRating"></span>
@@ -248,7 +248,7 @@
           <tr>
             <td>
               <ul class="scores">
-                <li class="imdb" ex:if-exists=".IMDbNumber">
+                <li class="imdb" ex:if-exists=".IMDbURL">
                   <a ex:href-content=".IMDbURL" target="_blank">
                     <img src="/video/images/exhibit/imdb.jpg" height="14">
                     <span class="imdbrating" ex:content=".IMDbRating"></span>
@@ -256,22 +256,26 @@
                 </li>
                 <li class="rt" ex:if-exists=".RTURL">
                   <a ex:href-content=".RTURL" target="_blank">
-                    <img width="14" height="14" src="/video/images/exhibit/fresh.gif" ex:if-exists=".RTFresh" />
-                    <img width="14" height="14" src="/video/images/exhibit/rotten.gif" ex:if-exists=".RTRotten" />
-                    <img width="14" height="14" src="/video/images/exhibit/na.gif" ex:if-exists=".RTNA" />
+                    <span ex:select=".RTST">
+                      <img ex:case="f" width="14" height="14" src="/video/images/exhibit/fresh.gif"/>
+                      <img ex:case="r" width="14" height="14" src="/video/images/exhibit/rotten.gif"/>
+                      <img ex:case="n" width="14" height="14" src="/video/images/exhibit/na.gif"/>
+                    </span>
                     <span class="rtrating" ex:content=".RTRating" ex:if-exists=".RTRating"></span>
                     <span ex:if-exists=".RTRating">%</span>
-                    <span class="rtna" ex:if-exists=".RTNA">N/A</span>
+                    <span class="rtna" ex:content="if(contains(.RTST,'n'), 'N/A', '')"></span>
                   </a>
                 </li>
                 <li class="mc" ex:if-exists=".MCURL">
                   <a ex:href-content=".MCURL" target="_blank">
-                    <img width="14" height="14" src="/video/images/exhibit/metacritic-red.gif" ex:if-exists=".MCUnfavorable" />
-                    <img width="14" height="14" src="/video/images/exhibit/metacritic-yellow.gif" ex:if-exists=".MCMixed" />
-                    <img width="14" height="14" src="/video/images/exhibit/metacritic-green.gif" ex:if-exists=".MCFavorable" />
-                    <img width="14" height="14" src="/video/images/exhibit/metacritic-gray.gif" ex:if-exists=".MCNA" />
+                    <span ex:select=".MCST">
+                      <img ex:case="u" width="14" height="14" src="/video/images/exhibit/metacritic-red.gif"/>
+                      <img ex:case="m" width="14" height="14" src="/video/images/exhibit/metacritic-yellow.gif"/>
+                      <img ex:case="f" width="14" height="14" src="/video/images/exhibit/metacritic-green.gif"/>
+                      <img ex:case="n" width="14" height="14" src="/video/images/exhibit/metacritic-gray.gif"/>
+                    </span>
                     <span ex:if-exists=".MCRating" ex:content=".MCRating"></span>
-                    <span class="mcna" ex:if-exists=".MCNA">N/A</span>
+                    <span class="mcna" ex:content="if(contains(.MCST,'n'), 'N/A', '')"></span>
                   </a>
                 </li>
 
@@ -282,9 +286,9 @@
                   </a>
                 </li>
 
-                <li class="downloads" ex:if-exists=".Downloads">
+                <li class="downloads" ex:if-exists=".DL">
                   <img src="/video/images/exhibit/dl.png" width="14" height="14" alt="Download Count"/>
-                  <span ex:content=".Downloads"></span>
+                  <span ex:content=".DL"></span>
                 </li>
               </ul>
             </td>

@@ -171,7 +171,7 @@ def exhibit_content(request):
             #                     'href': '/tvseasons'}
             #                    for child in node.children.all() if child.kind == KIND_SEASON]
 
-        item['Downloads'] = node.downloads
+        item['DL'] = node.downloads
 
         metadata = node.metadata
         imdb = metadata.imdb if metadata else None
@@ -185,7 +185,6 @@ def exhibit_content(request):
 
         if imdb:
             imdb = node.metadata.imdb
-            item['IMDbNumber'] = imdb.imdb_id
             item['IMDbURL'] = 'http://www.imdb.com/title/tt%s' % imdb.imdb_id
             item['IMDbGenres'] = [genre.name for genre in imdb.genres.all()]
 
@@ -224,42 +223,42 @@ def exhibit_content(request):
             #     item['ThumbWidth'] = imdb.thumb_width
             #     item['ThumbHeight'] = imdb.thumb_height
         else:
-            missing.append('IMDbNumber')
+            missing.append('IMDbURL')
 
         if rt:
-            item['RTID'] = rt.rt_id
             item['RTURL'] = rt.rt_uri
 
             # Prefer IMDb (local) thumbnails.
             if rt.thumb_uri and 'ThumbURL' not in item:
                 item['ThumbURL'] = rt.thumb_uri
-                item['ThumbWidth'] = rt.thumb_width
-                item['ThumbHeight'] = rt.thumb_height
+                # item['ThumbWidth'] = rt.thumb_width
+                # item['ThumbHeight'] = rt.thumb_height
 
             if rt.top_critics_percent:
                 item['RTRating'] = rt.top_critics_percent
+
+
                 if rt.top_critics_fresh is None:
-                    item['RTNA'] = '1'
+                    item['RTST'] = 'n'
                 elif rt.top_critics_fresh is True:
-                    item['RTFresh'] = '1'
+                    item['RTST'] = 'f'
                 else:
-                    item['RTRotten'] = '1'
+                    item['RTST'] = 'r'
             elif rt.all_critics_percent:
                 item['RTRating'] = rt.all_critics_percent
                 if rt.all_critics_fresh is None:
-                    item['RTNA'] = '1'
+                    item['RTST'] = 'n'
                 elif rt.all_critics_fresh is True:
-                    item['RTFresh'] = '1'
+                    item['RTST'] = 'f'
                 else:
-                    item['RTRotten'] = '1'
+                    item['RTST'] = 'r'
             else:
-                item['RTNA'] = '1'
+                item['RTST'] = 'n'
                 missing.append('RTRating')
         else:
-            missing.append('RTID')
+            missing.append('RTURL')
 
         if mc:
-            item['MCID'] = mc.mc_id
             item['MCURL'] = 'http://www.metacritic.com%s' % mc.mc_uri
             if mc.score:
                 item['MCRating'] = mc.score
@@ -267,17 +266,17 @@ def exhibit_content(request):
                 missing.append('MCRating')
             if mc.status:
                 if mc.status == 'tbd':
-                    item['MCNA'] = 1
+                    item['MCST'] = 'n'
                 elif mc.status in ['terrible', 'unfavorable']:
-                    item['MCUnfavorable'] = 1
+                    item['MCST'] = 'u'
                 elif mc.status in ['mixed']:
-                    item['MCMixed'] = 1
+                    item['MCST'] = 'm'
                 elif mc.status in ['favorable', 'outstanding']:
-                    item['MCFavorable'] = 1
+                    item['MCST'] = 'f'
             else:
-                item['MCNA'] = 1
+                item['MCST'] = 'n'
         else:
-            missing.append('MCID')
+            missing.append('MCURL')
 
         item['Missing'] = missing
         items.append(item)
@@ -289,7 +288,6 @@ def exhibit_content(request):
         'ThumbURL': { 'valueType': 'url' },
         'ThumbWidth': { 'valueType': 'number' },
         'ThumbHeight': { 'valueType': 'number' },
-        'IMDbNumber': { 'valueType': 'text', 'label': 'IMDb ID Number' },
         'IMDbRating': { 'valueType': 'number', 'label': 'IMDb User Rating' },
         'IMDbURL': { 'valueType': 'url', 'label': 'IMDb URL' },
         'IMDbGenres': { 'valueType': 'text', 'label': 'Genres' },
@@ -300,26 +298,20 @@ def exhibit_content(request):
         'IMDbAKA': { 'valueType': 'text', 'label': 'Alternate Titles' },
         'IMDbProduction': { 'valueType': 'text', 'label': 'Production Companies' },
         'IMDbPlotOutline': { 'valueType': 'text', 'label': 'Plot Outline' },
-        'RTID': { 'valueType': 'text', 'label': 'RottenTomatoes ID' },
         'RTRating': { 'valueType': 'number', 'label': 'RottenTomatoes Rating' },
         'RTURL': { 'valueType': 'url', 'label': 'RottenTomatoes URL' },
         'RTActors': { 'valueType': 'text', 'label': 'Actors' },
         'RTDirectors': { 'valueType': 'text', 'label': 'Directors' },
         'RTWriters': { 'valueType': 'text', 'label': 'Writers' },
-        'RTFresh': { 'valueType': 'url', 'label': 'RT Fresh' },
-        'RTRotten': { 'valueType': 'url', 'label': 'RT Rotten' },
-        'RTNA': { 'valueType': 'url', 'label': 'RT No Rating' },
+        'RTST': { 'valueType': 'text', 'label': 'RottenTomatoes Status'},
         'RTBoxOffice': { 'valueType': 'number', 'label': 'Box Office' },
-        'MCID': { 'valueType': 'text', 'label': 'MetaCritic ID' },
         'MCURL': { 'valueType': 'url', 'label':' MetaCritic URL' },
         'MCRating': { 'valueType': 'number', 'label': 'Metacritic Rating' },
+        'MCST': { 'valueType': 'text', 'label': 'Metacritic Status' },
         'MCNA': { 'valueType': 'boolean', 'label': 'MC No Rating' },
-        'MCFavorable': { 'valueType': 'boolean', 'label': 'MC Favorable Ratings' },
-        'MCMixed': { 'valueType': 'boolean', 'label': 'MC Mixed Ratings' },
-        'MCUnfavorable': { 'valueType': 'boolean', 'label': 'MC Unfavorable Ratings' },
         'NYTReviewURL': { 'valueType': 'url', 'label': 'NYT Review URL' },
         'DateAdded': { 'valueType': 'date', 'label': 'Date Added' },
-        'Downloads': { 'valueType': 'number', 'label': 'Downloads' },
+        'DL': { 'valueType': 'number', 'label': 'Downloads' },
         'Random': { 'valueType': 'number', 'label': 'Random' },
         'Missing': { 'valueType': 'text', 'label': 'Missing Fields' },
         }

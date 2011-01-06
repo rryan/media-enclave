@@ -22,11 +22,14 @@ def datetime_string(dt):
 
 def cleanup_name(name):
     """
+    "John Smith" => "John Smith"
     "Smith, John" => "John Smith"
     "Smith, John (I)" => "John Smith"
     """
     name = re.sub(u'\([IVX]*\)$', '', name)
-    last, first = name.split(', ')
+    if ', ' not in name:
+        return name
+    last, _, first = name.partition(', ')
     return "%s %s" % (first, last)
 
 

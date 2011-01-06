@@ -4,17 +4,18 @@ import json
 import re
 import cgi
 
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
 from django import forms
+from django.conf import settings
+from django.contrib.auth import authenticate, login
 from django.contrib.auth import forms as auth_forms
-from django.utils.translation import ugettext_lazy as _  # For the auth form.
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template.loader import select_template
 from django.template import Context, RequestContext
+from django.template.loader import select_template
+from django.utils.translation import ugettext_lazy as _  # For the auth form.
 
 from menclave.venclave.models import ContentNode, KIND_MOVIE, KIND_SERIES, KIND_SEASON
 from menclave.venclave.templatetags import venclave_tags
@@ -114,7 +115,7 @@ def browse(request):
                               context_instance=RequestContext(request))
 
 def exhibit(request):
-    result = {}
+    result = {'settings': settings}
     return render_to_response('venclave/exhibit.html', result,
                               context_instance=RequestContext(request))
 

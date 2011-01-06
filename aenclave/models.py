@@ -336,7 +336,11 @@ class Channel(models.Model):
     def touch(self):
         self.save()  # `self.last_touched` will auto-update.
 
-    def controller(self): return Controller(self)
+    def controller(self):
+        # TODO(rnk): This import goes here to avoid circularity.  We should
+        # avoid this.
+        from menclave.aenclave.control import Controller
+        return Controller(self)
 
 #---------------------------- For 6.867 --------------------------------
 
@@ -359,8 +363,5 @@ class GoodRecs(models.Model):
 class BadRecs(models.Model):
 
     bad_recs = models.IntegerField(editable=False)
-
-# This import goes at the end to avoid circularity.
-from control import Controller
 
 #=============================================================================#

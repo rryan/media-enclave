@@ -53,7 +53,7 @@
     </th>
     <td>
       {% for director in node.metadata.imdb.directors.all %}
-        {% reverse_name director.name %}<br />
+      {{ director.name }}<br />
       {% empty %}
         Directors not available
       {% endfor %}

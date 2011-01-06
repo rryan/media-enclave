@@ -3,8 +3,6 @@
 from django.conf import settings
 from django.conf.urls.defaults import url, patterns
 
-from menclave.aenclave.models import Song
-
 urlpatterns = patterns(
     '',
 
@@ -87,8 +85,9 @@ urlpatterns = patterns(
      'menclave.aenclave.browse.browse_artists'),
 
     url(r'^songs/(?P<object_id>\d+)/$',
-        'django.views.generic.list_detail.object_detail',
-        {'queryset': Song.objects, 'template_name': 'song_detail.html'},
+        #'django.views.generic.list_detail.object_detail',
+        #{'queryset': Song.objects, 'template_name': 'song_detail.html'},
+        'menclave.aenclave.browse.view_song',
         name='aenclave-song'),
 
     url(r'^albums/(?P<album_name>.+)/$',

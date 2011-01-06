@@ -53,3 +53,21 @@ def mins_to_hours(mins):
     hours = mins // 60
     mins = mins % 60
     return "%d:%02d" % (hours, mins)
+
+
+@register.filter
+def ex_braces(content):
+    """Wrap text in braces for exhibit.
+
+    Django has no way to escape braces in its template syntax, and Exhibit uses
+    expressions like {{.label}} for its ex:*-subcontent attributes.  This
+    is used to, for example, generate a URL from the item in the lens.
+
+    See: http://simile.mit.edu/wiki/Exhibit/Dynamic_URLs
+
+    This filter exists to wrap text in double curly braces that will make it
+    past Django and be visible to Exhibit.  The official way to do this with
+    django is to use {% templatetag openvariable %} to emit a literal {{.  This
+    is less than ideal, so we use the filter approach.
+    """
+    return "{{" + content + "}}"

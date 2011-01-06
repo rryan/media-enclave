@@ -147,11 +147,11 @@ TEMPLATE_LOADERS = (
 
 # The only nonstandard template context processor is request.
 TEMPLATE_CONTEXT_PROCESSORS = (
-	"django.core.context_processors.request",
-	"django.core.context_processors.auth",
-	"django.core.context_processors.debug",
-	"django.core.context_processors.i18n",
-	"django.core.context_processors.media",
+        "django.core.context_processors.request",
+        "django.core.context_processors.auth",
+        "django.core.context_processors.debug",
+        "django.core.context_processors.i18n",
+        "django.core.context_processors.media",
         "menclave.aenclave.context_processors.songlist_sort",
 )
 
@@ -185,6 +185,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',  # lets us use a few extra template filters
     'django.contrib.sessions',  # handles user logins
     'media_bundler',  # bundles js and css
+    'menclave.log',
     # The below are the applications included in Media-Enclave.  Usually you
     # will pick one to leave uncommented.
     'menclave.aenclave',  # Audio Enclave
@@ -217,7 +218,7 @@ USE_BUNDLES = False
 # get api key here:
 # http://wami.csail.mit.edu:8080/portal/login.html
 WAMI_API_KEY = {
-'example.com' : 'md5-api-developer-hash-here'
+    'example.com' : 'md5-api-developer-hash-here'
 }
 
 # Enable this to support bundle versioning and cache busting.

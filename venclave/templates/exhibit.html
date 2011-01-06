@@ -165,11 +165,11 @@
         <table class="content-item" ex:role="lens" style="display: none;" ex:itemTypes="TV Show">
           <tr>
             <td class="poster" rowspan="3">
-              <a ex:href-subcontent="../TV/{{.label}}/">
+              <a ex:href-subcontent="../TV/{{".label"|ex_braces}}/">
                 <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL" width="150"></a>
             </td>
             <td class="content-name">
-              <a ex:href-subcontent="../TV/{{.label}}/">
+              <a ex:href-subcontent="../TV/{{".label"|ex_braces}}/">
                 <img src="/video/images/tv_icon.png"/>
                 <span class="content-title" ex:content=".Title"></span>
               </a>
@@ -242,11 +242,11 @@
         <table class="content-item" ex:role="lens" style="display: none;" ex:itemTypes="Movie">
           <tr>
             <td class="poster" rowspan="3">
-              <a ex:href-subcontent="../Movies/{{.label}}/">
+              <a ex:href-subcontent="../Movies/{{".label"|ex_braces}}/">
                 <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL" width="150"></a>
             </td>
             <td class="content-name">
-              <a ex:href-subcontent="../Movies/{{.label}}/">
+              <a ex:href-subcontent="../Movies/{{".label"|ex_braces}}/">
                 <img src="/video/images/mo_icon.png"/>
                 <span class="content-title" ex:content=".Title"></span>
                 <span class="content-year">(<span ex:content=".Year"></span>)</span>

@@ -412,8 +412,12 @@ def update_imdb_metadata(node, force=False, erase=False):
                     imdb.thumb_image = storage_path
                     # thumb_width and thumb_height are filled automatically
             except Exception, e:
-                logging.error("Couldn't lookup IMDb cover from given URI: %s" % fetched['imdb_cover_uri'])
+                logging.error("Couldn't lookup IMDb cover from given URI: %s" %
+                              fetched['imdb_cover_uri'])
                 traceback.print_exc(e)
+            else:
+                logging.info("Fetched thumbnail from: %s" %
+                             fetched['imdb_cover_uri'])
 
         if 'imdb_outline' in fetched:
             imdb.plot_outline = fetched['imdb_outline']

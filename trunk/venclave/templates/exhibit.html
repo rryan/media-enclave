@@ -166,7 +166,8 @@
           <tr>
             <td class="poster" rowspan="3">
               <a ex:href-subcontent="../TV/{{".label"|ex_braces}}/">
-                <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL" width="150"></a>
+                <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL"
+                  width="{{settings.IMDB_THUMBNAIL_WIDTH}}"></a>
             </td>
             <td class="content-name">
               <a ex:href-subcontent="../TV/{{".label"|ex_braces}}/">
@@ -243,7 +244,8 @@
           <tr>
             <td class="poster" rowspan="3">
               <a ex:href-subcontent="../Movies/{{".label"|ex_braces}}/">
-                <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL" width="150"></a>
+                <img ex:if-exists=".ThumbURL" ex:src-content=".ThumbURL"
+                  width="{{settings.IMDB_THUMBNAIL_WIDTH}}"/></a>
             </td>
             <td class="content-name">
               <a ex:href-subcontent="../Movies/{{".label"|ex_braces}}/">

@@ -8,6 +8,15 @@ from rottentomatoes import *
 from metacritic import *
 from nyt import *
 
+
+class FakePool(object):
+
+    """Like eventlet.GreenPool, but without any green thread parallelism."""
+
+    def spawn(self, func, *args, **kwargs):
+        func(*args, **kwargs)
+
+
 def update_contentnodes_metadata(nodes, force=False, force_imdb=False,
                                  force_rt=False, force_mc=False,
                                  force_nyt=False):
@@ -18,12 +27,15 @@ def update_contentnodes_metadata(nodes, force=False, force_imdb=False,
         (force_nyt,  'metadata__nyt_review',             update_nyt_metadata),
         ]
 
-    pool = eventlet.GreenPool(size=100)
+    pool = eventlet.GreenPool(size=6)
+    #pool = FakePool()
     for (force_source, filter_attr, update_source_metadata) in sources:
         # If we didn't force updating of this source (or all sources), only
         # update those that don't have metadata from this source.
         if not (force or force_source):
             source_nodes = nodes.filter(**{filter_attr: None})
+        else:
+            source_nodes = nodes
 
         for node in source_nodes:
             pool.spawn(update_source_metadata, node,

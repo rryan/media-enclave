@@ -1,0 +1,12 @@
+Django
+-e git://github.com/rnk/django-media-bundler.git#egg=django-media-bundler
+
+# video-enclave
+eventlet
+mechanize
+BeautifulSoup
+
+# audio-enclave
+Pyro
+mutagen
+python-daemon

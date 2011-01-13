@@ -1,6 +1,6 @@
 # Monkey-patch before we import the scrapers, so they don't import stale stuff.
 import eventlet
-eventlet.monkey_patch()
+#eventlet.monkey_patch()
 
 from common import *
 from imdb import *
@@ -27,8 +27,8 @@ def update_contentnodes_metadata(nodes, force=False, force_imdb=False,
         (force_nyt,  'metadata__nyt_review',             update_nyt_metadata),
         ]
 
-    pool = eventlet.GreenPool(size=6)
-    #pool = FakePool()
+    #pool = eventlet.GreenPool(size=6)
+    pool = FakePool()
     for (force_source, filter_attr, update_source_metadata) in sources:
         # If we didn't force updating of this source (or all sources), only
         # update those that don't have metadata from this source.

@@ -26,6 +26,7 @@ def get_bundles(_MENCLAVE_ROOT):
              'base.css',
              'browse.css',
              'exhibit.css',
+             'detail.css',
          )},
 
         {"type": "png-sprite",

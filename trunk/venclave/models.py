@@ -165,6 +165,34 @@ class ContentMetadata(models.Model):
     manual = models.OneToOneField("ManualMetadata", blank=True, null=True)
     file = models.OneToOneField("FileMetadata", blank=True, null=True)
 
+    def _get_preferred_thumb_uri(self):
+        """Return the preferred thumbnail URI"""
+        # Prefer IMDb (local) thumbnails to RT thumbnails.
+        thumb_uri = None
+        if self.rotten_tomatoes and self.rotten_tomatoes.thumb_uri:
+            thumb_uri = self.rotten_tomatoes.thumb_uri
+        if self.imdb and self.imdb.thumb_image:
+            thumb_uri = self.imdb.thumb_image.url
+        return thumb_uri
+    thumb_uri = property(_get_preferred_thumb_uri)
+
+    def _get_preferred_plot_summary(self):
+        plot_summary = None
+        if self.imdb and self.imdb.plot_outline:
+            plot_summary = self.imdb.plot_outline
+
+        # TODO(rryan) doesn't exist yet
+        # if self.rotten_tomatoes and self.rotten_tomatoes.plot_summary:
+        #     plot_summary = self.rotten_tomatoes.plot_summary
+        return plot_summary
+    plot_summary = property(_get_preferred_plot_summary)
+
+    def _get_preferred_runtime(self):
+        runtime = None
+        if self.imdb and self.imdb.length:
+            runtime = self.imdb.length
+        return runtime
+    runtime = property(_get_preferred_runtime)
 
 class ContentMetadataSource(models.Model):
 
@@ -256,6 +284,20 @@ class RottenTomatoesMetadata(ContentMetadataSource):
     all_critics_percent = models.IntegerField(null=True)
     all_critics_fresh = models.NullBooleanField()
 
+    def _preferrered_percent(self):
+        if self.all_critics_percent is not None:
+            return self.all_critics_percent
+        else:
+            return self.top_critics_percent
+    percent = property(_preferrered_percent)
+
+    def _preferred_fresh(self):
+        if self.all_critics_fresh is not None:
+            return self.all_critics_fresh
+        else:
+            return self.top_critics_fresh
+    fresh = property(_preferred_fresh)
+
 class MetaCriticMetadata(ContentMetadataSource):
 
     """MetaCritic metadata."""
@@ -269,6 +311,19 @@ class MetaCriticMetadata(ContentMetadataSource):
 
     score = models.IntegerField(null=True)
     status = models.CharField(max_length=64, null=True)
+
+    def _get_color(self):
+        if self.status is None:
+            return 'gray'
+        elif self.status in ['terrible', 'unfavorable']:
+            return 'red'
+        elif self.status in ['mixed']:
+            return 'yellow'
+        elif self.status in ['favorable', 'outstanding']:
+            return 'green'
+        return 'gray'
+    color = property(_get_color)
+
 
 
 class FileMetadata(ContentMetadataSource):
@@ -334,6 +389,19 @@ class ContentNode(models.Model):
     kind = models.CharField(default=KIND_UNKNOWN,
                             max_length=2,
                             choices=KIND_CHOICES)
+
+    def _is_movie(self):
+        return self.kind == KIND_MOVIE
+    is_movie = property(_is_movie)
+    def _is_tv(self):
+        return self.kind == KIND_SERIES
+    is_tv = property(_is_tv)
+    def _is_episode(self):
+        return self.kind == KIND_TV
+    is_episode = property(_is_episode)
+    def _is_season(self):
+        return self.kind == KIND_SEASON
+    is_season = property(_is_season)
 
     title = models.CharField(max_length=255)
 

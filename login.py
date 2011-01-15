@@ -144,5 +144,6 @@ def login(request):
 def logout(request):
     auth.logout(request)
     # TODO(rryan) remove aenclave specificity
-    goto = request.GET.get('goto', reverse('aenclave-home'))
+    default_route = get_default_route()
+    goto = request.REQUEST.get('goto', default_route)
     return HttpResponseRedirect(goto)

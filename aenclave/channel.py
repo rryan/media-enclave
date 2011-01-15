@@ -1,4 +1,4 @@
-# menclave/aenclave/html.py
+# menclave/aenclave/channel.py
 
 """Channel related views and functions."""
 
@@ -7,8 +7,8 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 
 from menclave.login import (permission_required_json,
-                                     permission_required,
-                                     permission_required_xml)
+                            permission_required,
+                            permission_required_xml)
 from menclave.aenclave.utils import get_int_list, get_song_list, get_integer
 from menclave.aenclave.xml import (simple_xml_response, xml_error,
                                    render_xml_to_response)

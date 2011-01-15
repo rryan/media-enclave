@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 
 from menclave.log.util import enable_logging
-from menclave.aenclave.login import permission_required_redirect
+from menclave.login import permission_required_redirect
 from menclave.aenclave.html import html_error, render_html_template
 from menclave.aenclave import processing
 from menclave.aenclave import youtuberip
@@ -52,9 +52,9 @@ def upload_sftp(request):
                 full_path = root + '/' + filename
 
                 content = File(open(full_path, 'r'))
-    
+
                 song, audio = processing.process_song(full_path, content)
-                
+
                 song_list.append(song)
 
                 if audio.info.sketchy:
@@ -123,7 +123,7 @@ def upload_http_fancy_receiver(request):
         return html_error(request, 'No file was uploaded.', 'HTTP Upload')
 
     logging.info("Received upload of %s" % audio.name)
-    
+
     if not processing.valid_song(audio.name):
         logging.error("Rejecting upload due to unsupported filetype")
         return html_error(request, 'This filetype is unsupported.',

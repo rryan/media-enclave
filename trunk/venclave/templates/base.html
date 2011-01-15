@@ -22,9 +22,14 @@
     <div id="container">
     <div id="header">
       {% block header %}
-        <div id="user">
-          welcome, {{user.username}} <a href="{% url venclave-logout %}">[logout]</a>
-        </div>
+      <div id="login">
+        {% if user.is_authenticated %}
+        <tt>{{user.username}}</tt>
+        [<a href="{% url menclave-logout %}?goto={% url venclave-home %}">logout</a>]
+        {% else %}
+        [<a href="{% url menclave-login %}?goto={{ request.build_absolute_uri }}">login</a>]
+        {% endif %}
+      </div>
 
         <div id="title">
           <img src="{% url venclave-images "browse_title.png" %}" alt="Video Enclave" />
@@ -54,9 +59,14 @@
       {% endblock header %}
     </div>
 
-    {% block content %}{% endblock %}
+    {% block content %}{% endblock content %}
 
+    {% block copyright %}
+    <div id="copyright">Powered by
+      <a href="http://code.google.com/p/media-enclave/">Media-Enclave</a></div>
     <div id="copyright">&copy; 1999&ndash;2009 by Putz Inc.</div>
+    {% endblock copyright %}
+
     </div>
   </body>
 

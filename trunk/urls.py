@@ -1,23 +1,44 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import url, patterns, include
+from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.conf import settings
 
 admin.autodiscover()
 
+def get_default_route():
+    if settings.VENCLAVE_ENABLED:
+        return '/video'
+    elif settings.AENCLAVE_ENABLED:
+        return '/audio'
+    # TODO(XXX) return a default picker page
+    return '/log'
+
 urlpatterns = patterns(
     '',
-    # TODO(rnk): This redirect to /audio/ should be eliminated.  If only one
-    # menclave app is installed, we could pick the right one automatically, and
-    # give a lame picker index if more than one is installed.
-    (r'^$', 'django.views.generic.simple.redirect_to', {'url': '/audio'}),
+
+    (r'^$', 'django.views.generic.simple.redirect_to', {'url': get_default_route()}),
     (r'^log/', include('menclave.log.urls')),
+
+    # Login/logout
+    url(r'^login/$',
+        'menclave.login.login',
+        name='menclave-login'),
+
+    url(r'^logout/$',
+        'menclave.login.logout',
+        name='menclave-logout'),
+
+    url(r'^user/$',  # DEBUG remove this eventually
+        'menclave.login.user_debug',
+        name="menclave-user-debug"),
+
     (r'^admin/(.*)', admin.site.root),
 )
 
-if 'menclave.aenclave' in settings.INSTALLED_APPS:
+if settings.AENCLAVE_ENABLED:
     urlpatterns += patterns('', (r'^audio/', include('menclave.aenclave.urls')))
 
-if 'menclave.venclave' in settings.INSTALLED_APPS:
+if settings.VENCLAVE_ENABLED:
     urlpatterns += patterns('', (r'^video/', include('menclave.venclave.urls')))
 
 if settings.DEBUG:

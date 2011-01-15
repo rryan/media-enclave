@@ -45,7 +45,7 @@ def permission_required(perm, action, erf=html_error, perm_fail_erf=None):
                     return real_handler(request, *args, **kwargs)
                 # Otherwise, show error message.
                 error_text = ('You must <a href="%s">log in</a> to do that.' %
-                              reverse('aenclave-login'))
+                              reverse('menclave-login'))
                 return erf(request, error_text, action)
             elif not request.user.has_perm(perm):
                 # Check if the anonymous user has access.
@@ -80,7 +80,8 @@ def permission_required_json(perm):
 #------------------------------- Login/Logout --------------------------------#
 
 def user_debug(request):
-    return render_html_template('aenclave/user_debug.html', request,
+    # TODO(rryan) remove aenclave specificity
+    return render_html_template('user_debug.html', request,
                                 context_instance=RequestContext(request))
 
 def login(request):
@@ -105,7 +106,8 @@ def login(request):
                 # redirect, so we look for that if 'goto' is missing.
                 goto = request.GET.get('next', None)
             context = RequestContext(request)
-            return render_html_template('aenclave/login.html', request,
+            # TODO(rryan) remove aenclave specificity
+            return render_html_template('login.html', request,
                                         {'redirect_to': goto},
                                         context_instance=context)
         # Check if the username and password are correct.
@@ -123,7 +125,8 @@ def login(request):
         error_message = ('The user account for <tt>%s</tt> has been disabled.' %
                          user.username)
     if error_message:
-        return render_html_template('aenclave/login.html', request,
+        # TODO(rryan) remove aenclave specificity
+        return render_html_template('login.html', request,
                                     {'error_message': error_message,
                                      'redirect_to': form.get('goto', None)},
                                     context_instance=RequestContext(request))
@@ -132,10 +135,12 @@ def login(request):
     auth.login(request, user)
 
     # hack to try to pass them back to http land
+    # TODO(rryan) remove aenclave specificity
     goto = request.REQUEST.get('goto', reverse('aenclave-home'))
 
     # hack to prevent infinite loop.
     if goto == '':
+        # TODO(rryan) remove aenclave specificity
         goto = reverse('aenclave-home')
 
     if goto.startswith('https'):
@@ -145,5 +150,6 @@ def login(request):
 
 def logout(request):
     auth.logout(request)
+    # TODO(rryan) remove aenclave specificity
     goto = request.GET.get('goto', reverse('aenclave-home'))
     return HttpResponseRedirect(goto)

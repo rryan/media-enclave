@@ -29,20 +29,6 @@ urlpatterns = patterns(
         {'document_root': settings._MENCLAVE_ROOT + 'aenclave/images/'},
         name='aenclave-images'),
 
-    # Login/logout
-
-    url(r'^login/$',
-        'menclave.aenclave.login.login',
-        name='aenclave-login'),
-
-    url(r'^logout/$',
-        'menclave.aenclave.login.logout',
-        name='aenclave-logout'),
-
-    url(r'^user/$',  # DEBUG remove this eventually
-        'menclave.aenclave.login.user_debug',
-        name="aenclave-user-debug"),
-
     # Queuing
 
     url(r'^queue/$',

@@ -376,7 +376,6 @@ class ContentNode(models.Model):
 
     owner = models.ForeignKey('auth.User')
 
-    objects = models.Manager()
     attributes = (TypeFacet, GenreFacet, RatingFacet, YearFacet, DirectorFacet)
     attrs_by_name = dict((f.name, f) for f in attributes)
 
@@ -494,8 +493,8 @@ class ContentNode(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('django.views.generic.list_detail.object_detail',
-                (str(self.id),), {'queryset': ContentNode.objects,
+                (str(self.id),), {'queryset': ContentNode.objects.all(),
                                   'template_name': 'content_detail.html'})
 
     SEARCHABLE_FIELDS = ('title', 'metadata__imdb__directors__name',
-                         'metadata__imdb__actors__name')
+                          'metadata__imdb__actors__name')

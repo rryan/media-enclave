@@ -11,24 +11,32 @@ body {
     margin-left: auto;
 }
 
-#header { 
+#header {
     position: relative;
     padding-top: 20px;
     width: 1000px;
 }
 
-#header #navigation{ 
+#header #navigation{
     margin: 14px 0;
+}
+
+#login {
+    font-size: 12px;
+    position: relative;
+    right: 20px;
+    top: 11px;
+    text-align: right;
 }
 
 #navigation img {
     border: 0;
 }
 
-#search { 
+#search {
     position: absolute;
     top: 50px;
-    right: 40px;
+    right: 20px;
 }
 
 #user {
@@ -51,3 +59,7 @@ body {
     text-align: center;
 }
 
+
+#header a {
+    text-decoration: none;
+}

@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.template import RequestContext
 
 from menclave import settings as settings
+from menclave.urls import get_default_route
 from menclave.aenclave.html import html_error, render_html_template
 from menclave.aenclave.json_response import json_error
 from menclave.aenclave.xml import xml_error
@@ -79,11 +80,6 @@ def permission_required_json(perm):
 
 #------------------------------- Login/Logout --------------------------------#
 
-def user_debug(request):
-    # TODO(rryan) remove aenclave specificity
-    return render_html_template('user_debug.html', request,
-                                context_instance=RequestContext(request))
-
 def login(request):
     form = request.POST
 
@@ -106,7 +102,6 @@ def login(request):
                 # redirect, so we look for that if 'goto' is missing.
                 goto = request.GET.get('next', None)
             context = RequestContext(request)
-            # TODO(rryan) remove aenclave specificity
             return render_html_template('login.html', request,
                                         {'redirect_to': goto},
                                         context_instance=context)
@@ -125,7 +120,6 @@ def login(request):
         error_message = ('The user account for <tt>%s</tt> has been disabled.' %
                          user.username)
     if error_message:
-        # TODO(rryan) remove aenclave specificity
         return render_html_template('login.html', request,
                                     {'error_message': error_message,
                                      'redirect_to': form.get('goto', None)},
@@ -135,13 +129,12 @@ def login(request):
     auth.login(request, user)
 
     # hack to try to pass them back to http land
-    # TODO(rryan) remove aenclave specificity
-    goto = request.REQUEST.get('goto', reverse('aenclave-home'))
+    default_route = get_default_route()
+    goto = request.REQUEST.get('goto', default_route)
 
     # hack to prevent infinite loop.
     if goto == '':
-        # TODO(rryan) remove aenclave specificity
-        goto = reverse('aenclave-home')
+        goto = default_route
 
     if goto.startswith('https'):
         goto = goto.replace('^https', 'http')

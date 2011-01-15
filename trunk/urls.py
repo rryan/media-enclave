@@ -28,10 +28,6 @@ urlpatterns = patterns(
         'menclave.login.logout',
         name='menclave-logout'),
 
-    url(r'^user/$',  # DEBUG remove this eventually
-        'menclave.login.user_debug',
-        name="menclave-user-debug"),
-
     (r'^admin/(.*)', admin.site.root),
 )
 

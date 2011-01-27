@@ -1,12 +1,13 @@
 # venclave/views.py
 
-import json
-import re
 import cgi
+import json
+import logging
+import re
 
 from django import forms
 from django.conf import settings
-from django.contrib.auth import authenticate, login
+from django.contrib import auth
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -45,30 +46,41 @@ def Qu(field, op, value):
 
 
 def home(request):
+    browse_redirect = HttpResponseRedirect(reverse('venclave-browse'))
+    # If already authenticated, go right in.
     if request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('venclave-browse'))
+        return browse_redirect
+
+    ## If SSL auth works, go right in.
+    #user = auth.authenticate(request=request)
+    #if user:
+        #auth.login(request, user)
+        #logging.info("User %s logged in via SSL", user.username)
+        #return browse_redirect
+
     reg_form = VenclaveUserCreationForm()
     if request.method == 'POST':
         # login
-        if request.POST['f'] == 'l':
+        if request.POST.get('f') == 'l':
             username = request.POST['username']
             password = request.POST['password']
-            user = authenticate(username=username, password=password)
+            user = auth.authenticate(username=username, password=password)
             if user is not None:
-                login(request,user)
-                return HttpResponseRedirect(reverse('venclave-browse'))
+                auth.login(request, user)
+                logging.info("User %s logged in via password", user.username)
+                return browse_redirect
         # register
-        elif request.POST['f'] == 'r':
+        elif settings.VENCLAVE_ALLOW_REGISTRATION and request.POST['f'] == 'r':
             reg_form = VenclaveUserCreationForm(request.POST)
             if reg_form.is_valid():
                 reg_form.save()
                 username = reg_form.cleaned_data['username']
                 password = reg_form.cleaned_data['password1']
-                user = authenticate(username=username, password=password)
-                login(request, user)
-                return HttpResponseRedirect(reverse('venclave-browse'))
+                user = auth.authenticate(username=username, password=password)
+                auth.login(request, user)
+                return browse_redirect
     return render_to_response("venclave/index.html",
-                              {'reg_form': reg_form})
+                              {'reg_form': reg_form, 'settings': settings})
 
 
 def words_to_query(query_string):

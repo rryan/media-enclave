@@ -36,7 +36,13 @@
           <img src="{% url venclave-images "browse_title.png" %}" alt="Video Enclave" />
         </div>
 
-        <div id="navigation">{% breadcrumbs request %}</div>
+        <div id="navigation">
+          <a href="{% url venclave-browse %}">browse</a> &middot;
+          <a href="{% url venclave-exhibit %}">search</a> &middot;
+          <a href="#todo">request</a>
+        </div>
+
+        <div id="breadcrumbs">{% breadcrumbs request %}</div>
 
         <div id="search">
           <form method="GET" action="{% url venclave-browse %}">

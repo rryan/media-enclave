@@ -36,7 +36,6 @@ def get_bundles(_MENCLAVE_ROOT):
          "css_file": _MENCLAVE_ROOT + "venclave/styles/venclave-sprites.css",
          "files": (
              'browse_title.png',
-             'browse_green.png',
              'slash.png',
              'upload_white.png',
              'mo_icon.png',

@@ -2,10 +2,11 @@
 
 from __future__ import division
 
-from django.template import Library
-from django.template import Context
-from django.template.loader import get_template
+from django.utils.html import urlquote, escape, mark_safe
 from django.core.urlresolvers import reverse
+from django.template import Context
+from django.template import Library
+from django.template.loader import get_template
 
 
 register = Library()
@@ -16,6 +17,25 @@ def facet(attribute):
     choices = attribute.get_choices()
     t = get_template('facets/%s.html' % type)
     return t.render(Context({'attribute': attribute}))
+
+
+@register.simple_tag
+def breadcrumbs(request):
+    crumb_tmpl = '<a href="%s" class="%s">%s</a>'
+    # '/video/a/b/c/' -> ['video', 'a', 'b', 'c']
+    crumbs = request.path.strip('/').split('/')
+    # Drop video.
+    # TODO(rnk): This encodes a dependency on the URL mapping.  Oh well.
+    crumbs = crumbs[crumbs.index('video') + 1:]
+    html_parts = []
+    for (i, crumb) in enumerate(crumbs):  # Aye, caramba!
+        href = urlquote('/'.join(['', 'video'] + crumbs[:i + 1] + ['']))
+        css_class = "crumb"
+        if i + 1 == len(crumbs):
+            css_class += " crumb-active"
+        crumb = escape(crumb)
+        html_parts.append(crumb_tmpl % (href, css_class, crumb))
+    return mark_safe(' &raquo; '.join(html_parts))
 
 
 @register.simple_tag

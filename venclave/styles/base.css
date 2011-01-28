@@ -21,16 +21,16 @@ body {
     margin: 14px 0;
 }
 
+#header #breadcrumbs{
+    margin: 14px 0;
+}
+
 #login {
     font-size: 12px;
     position: relative;
     right: 20px;
     top: 11px;
     text-align: right;
-}
-
-#navigation img {
-    border: 0;
 }
 
 #search {
@@ -59,15 +59,18 @@ body {
     text-align: center;
 }
 
-
-#header a {
-    text-decoration: none;
+#header {
+    font-size: 16pt;
 }
 
-a.crumb {
+#navigation a {
+    /*background: #a5e055;*/
+    background: #ddddff;
+}
+
+#header a {
     color: #464646;
     font-family: Monaco, "Droid Sans Mono", "Andale Mono", verdana, sans-serif;
-    font-size: 16pt;
     text-decoration: none;
 }
 

@@ -19,8 +19,6 @@ from django.template import Context, RequestContext
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _  # For the auth form.
 
-from menclave.profiling import profile
-
 from menclave.venclave.html import render_to_response
 from menclave.venclave.models import (ContentNode, KIND_MOVIE, KIND_SERIES,
                                       KIND_SEASON, Role, IMDBMetadata)
@@ -382,7 +380,8 @@ def exhibit_content(request):
               'properties': properties,
               'items': items }
 
-    return HttpResponse(json.dumps(result, indent=2))
+    indent = None if not settings.DEBUG else 2
+    return HttpResponse(json.dumps(result, indent=indent))
 
 
 @login_required

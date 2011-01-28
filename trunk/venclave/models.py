@@ -169,12 +169,11 @@ class ContentMetadata(models.Model):
     def thumb_uri(self):
         """Gets the preferred thumbnail URI from available metadata sources."""
         # Prefer IMDb (local) thumbnails to RT thumbnails.
-        thumb_uri = None
-        if self.rotten_tomatoes and self.rotten_tomatoes.thumb_uri:
-            thumb_uri = self.rotten_tomatoes.thumb_uri
         if self.imdb and self.imdb.thumb_image:
-            thumb_uri = self.imdb.thumb_image.url
-        return thumb_uri
+            return self.imdb.thumb_image.url
+        if self.rotten_tomatoes and self.rotten_tomatoes.thumb_uri:
+            return self.rotten_tomatoes.thumb_uri
+        return None
 
     @property
     def plot_summary(self):

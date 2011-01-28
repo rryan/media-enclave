@@ -42,6 +42,39 @@ except:
     PROFILE_LOG_BASE = "."
 
 
+def instrument_model_init(func):
+    """Counts calls to the base model __init__ method by class.
+
+    Decorate your relevant view with this method to see which models are
+    getting built the most.
+    """
+    from django.db.models import base
+    def new_func(*args, **kwargs):
+        inits = {}
+        old_init = base.Model.__dict__['__init__']
+
+        def new_init(self, *args, **kwargs):
+            """Add one to the inits dict for this instance's class."""
+            cls = self.__class__
+            key = cls.__module__ + '.' + cls.__name__
+            inits.setdefault(key, 0)
+            inits[key] += 1
+            return old_init(self, *args, **kwargs)
+
+        base.Model.__init__ = new_init
+        try:
+            ret = func(*args, **kwargs)
+        finally:
+            base.Model.__init__ = old_init
+
+        print 'Django models initialized sorted most first:'
+        print '\n'.join('%s %d' % (k.ljust(60), v) for (k, v) in
+                        sorted(inits.items(), key=lambda t: -t[1]))
+
+        return ret
+    return new_func
+
+
 def profile(log_file):
     """Profile some callable.
 

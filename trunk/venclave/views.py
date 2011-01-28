@@ -140,18 +140,6 @@ def exhibit_history(request):
     return HttpResponse('<html><body></body></html>')
 
 
-@profile('exhibit_content.prof')
-def exhibit_content_dbg(request):
-    """Handler for debugging the performance of the exhibit_content handler.
-
-    The debug toolbar looks for the </body> to insert itself into, so we just
-    wrap the JSON with html and body tags.  Kill this off once exhibit_content
-    uses a constant number of queries.
-    """
-    content = exhibit_content(request).content
-    return HttpResponse('<html><body>' + content + '</body></html>')
-
-
 def _grouped_dict(through_model, key_model, child_model, order_by=None):
     """From a 'through' model, group one model keyed on another.
 

@@ -34,7 +34,7 @@ urlpatterns = patterns(
         name='venclave-exhibit'),
 
     url(r'^exhibit/content/$',
-        'menclave.venclave.views.exhibit_content_dbg',
+        'menclave.venclave.views.exhibit_content',
         name='venclave-exhibit-content'),
 
     url(r'^exhibit/__history__.html',

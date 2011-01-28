@@ -13,11 +13,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.template import Context, RequestContext
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _  # For the auth form.
 
+from menclave.venclave.html import render_to_response
 from menclave.venclave.models import ContentNode, KIND_MOVIE, KIND_SERIES, KIND_SEASON
 from menclave.venclave.templatetags import venclave_tags
 
@@ -79,7 +80,7 @@ def home(request):
                 user = auth.authenticate(username=username, password=password)
                 auth.login(request, user)
                 return browse_redirect
-    return render_to_response("venclave/index.html",
+    return render_to_response("venclave/index.html", request,
                               {'reg_form': reg_form, 'settings': settings})
 
 
@@ -123,12 +124,12 @@ def browse(request):
     result = browse_and_update_vals(nodes, query_string)
     result.update({'attributes': facet_attributes,
                    'search_query': query_string})
-    return render_to_response('venclave/browse.html', result,
+    return render_to_response('venclave/browse.html', request, result,
                               context_instance=RequestContext(request))
 
 def exhibit(request):
     result = {'settings': settings}
-    return render_to_response('venclave/exhibit.html', result,
+    return render_to_response('venclave/exhibit.html', request, result,
                               context_instance=RequestContext(request))
 
 def exhibit_history(request):
@@ -498,11 +499,11 @@ def get_pane(request):
 
 @login_required
 def upload(request):
-    return render_to_response('venclave/upload.html',
+    return render_to_response('venclave/upload.html', request,
                               context_instance=RequestContext(request))
 
 
 def detail(request, id):
     node = get_object_or_404(ContentNode, pk=id)
-    return render_to_response('venclave/detail.html',
+    return render_to_response('venclave/detail.html', request,
                               {'node': node})

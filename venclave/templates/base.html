@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 
 {% load bundler_tags %}
+{% load venclave_tags %}
 
 <html>
 
@@ -35,19 +36,7 @@
           <img src="{% url venclave-images "browse_title.png" %}" alt="Video Enclave" />
         </div>
 
-        <div id="navigation">
-          <a href="{% url venclave-browse %}">
-            {% block browse-image %}
-              <img src="{% url venclave-images "browse_white.png" %}" alt="Browse" />
-            {% endblock browse-image %}
-          </a>
-          <img src="{% url venclave-images "slash.png" %}" />
-          <a href="{% url venclave-upload %}">
-            {% block upload-image %}
-              <img src="{% url venclave-images "upload_white.png" %}" alt="Upload" />
-            {% endblock upload-image %}
-          </a>
-        </div>
+        <div id="navigation">{% breadcrumbs request %}</div>
 
         <div id="search">
           <form method="GET" action="{% url venclave-browse %}">

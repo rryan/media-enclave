@@ -42,6 +42,14 @@ def make_stars(rating):
 
 
 @register.filter
+def rating(rating):
+    """Map None to the empty string."""
+    if not rating:
+        return "??"
+    return rating
+
+
+@register.filter
 def mins_to_hours(mins):
     """Convert a number of minutes into hours:mins."""
     if not mins:

@@ -134,8 +134,26 @@ def exhibit(request):
 def exhibit_history(request):
     return HttpResponse('<html><body></body></html>')
 
+def exhibit_content_dbg(request):
+    """Handler for debugging the performance of the exhibit_content handler.
+
+    The debug toolbar looks for the </body> to insert itself into, so we just
+    wrap the JSON with html and body tags.  Kill this off once exhibit_content
+    uses a constant number of queries.
+    """
+    content = exhibit_content(request).content
+    return HttpResponse('<html><body>' + content + '</body></html>')
+
+# TODO(rnk): Move the json mimetype stuff back up out of aenclave so we can
+# reuse it for this request.
+# TODO(rnk): select_related doesn't work for ManyToMany relationships.  We
+# could really speed this query up if we didn't do ~6000 SQL queries for
+# actors, directors, and genres.  Writing this in straight SQL may be too hard,
+# so we may have to resort to just loading all role and genre models into
+# memory, and building a dict mapping from movie id to lists of models.
 def exhibit_content(request):
-    content_nodes = ContentNode.objects.filter(kind__in=[KIND_MOVIE, KIND_SERIES]).select_related()
+    content_nodes = ContentNode.with_metadata(
+        ).filter(kind__in=[KIND_MOVIE, KIND_SERIES])
     kinds = {KIND_MOVIE: 'Movie',
              KIND_SERIES: 'TV Show',}
     items = []

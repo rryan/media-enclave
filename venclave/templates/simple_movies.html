@@ -25,9 +25,47 @@
     {{banner_msg|safe}}
   </div>
 
-  <table id="browse">
+  <table id="video-list">
+    <tr>
+      <th>Title</th>
+      <th>Length</th>
+      <th>Size</th>
+      {# TODO(rnk): Should make these headers sortable. #}
+      {# TODO(rnk): Icons might be nice here. #}
+      <th>IMDB</th>
+      <th>MC</th>
+      <th>RT</th>
+    </tr>
+
     {% for node in nodes %}
-    <tr><td><a href="{{ node.title }}">{{ node.title }}</a></td></tr>
+      <tr>
+        <td class="item-title">
+          <a href="{{ node.title|urlencode }}">{{ node.title }}</a></td>
+        <td class="item-length">98 min</td>
+        <td class="item-size">XXX MB</td>
+        <td class="item-rating">
+          {% with node.metadata.imdb as imdb %}
+            {% if imdb %}
+              <a href="{{ imdb.imdb_uri }}">{{ imdb.rating|rating }}</a>
+            {% endif %}
+          {% endwith %}
+        </td>
+        <td class="item-rating">
+          {% with node.metadata.metacritic as mc %}
+            {% if mc %}
+              <a href="{{ mc.mc_uri }}">{{ mc.score|rating }}</a>
+            {% endif %}
+          {% endwith %}
+        </td>
+        <td class="item-rating">
+          {% with node.metadata.rotten_tomatoes as rt %}
+            {% if rt %}
+              <a href="{{ rt.rt_uri }}">{{ rt.percent|rating }}</a>
+            {% endif %}
+          {% endwith %}
+        </td>
+      </tr>
     {% endfor %}
+
   </table>
 {% endblock %}

@@ -60,6 +60,8 @@ class Command(BaseCommand):
 
     def do_movies(self, movies_path):
         for movdir in listdir(movies_path):
+            if not os.path.isdir(movdir):
+                continue
             movdir = os.path.join(movies_path, movdir)
             node = self.make_content_node(movdir, KIND_MOVIE)
             node.save()

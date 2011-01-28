@@ -17,6 +17,10 @@ urlpatterns = patterns(
         'menclave.venclave.browse.movies',
         name='venclave-browse-movies'),
 
+    url(r'^browse/movies/(?P<title>[^/]+)/$',
+        'menclave.venclave.browse.movie_detail',
+        name='venclave-movie-detail'),
+
     url(r'^browse/tv/$',
         'menclave.venclave.browse.tv',
         name='venclave-browse-tv'),

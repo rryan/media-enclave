@@ -14,14 +14,24 @@ div#results-banner {
 
 /**** Video List ****/
 
-table#video-list,
-table.video-sublist {
-    border-collapse: collapse;
+table#video-list {
+    width: 100%;
 }
 
 table#video-list th {
     font-family: Monaco, "Andale Mono", verdana, sans-serif;
     text-align: left;
+}
+
+table#video-list .item-title a {
+    display: block;
+    color: #464646;
+    text-decoration: none;
+}
+
+table#video-list,
+table.video-sublist {
+    border-collapse: collapse;
 }
 
 table#video-list .sublist-container {
@@ -38,23 +48,7 @@ table#video-list .item-arrow {
 }
 
 table#video-list .item-title {
-    width: 300px;
-}
-
-table#video-list .item-title a{
-    display: block;
-}
-
-table#video-list .item-length,
-table#video-list .item-release,
-table#video-list .item-rating {
-    text-align: center;
-    width: 100px;
-}
-
-table#video-list .item-title a {
-    color: #464646;
-    text-decoration: none;
+    /*width: 300px;*/
 }
 
 /**** Panes ****/

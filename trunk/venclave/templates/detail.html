@@ -3,9 +3,9 @@
 {% load bundler_tags %}
 
 {% block styles %}
-{{ block.super }}
-      {% css "venclave-styles" "detail.css" %}
-      {% css "venclave-styles" "exhibit.css" %}
+  {{ block.super }}
+  {% css "venclave-styles" "detail.css" %}
+  {% css "venclave-styles" "exhibit.css" %}
 {% endblock %}
 
 {% block content %}
@@ -27,7 +27,6 @@
         {% endif %}{% endif %}
 
         <span class="content-title">{{ node.title }}</span>
-        <span class="content-year">()</span>
       </a>
     </td>
   </tr>
@@ -75,7 +74,8 @@
         {% if node.metadata.nyt_review %}
         <li class="nyt">
           <a href="{{ node.metadata.nyt_review }}" target="_blank">
-            <img src="/video/images/exhibit/nyt_logo.png" width="14" height="14" alt="NYT Review Link"/>
+            <img src="/video/images/exhibit/nyt_logo.png" width="14"
+                height="14" alt="NYT Review Link"/>
             Review
           </a>
         </li>
@@ -139,33 +139,19 @@
 
 <table class="detail">
   <tr>
-    <th>
-      Year
-    </th>
-    <td>
-      {{ node.metadata.imdb.release_year }}
-    </td>
+    <th>Year</th>
+    <td>{{ node.metadata.imdb.release_year }}</td>
   </tr>
   <tr>
-    <th>
-      Length
-    </th>
-    <td>
-      {{ node.metadata.imdb.length }} minutes
-    </td>
+    <th>Length</th>
+    <td>{{ node.metadata.imdb.length }} minutes</td>
   </tr>
   <tr>
-    <th>
-      Rating
-    </th>
-    <td>
-      {{ node.metadata.imdb.rating }} out of 5
-    </td>
+    <th>Rating</th>
+    <td>{{ node.metadata.imdb.rating }} out of 5</td>
   </tr>
   <tr>
-    <th>
-      Genres
-    </th>
+    <th>Genres</th>
     <td>
       {% for genre in node.metadata.imdb.genres.all %}
         {{ genre.name }}<br />
@@ -175,9 +161,7 @@
     </td>
   </tr>
   <tr>
-    <th>
-      Director
-    </th>
+    <th>Director</th>
     <td>
       {% for director in node.metadata.imdb.directors.all %}
         {{ director.name }}<br/>
@@ -187,12 +171,8 @@
     </td>
   </tr>
   <tr>
-    <th>
-      Plot summary
-    </th>
-    <td>
-      {{ node.metadata.imdb.plot_summary }}
-    </td>
+    <th>Plot summary</th>
+    <td>{{ node.metadata.imdb.plot_summary }}</td>
   </tr>
 </table>
 

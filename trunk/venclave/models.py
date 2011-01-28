@@ -350,12 +350,6 @@ class ManualMetadata(ContentMetadataSource):
     description = models.TextField()
 
 
-class VideoFile(models.Model):
-
-    file = models.FileField(upload_to='venclave/content')
-    parent = models.ForeignKey('ContentNode')
-
-
 KIND_TV = 'tv'
 KIND_MOVIE = 'mo'
 KIND_SERIES = 'se'
@@ -363,6 +357,7 @@ KIND_SEASON = 'sn'
 KIND_TRAILER = 'tr'
 KIND_RANDOMCLIP = 'rc'
 KIND_UNKNOWN = 'uk'
+
 
 class ContentNode(models.Model):
 
@@ -438,7 +433,8 @@ class ContentNode(models.Model):
     parent = models.ForeignKey("self", related_name="children",
                                blank=True, null=True)
 
-    metadata = models.OneToOneField("ContentMetadata", blank=True, null=True)
+    # TODO(rnk): Should we just fold ContentMetadata into the ContentNode?
+    metadata = models.OneToOneField("ContentMetadata")
 
     #--------------------------------- Content Path --------------------------#
 
@@ -498,3 +494,20 @@ class ContentNode(models.Model):
 
     SEARCHABLE_FIELDS = ('title', 'metadata__imdb__directors__name',
                           'metadata__imdb__actors__name')
+
+    @classmethod
+    def with_metadata(cls):
+        """Selects all the important metadata along with the nodes.
+
+        We frequently want to use select_related to read all the metadata and
+        the content nodes, but keeping track of these names is unwieldy so we
+        keep it here.  If you're going to access all the metadata sources,
+        instead of using ContentNode.objects, use ContentNode.with_metadata(),
+        and things should just work.
+        """
+        return cls.objects.select_related(
+            'metadata__imdb',
+            'metadata__rotten_tomatoes',
+            'metadata__metacritic',
+            'metadata__nyt_review',
+            )

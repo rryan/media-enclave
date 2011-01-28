@@ -1,6 +1,7 @@
 # venclave/views.py
 
 import cgi
+import itertools
 import json
 import logging
 import re
@@ -18,8 +19,11 @@ from django.template import Context, RequestContext
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _  # For the auth form.
 
+from menclave.profiling import profile
+
 from menclave.venclave.html import render_to_response
-from menclave.venclave.models import ContentNode, KIND_MOVIE, KIND_SERIES, KIND_SEASON
+from menclave.venclave.models import (ContentNode, KIND_MOVIE, KIND_SERIES,
+                                      KIND_SEASON, Role, IMDBMetadata)
 from menclave.venclave.templatetags import venclave_tags
 
 
@@ -135,6 +139,8 @@ def exhibit(request):
 def exhibit_history(request):
     return HttpResponse('<html><body></body></html>')
 
+
+@profile('exhibit_content.prof')
 def exhibit_content_dbg(request):
     """Handler for debugging the performance of the exhibit_content handler.
 
@@ -145,13 +151,37 @@ def exhibit_content_dbg(request):
     content = exhibit_content(request).content
     return HttpResponse('<html><body>' + content + '</body></html>')
 
+
+def _grouped_dict(through_model, key_model, child_model, order_by=None):
+    """From a 'through' model, group one model keyed on another.
+
+    This allows us to efficiently do a single query to map from
+    IMDBMetadata primary keys to lists of actor, genre, and director names.
+
+    Each dict looks something like:
+    {imdb_pk1 : [actor1_name, actor2_name...],
+     imdb_pk2 : [actor1_name, actor3_name...],
+     ...}
+    """
+    order = [key_model]
+    if order_by:
+        order.append(order_by)
+    q = through_model.objects.order_by(*order)
+
+    # Profiling revealed that most time is spent in Django's base model
+    # constructor, so we avoid creating those model objects when all we want is
+    # the name of the child model by using .values() to get a dict instead.
+    imdb_id_attr = key_model + '_id'
+    name_attr = child_model + '__name'
+    q = q.values(name_attr, imdb_id_attr)
+
+    return dict((imdb_id, [r[name_attr] for r in results])
+                for (imdb_id, results) in itertools.groupby(
+                    q, lambda t: t[imdb_id_attr]))
+
+
 # TODO(rnk): Move the json mimetype stuff back up out of aenclave so we can
 # reuse it for this request.
-# TODO(rnk): select_related doesn't work for ManyToMany relationships.  We
-# could really speed this query up if we didn't do ~6000 SQL queries for
-# actors, directors, and genres.  Writing this in straight SQL may be too hard,
-# so we may have to resort to just loading all role and genre models into
-# memory, and building a dict mapping from movie id to lists of models.
 def exhibit_content(request):
     content_nodes = ContentNode.with_metadata(
         ).filter(kind__in=[KIND_MOVIE, KIND_SERIES])
@@ -166,6 +196,13 @@ def exhibit_content(request):
     #                   'Label': 'Season %d' % (i+1),
     #                   'href': '/tvseasons'})
 
+    # select_related doesn't work for ManyToMany relationships, so we load all
+    # genre, actor, and director names into memory.
+    imdb_to_actors = _grouped_dict(Role, 'imdb', 'actor', order_by='bill_pos')
+    imdb_to_directors = _grouped_dict(IMDBMetadata.directors.through,
+                                      'imdbmetadata', 'director')
+    imdb_to_genres = _grouped_dict(IMDBMetadata.genres.through,
+                                   'imdbmetadata', 'genre')
 
     for node in content_nodes:
         name = node.simple_name()
@@ -218,7 +255,6 @@ def exhibit_content(request):
         if imdb:
             imdb = node.metadata.imdb
             item['IMDbURL'] = 'http://www.imdb.com/title/tt%s' % imdb.imdb_id
-            item['IMDbGenres'] = [genre.name for genre in imdb.genres.all()]
 
             if imdb.rating is not None:
                 item['IMDbRating'] = imdb.rating
@@ -235,12 +271,12 @@ def exhibit_content(request):
             else:
                 missing.append('IMDbPlotOutline')
 
-            item['IMDbGenres'] = [genre.name for genre in imdb.genres.all()]
-            item['IMDbDirectors'] = [director.name for director in imdb.directors.all()]
+            item['IMDbGenres'] = imdb_to_genres.get(imdb.pk, [])
+            item['IMDbDirectors'] = imdb_to_directors.get(imdb.pk, [])
 
             # Limit to top 4
 
-            item['IMDbActors'] = [actor.name for actor in imdb.actors.all()][:4]
+            item['IMDbActors'] = imdb_to_actors.get(imdb.pk, [])[:4]
 
             # Don't provide it if we don't have any. It's easier to check after
             # the query.
@@ -359,7 +395,6 @@ def exhibit_content(request):
               'items': items }
 
     return HttpResponse(json.dumps(result, indent=2))
-
 
 
 @login_required

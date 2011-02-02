@@ -364,7 +364,7 @@ def update_imdb_metadata(node, force=False, erase=False):
                 node.save()
                 return True
 
-        imdb = models.IMDBMetadata()
+        (imdb, _) = models.IMDBMetadata.objects.get_or_create(imdb_id=imdb_id)
         imdb.imdb_id = imdb_id
         imdb.imdb_uri = u'http://www.imdb.com/title/tt%s/' % imdb_id
         imdb.save()

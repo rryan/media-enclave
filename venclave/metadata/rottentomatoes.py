@@ -9,6 +9,7 @@ from BeautifulSoup import BeautifulSoup as B
 from menclave.venclave import models
 import common
 
+
 def rottentomatoes_repair_markup(page):
     """Repair the page as much as possible. Remove <script> and <noscript>
     tags. Fix strange occurences of '</<'"""
@@ -58,10 +59,6 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
         document = B(page, convertEntities=B.HTML_ENTITIES,
                      markupMassage=hexentityMassage)
 
-
-        #results_table = document.findChild('table', attrs={'class': re.compile('proViewTbl')})
-        #results_tbody = results_table.findChild('tbody') if results_table else None
-        #results = results_tbody.findAll('tr') if results_tbody else None
         results_ul = document.findChild('ul', attrs={'id': re.compile('movie_results_ul')})
         results = (results_ul.findAll('li', attrs={'class': re.compile('media_block')})
                    if results_ul else None)
@@ -79,10 +76,7 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
 
             link_title = link.string if link else None
             if not link_title:
-                print link
-                print link.string
                 logging.error("Couldn't find RT result link title. Skipping")
-                raise KeyboardInterrupt()
                 continue
 
             titles = []
@@ -113,8 +107,6 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
                     try:
                         logging.warning(u"Skipping RT title '%s' because it didn't match '%s'" % (aka, title))
                     except Exception, e:
-                        import pdb
-                        pdb.set_trace()
                         traceback.print_exc(e)
                     continue
                 else:
@@ -127,9 +119,11 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
 
             span_year = result_node.findChild('span', attrs={'class': re.compile('movie_year')})
             link_year = unicode(span_year.string) if span_year and span_year.string else None
+            link_year = link_year.strip(' ()')
 
             if year and link_year != year:
-                logging.info("Link '%s's year '%s' doesn't match '%s'." % (link_title, link_year, year))
+                logging.info("Link '%s's year '%s' doesn't match '%s'." %
+                             (link_title, link_year, year))
                 continue
 
             # Get RT ID
@@ -138,8 +132,8 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
             assert link_match # guaranteed
             return link_match.groupdict()['id']
     except Exception, e:
-        logging.error("Couldn't lookup RT ID for '%s (%s)'" % (title, year))
         traceback.print_exc(e)
+        logging.error("Couldn't lookup RT ID for '%s (%s)'" % (title, year))
         pass
 
     # As a fallback, try to determine the ID from the IMDB ID. This can be
@@ -216,7 +210,11 @@ def rottentomatoes_parse_page(rt_id):
     actors = []
     for anode in doc.findAll('a', attrs={'rel': 'v:starring'}):
         actor_name = anode.string
-        actor_role = ''.join([s for s in anode.nextSibling.contents if isinstance(s, basestring)]) if anode.nextSibling else ''
+        role_div = anode.parent
+        role_span = role_div.findChild('span', attrs={'class': 'characters'})
+        actor_role = (''.join(s for s in role_span.contents
+                             if isinstance(s, basestring))
+                      if anode.nextSibling else '')
         # Sometimes they aren't matched
         actor_role = re.sub('^\(', '', actor_role)
         actor_role = re.sub('\)$', '', actor_role)
@@ -262,8 +260,7 @@ def update_rottentomatoes_metadata(node, force=False):
                 node.save()
                 return True
 
-        rt = models.RottenTomatoesMetadata()
-        rt.rt_id = rt_id
+        (rt, _) = models.RottenTomatoesMetadata.objects.get_or_create(rt_id=rt_id)
         rt.rt_uri = u'http://www.rottentomatoes.com/m/%s/' % rt_id
         rt.save()
 
@@ -297,6 +294,6 @@ def update_rottentomatoes_metadata(node, force=False):
         node.save()
         return True
     except Exception, ex:
-        logging.error("Could not update metadata for '%s'. Got exception: %s" % (node, ex))
         traceback.print_exc()
+        logging.error("Could not update metadata for '%s'. Got exception: %s" % (node, ex))
     return False

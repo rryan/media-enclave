@@ -339,22 +339,35 @@ def update_imdb_metadata(node, force=False, erase=False):
         name = node.simple_name().encode('utf-8')
         title, year = common.detect_title_year(name)
         imdb = node.metadata.imdb
+        imdb_id = imdb.imdb_id if imdb else None
 
-        if not imdb:
-            imdb = models.IMDBMetadata()
-
-        imdb_id = imdb.imdb_id
-        if imdb_id == '' or erase:
+        if not imdb_id or erase:
             imdb_id = imdb_find_id(title, year)
             if not imdb_id:
                 return False
-
-            imdb.imdb_id = imdb_id
-            imdb.imdb_uri = u'http://www.imdb.com/title/tt%s/' % imdb_id
-            imdb.save()
         elif not force:
             logging.info("IMDb metadata already found for '%s', skipping." % node)
             return True
+
+        # If we already have an IMDB node with this IMDB id and we're not
+        # erasing existing data, we don't need to rescrape the page.
+        if not force and not erase:
+            try:
+                imdb = models.IMDBMetadata.objects.get(imdb_id=imdb_id)
+            except models.IMDBMetadata.DoesNotExist:
+                # We don't have it, so continue with the scraping.
+                pass
+            else:
+                logging.info("Found exsting IMDBMetadata for '%s'" % node)
+                node.metadata.imdb = imdb
+                node.metadata.save()
+                node.save()
+                return True
+
+        imdb = models.IMDBMetadata()
+        imdb.imdb_id = imdb_id
+        imdb.imdb_uri = u'http://www.imdb.com/title/tt%s/' % imdb_id
+        imdb.save()
 
         fetched = imdb_parse_page_metadata(imdb_id)
 

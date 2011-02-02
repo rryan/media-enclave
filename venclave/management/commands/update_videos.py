@@ -123,7 +123,21 @@ class Command(BaseCommand):
         mtime = os.path.getmtime(path)
         node.created = datetime.datetime.fromtimestamp(mtime)
 
-        if not node.metadata:
+        # Get the file size or size of files contained within the directory.
+        if os.path.isfile(path):
+            size = os.path.getsize(path)
+        elif os.path.isdir(path):
+            # This could be inefficient if we end up repeatedly walking the same
+            # directory subtree.
+            size = 0
+            for (root, dirs, files) in os.walk(path):
+                size += sum(os.path.getsize(os.path.join(root, f))
+                            for f in files)
+        node.size = size
+
+        try:
+            node.metadata
+        except ContentMetadata.DoesNotExist:
             meta = ContentMetadata()
             meta.save()
             node.metadata = meta

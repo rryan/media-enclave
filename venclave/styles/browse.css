@@ -39,7 +39,7 @@ table#video-list .sublist-container {
 }
 
 table#video-list td {
-
+    padding: 3px;
 }
 
 table#video-list .item-icon,
@@ -49,6 +49,18 @@ table#video-list .item-arrow {
 
 table#video-list .item-title {
     /*width: 300px;*/
+}
+
+table#video-list .item-length {
+    text-align: right;
+}
+
+table#video-list .item-size {
+    text-align: right;
+}
+
+table#video-list .item-rating {
+    text-align: right;
 }
 
 /**** Panes ****/

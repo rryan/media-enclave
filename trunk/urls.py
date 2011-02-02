@@ -28,7 +28,7 @@ urlpatterns = patterns(
         'menclave.login.logout',
         name='menclave-logout'),
 
-    (r'^admin/(.*)', admin.site.root),
+    (r'^admin/', include(admin.site.urls)),
 )
 
 if settings.AENCLAVE_ENABLED:

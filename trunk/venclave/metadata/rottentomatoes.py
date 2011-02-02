@@ -59,20 +59,30 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
                      markupMassage=hexentityMassage)
 
 
-        results_table = document.findChild('table', attrs={'class': re.compile('proViewTbl')})
-        results_tbody = results_table.findChild('tbody') if results_table else None
-        results = results_tbody.findAll('tr') if results_tbody else None
+        #results_table = document.findChild('table', attrs={'class': re.compile('proViewTbl')})
+        #results_tbody = results_table.findChild('tbody') if results_table else None
+        #results = results_tbody.findAll('tr') if results_tbody else None
+        results_ul = document.findChild('ul', attrs={'id': re.compile('movie_results_ul')})
+        results = (results_ul.findAll('li', attrs={'class': re.compile('media_block')})
+                   if results_ul else None)
 
         if results is None:
             logging.error("Couldn't lookup RT ID for '%s (%s)'" % (title, year))
             return None
 
         for result_node in results:
-            link = result_node.findChild('a', attrs={'href': rottentomatoes_id_pattern})
+            # Scope in on the content div, because otherwise we get the poster
+            # image.
+            content_div = result_node.findChild(
+                'div', attrs={'class': re.compile('media_block_content')})
+            link = content_div.findChild('a', attrs={'href': rottentomatoes_id_pattern})
 
             link_title = link.string if link else None
             if not link_title:
+                print link
+                print link.string
                 logging.error("Couldn't find RT result link title. Skipping")
+                raise KeyboardInterrupt()
                 continue
 
             titles = []
@@ -115,10 +125,8 @@ def rottentomatoes_find_id(title, year=None, imdb_id=None):
             if not found_title:
                 continue
 
-            year_container = result_node.findChild('td', attrs={'class': re.compile('date')})
-            year_p = year_container.findChild('p') if year_container else None
-            year_strong = year_p.findChild('strong') if year_p else None
-            link_year = unicode(year_strong.string) if year_strong and year_strong.string else None
+            span_year = result_node.findChild('span', attrs={'class': re.compile('movie_year')})
+            link_year = unicode(span_year.string) if span_year and span_year.string else None
 
             if year and link_year != year:
                 logging.info("Link '%s's year '%s' doesn't match '%s'." % (link_title, link_year, year))
@@ -222,28 +230,42 @@ def update_rottentomatoes_metadata(node, force=False):
         logging.info("Looking up RT metadata for '%s'" % node)
         rt = node.metadata.rotten_tomatoes
 
-        if rt is None:
-            rt = models.RottenTomatoesMetadata()
-        elif not force:
+        if rt and not force:
             logging.info("RT metadata already present for '%s'. Skipping." % node)
             return True
 
         name = node.simple_name()
         title, year = common.detect_title_year(name)
 
-        rt_id = rt.rt_id
-        if rt.rt_id == '':
+        rt_id = rt.rt_id if rt else None
+        if not rt_id:
             imdb_id = node.metadata.imdb.imdb_id if node.metadata.imdb else None
             rt_id = rottentomatoes_find_id(title, year, imdb_id=imdb_id)
             if not rt_id:
                 return False
-
-            rt.rt_id = rt_id
-            rt.rt_uri = u'http://www.rottentomatoes.com/m/%s/' % rt_id
-            rt.save()
         elif not force:
             logging.info("RT metadata already found for '%s', skipping." % node)
             return True
+
+        # If we already have an RT node with this RT id and we're not erasing
+        # existing data, we don't need to rescrape the page.
+        if not force:
+            try:
+                rt = models.RottenTomatoesMetadata.objects.get(rt_id=rt_id)
+            except models.RottenTomatoesMetadata.DoesNotExist:
+                # We don't have it, so continue with the scraping.
+                pass
+            else:
+                logging.info("Found exsting RottenTomatoesMetadata for '%s'" % node)
+                node.metadata.rottentomatoes = rt
+                node.metadata.save()
+                node.save()
+                return True
+
+        rt = models.RottenTomatoesMetadata()
+        rt.rt_id = rt_id
+        rt.rt_uri = u'http://www.rottentomatoes.com/m/%s/' % rt_id
+        rt.save()
 
         metadata = rottentomatoes_parse_page(rt.rt_id)
 

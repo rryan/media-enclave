@@ -224,7 +224,7 @@ class IMDBMetadata(ContentMetadataSource):
     def source_name(cls):
         return 'IMDB'
 
-    imdb_id = models.CharField(max_length=255)
+    imdb_id = models.CharField(max_length=255, unique=True)
     imdb_uri = models.URLField(verify_exists=False)
     imdb_canonical_title = models.CharField(max_length=255)
 
@@ -272,7 +272,7 @@ class RottenTomatoesMetadata(ContentMetadataSource):
     def source_name(cls):
         return "RottenTomatoes"
 
-    rt_id = models.CharField(max_length=255)
+    rt_id = models.CharField(max_length=255, unique=True)
     rt_uri = models.URLField(verify_exists=False)
 
     thumb_uri = models.URLField(verify_exists=False, null=True)
@@ -309,7 +309,7 @@ class MetaCriticMetadata(ContentMetadataSource):
     def source_name(cls):
         return "MetaCritic"
 
-    mc_id = models.CharField(max_length=255)
+    mc_id = models.CharField(max_length=255, unique=True)
     mc_uri = models.URLField(verify_exists=False)
 
     score = models.IntegerField(null=True)
@@ -480,6 +480,8 @@ class ContentNode(models.Model):
     date_added_string.short_description = 'date added'
 
     #------------------------------ Other Stuff ------------------------------#
+
+    size = models.IntegerField(default=0, editable=False)
 
     class Meta:
         get_latest_by = 'created'

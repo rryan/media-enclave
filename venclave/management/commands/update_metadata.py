@@ -44,6 +44,11 @@ class Command(BaseCommand):
             dest='force_nyt',
             default=False,
             help='Force update of NYT metadata.'),
+        make_option('--clean',
+            action='store_true',
+            dest='clean',
+            default=False,
+            help='Clean up unreferenced metadata.'),
         )
 
     def handle(self, *args, **options):
@@ -66,4 +71,27 @@ class Command(BaseCommand):
         #                              force_mc=options['force_mc'],
         #                              force_nyt=options['force_nyt'])
 
+        # Clean up any un-referenced metadata nodes.
+        if options['clean']:
+            logging.info("Deleting unreferenced metadata records...")
+            def delete_ids_not_in_set(model_cls, ids):
+                q = models.ContentMetadata.objects.exclude(id__in=metadata_ids)
+                logging.info("Deleting %d %s models.", q.count(),
+                             model_cls.__name__)
+                q.delete()
 
+            live_nodes = models.ContentNode.objects.all()
+
+            metadata_ids = [d['metadata_id'] for d in
+                            live_nodes.values('metadata_id')]
+            delete_ids_not_in_set(models.ContentMetadata, metadata_ids)
+            live_metadata = models.ContentMetadata.objects.all()
+
+            imdb_ids = [m.imdb_id for m in live_metadata]
+            delete_ids_not_in_set(models.IMDBMetadata, imdb_ids)
+
+            rt_ids = [m.rotten_tomatoes_id for m in live_metadata]
+            delete_ids_not_in_set(models.RottenTomatoesMetadata, rt_ids)
+
+            mc_ids = [m.metacritic_id for m in live_metadata]
+            delete_ids_not_in_set(models.MetaCriticMetadata, mc_ids)

@@ -20,11 +20,24 @@
     {{banner_msg|safe}}
   </div>
 
+  <h2 class="table_title">Categories</h2>
   <table id="browse">
-    <tr><td><a href="{% url venclave-browse-movies %}">Movies</a></td></tr>
-    <tr><td><a href="{% url venclave-browse-tv %}">TV</a></td></tr>
-    <tr><td><a href="{% url venclave-browse-other %}">Other</a></td></tr>
+    <tr>
+      <td><a class="browse-kind" href="{% url venclave-browse-movies %}">movies</a></td>
+      <td><a class="browse-kind" href="{% url venclave-browse-tv %}">tv</a></td>
+      <td><a class="browse-kind" href="{% url venclave-browse-other %}">other</a></td>
+    </tr>
   </table>
 
   {# TODO(rnk): Tables of recent additions would be nice. #}
+  <h2 class="table_title">Recent movies</h2>
+  {% with recent_movies as nodes %}
+    {% include "venclave/node_table.html" %}
+  {% endwith %}
+
+  <h2 class="table_title">Recent TV</h2>
+  {% with recent_episodes as nodes %}
+    {% include "venclave/node_table.html" %}
+  {% endwith %}
+
 {% endblock %}

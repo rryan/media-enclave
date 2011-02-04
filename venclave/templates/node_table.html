@@ -1,0 +1,47 @@
+{% load venclave_tags %}
+
+<table id="video-list">
+  <tr>
+    <th>Title</th>
+    <th>Length</th>
+    <th>Size</th>
+    {# TODO(rnk): Should make these headers sortable. #}
+    {# TODO(rnk): Icons might be nice here. #}
+    <th>IMDB</th>
+    <th>MC</th>
+    <th>RT</th>
+  </tr>
+
+  {% for node in nodes %}
+    {% with node.metadata.imdb as imdb %}
+      {% with node.metadata.rotten_tomatoes as rt %}
+        {% with node.metadata.metacritic as mc %}
+          <tr>
+            <td class="item-title">
+              <a href="{{ node|content_url }}">{{ node.title }}</a></td>
+            <td class="item-length">
+              {% if imdb.length %}{{imdb.length}} min{% else %}-{% endif %}
+            </td>
+            <td class="item-size">{{node.size|filesizeformat}}</td>
+            <td class="item-rating">
+              {% if imdb %}
+                <a href="{{ imdb.imdb_uri }}">{{ imdb.rating|rating }}</a>
+              {% endif %}
+            </td>
+            <td class="item-rating">
+              {% if mc %}
+                <a href="{{ mc.mc_uri }}">{{ mc.score|rating }}</a>
+              {% endif %}
+            </td>
+            <td class="item-rating">
+              {% if rt %}
+                <a href="{{ rt.rt_uri }}">{{ rt.percent|rating }}</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endwith %}
+      {% endwith %}
+    {% endwith %}
+  {% endfor %}
+
+</table>

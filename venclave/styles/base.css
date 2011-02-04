@@ -19,6 +19,7 @@ body {
 
 #header #navigation{
     margin: 14px 0;
+    float: right;
 }
 
 #header #breadcrumbs{

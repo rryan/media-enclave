@@ -8,6 +8,8 @@ from django.template import Context
 from django.template import Library
 from django.template.loader import get_template
 
+from menclave.venclave import models
+
 
 register = Library()
 
@@ -99,3 +101,16 @@ def ex_braces(content):
     is less than ideal, so we use the filter approach.
     """
     return "{{" + content + "}}"
+
+
+@register.filter
+def content_url(node):
+    url_names = {
+            models.KIND_MOVIE: 'venclave-movie-detail',
+            # TODO(rnk): Add more detail urls.
+            }
+    url_name = url_names.get(node.kind)
+    if url_name:
+        return reverse(url_name, args=[node.title])
+    else:
+        return reverse('venclave-detail', args=[node.id])

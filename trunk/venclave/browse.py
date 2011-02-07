@@ -13,7 +13,7 @@ from menclave.venclave.html import render_to_response
 
 
 def main(request):
-    q = models.ContentNode.with_metadata().order_by('-updated')
+    q = models.ContentNode.with_metadata().order_by('-created')
     recent_movies = q.filter(kind=models.KIND_MOVIE)[:10]
     recent_tv = q.filter(kind=models.KIND_TV)[:10]
     return render_to_response("venclave/browse.html", request,
@@ -22,20 +22,24 @@ def main(request):
 
 
 def movies(request):
-    queryset = models.ContentNode.with_metadata().filter(kind=models.KIND_MOVIE)
-    return render_to_response("venclave/simple_movies.html", request,
-                              {'nodes': queryset})
+    q = models.ContentNode.with_metadata().filter(kind=models.KIND_MOVIE)
+    return render_to_response("venclave/simple.html", request,
+                              {'nodes': q})
 
 
 def tv(request):
-    queryset = models.ContentNode.objects.filter(kind=models.KIND_SERIES)
-    return render_to_response("venclave/browse.html", request)
+    q = models.ContentNode.with_metadata()
+    q = q.filter(kind=models.KIND_SERIES)
+    return render_to_response("venclave/simple.html", request,
+                              {'nodes': q})
 
 
 def other(request):
-    # TODO
-    queryset = models.ContentNode.objects.filter(kind=models.KIND_UNKNOWN)
-    return render_to_response("venclave/browse.html", request)
+    q = models.ContentNode.with_metadata()
+    q = q.exclude(kind__in=(models.KIND_MOVIE, models.KIND_SERIES,
+                            models.KIND_TV, models.KIND_SEASON))
+    return render_to_response("venclave/simple.html", request,
+                              {'nodes': q})
 
 
 def movie_detail(request, title):

@@ -1,71 +1,23 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-    <title>amnesia &gt; {{breadcrumbs[-1].name}}</title>
-    <link rel="stylesheet" type="text/css" href="/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="/css/none.css" title="recent-none" />
-    <link rel="alternate stylesheet" type="text/css" href="/css/day.css" title="recent-day" />
-    <link rel="alternate stylesheet" type="text/css" href="/css/week.css" title="recent-week" />
-    <link rel="alternate stylesheet" type="text/css" href="/css/month.css" title="recent-month" />
-    <link rel="alternate" type="application/rss+xml" title="Amnesia RSS" href="http://amnesia.mit.edu/rss/${section}.xml" />
-    <script type="text/javascript" src="/js/styleswitcher.js"></script>
-  </head>
+{% extends "venclave/base.html" %}
 
-  <body>
-    <div class=title>
-      <a class=amnesia href="/{{section}}/">amnesia</a>
-      {% for crumb in breadcrumbs %}
-        &gt; <a class=crumb href="/{{section}}/{{crumb.link}}">{{crumb.name}}</a>
-      {% endfor %}
-    </div>
-    <div class="separator"></div>
+{% load venclave_tags %}
+{% load bundler_tags %}
 
-    <div class="select">Show files that were added in the last:
-      <a class=day href="#" onClick="setStyle('recent','day');return false;">day</a>
-      <a class=week href="#" onClick="setStyle('recent','week');return false;">week</a>
-      <a class=month href="#" onClick="setStyle('recent','month');return false;">month</a>
-    </div>
+{% block styles %}
+  {{ block.super }}
+  {% css "venclave-styles" "jquery-ui-1.7.1.custom.css" %}
+  {% css "venclave-styles" "browse.css" %}
+{% endblock %}
 
-    <div class="list indexlist">
-      <div class=item>
-        <span class=icon><a href=".."><img src="/icons/back.gif" width="14" height="14" /></a></span>
-        <span class=name><a href="..">Parent Directory</a></span>
-        <span class=buttons></span>
-        <span class=size></span>
-      </div>
-      {% for item in contents %}
-        <div class=item>
-          <span class=icon><a href="{{item.link}}"><img
-              src="/icons/{{item.icon}}.gif" width="14" height="14" /></a></span>
-          <span class=name>
-            <a href="{{item.link}}" class="{{item.recent}}">{{item.name}}</a>
-            {% if item.extra %}
-              {# TODO(rnk): Translate this stuff. #}
-              <span class=extra id=extra${item.index}>
-                #if $item.torrentname
-                ${item.torrentname}<br>
-                #end if
-                #if $item.ext
-                ${item.ext}<br>
-                #end if
-                #if $item.tags
-                ${item.tags}<br>
-                #end if
-                #if $item.date
-                Added ${item.date}
-                #end if
-              </span>
-            {% endif %}
-          </span>
-          <span class=buttons>
-            {% if item.extra %}
-              <a href="#" onclick="toggle('extra${item.index}'); return false;">&#8897;</a>
-            {% endif %}
-          </span>
-          <span class=size>{{item.size}}</span>
-        </div>
-      {% endfor %}
-    </div>
-  </body>
-</html>
+{% block scripts %}
+  {{ block.super }}
+  {% javascript "venclave-scripts" "jquery.json-1.3.min.js" %}
+  {% javascript "venclave-scripts" "jquery-ui-1.7.1.custom.min.js" %}
+{% endblock scripts %}
+
+{% block content %}
+
+  {# 'nodes' should be provided to this template. #}
+  {% include "venclave/node_table.html" %}
+
+{% endblock %}

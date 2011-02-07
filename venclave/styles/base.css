@@ -17,8 +17,12 @@ body {
     width: 1000px;
 }
 
-#header #navigation{
-    margin: 14px 0;
+#title-right {
+    float: right;
+    text-align: right;
+}
+
+#header #navigation {
     float: right;
 }
 
@@ -28,16 +32,7 @@ body {
 
 #login {
     font-size: 12px;
-    position: relative;
-    right: 20px;
-    top: 11px;
     text-align: right;
-}
-
-#search {
-    position: absolute;
-    top: 50px;
-    right: 20px;
 }
 
 #user {
@@ -64,17 +59,23 @@ body {
     font-size: 16pt;
 }
 
-#navigation a {
-    /*background: #a5e055;*/
-    background: #ddddff;
-}
-
 #header a {
     color: #464646;
     font-family: Monaco, "Droid Sans Mono", "Andale Mono", verdana, sans-serif;
     text-decoration: none;
 }
 
+#navigation a {
+    /*background: #a5e055;*/
+    background: #ddddff;
+}
+
 a.crumb-active {
     background: #a5e055;
+}
+
+a#title {
+    color: #f7941d;
+    font-family: Monaco, "Andale Mono", verdana, sans-serif;
+    font-size: 48pt;
 }

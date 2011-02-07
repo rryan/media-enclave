@@ -46,6 +46,18 @@ table#video-list th {
     text-align: left;
 }
 
+th.length-col {
+    width: 8ex;
+}
+
+th.size-col {
+    width: 10ex;
+}
+
+th.rating-col {
+    width: 5ex;
+}
+
 table#video-list .item-title a {
     display: block;
     color: #464646;

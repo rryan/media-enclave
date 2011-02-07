@@ -22,25 +22,36 @@
       <div id="header">
 
         {% block header %}
-          <div id="login">
-            {% if user.is_authenticated %}
-              <tt>{{user.username}}</tt>
-              [<a href="{% url menclave-logout %}?goto={% url venclave-home %}"
-                >logout</a>]
-            {% else %}
-              [<a href="{% url menclave-login %}?goto={{ request.build_absolute_uri }}"
-                >login</a>]
-            {% endif %}
-          </div>
+          <div id="title-right">
+            <div id="login">
+              {% if user.is_authenticated %}
+                <tt>{{user.username}}</tt>
+                [<a href="{% url menclave-logout %}?goto={% url venclave-home %}"
+                  >logout</a>]
+              {% else %}
+                [<a href="{% url menclave-login %}?goto={{ request.build_absolute_uri }}"
+                  >login</a>]
+              {% endif %}
+            </div>
 
-          <div id="title">
-            <img src="{% url venclave-images "browse_title.png" %}"
-              alt="venclave" />
+            <div id="search">
+              <form method="GET" action="{% url venclave-browse %}">
+                <input type="text" class="search_query" name="q" size="30"
+                  value="{{search_query}}" /><br/>
+                <input type="submit" value="Go"/>
+                <input type="reset" value="Clear" onclick="this.parentNode.q.value=''; console.log(this.parentNode.q.value); this.parentNode.submit()" />
+              </form>
+            </div>
+          </div>
+        {% endblock header %}
+
+          <div>
+            <a id="title" href="{% url venclave-home %}">venclave</a>
           </div>
 
           <div id="navigation">
             <a href="{% url venclave-browse %}">browse</a> &middot;
-            <a href="{% url venclave-exhibit %}">search</a> &middot;
+            <a href="{% url venclave-exhibit %}">exhibit</a> &middot;
             <a href="#todo">request</a>
           </div>
 
@@ -49,16 +60,6 @@
           </div>
 
           <hr/>
-
-          <div id="search">
-            <form method="GET" action="{% url venclave-browse %}">
-              <input type="text" class="search_query" name="q" size="30"
-                value="{{search_query}}" />
-              <input type="submit" value="Go"/>
-              <input type="reset" value="Clear" onclick="this.parentNode.q.value=''; console.log(this.parentNode.q.value); this.parentNode.submit()" />
-            </form>
-          </div>
-        {% endblock header %}
 
       </div>
 

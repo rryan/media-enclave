@@ -3,13 +3,13 @@
 <table id="video-list">
   <tr>
     <th>Title</th>
-    <th>Length</th>
-    <th>Size</th>
+    <th class="length-col">Length</th>
+    <th class="size-col">Size</th>
     {# TODO(rnk): Should make these headers sortable. #}
     {# TODO(rnk): Icons might be nice here. #}
-    <th>IMDB</th>
-    <th>MC</th>
-    <th>RT</th>
+    <th class="rating-col">IMDB</th>
+    <th class="rating-col">MC</th>
+    <th class="rating-col">RT</th>
   </tr>
 
   {% for node in nodes %}

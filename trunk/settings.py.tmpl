@@ -10,7 +10,8 @@
 ## CUSTOMIZE ME
 # This is the root of your media enclave checkout.  This variable is used
 # throughout the rest of the settings for convenience.
-_MENCLAVE_ROOT = "/path-to-menclave/"
+import os
+_MENCLAVE_ROOT = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 #================================= DEBUGGING =================================#
 
@@ -122,7 +123,6 @@ ACTUALLY_DELETE_FILES = False
 # to make a deleted files directory if you are not actually deleting
 # files.
 DELETED_FILES_DIRECTORY = ""
-
 
 # The host that the gst player will be running on.
 GST_PLAYER_HOST = "localhost"

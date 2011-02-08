@@ -2,9 +2,13 @@
 
 import cgi
 import itertools
-import json
 import logging
 import re
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from django import forms
 from django.conf import settings

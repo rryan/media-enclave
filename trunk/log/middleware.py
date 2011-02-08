@@ -1,7 +1,11 @@
 
-import json
 import logging
 import time
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from models import RequestLog
 import handler

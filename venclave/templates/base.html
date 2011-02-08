@@ -43,25 +43,27 @@
               </form>
             </div>
           </div>
-        {% endblock header %}
 
           <div>
             <a id="title" href="{% url venclave-home %}">venclave</a>
           </div>
 
-          <div id="navigation">
-            <a href="{% url venclave-browse %}">browse</a> &middot;
-            <a href="{% url venclave-exhibit %}">exhibit</a> &middot;
-            <a href="#todo">request</a>
-          </div>
+          <div>
+            <div id="navigation">
+              <a href="{% url venclave-browse %}">browse</a> &middot;
+              <a href="{% url venclave-exhibit %}">exhibit</a> &middot;
+              <a href="#todo">request</a>
+            </div>
 
-          <div id="breadcrumbs">
-            {% breadcrumbs request %}
+            <div id="breadcrumbs">
+              {% breadcrumbs request %}
+            </div>
           </div>
 
           <hr/>
 
-      </div>
+          </div>
+        {% endblock header %}
 
       {% block content %}{% endblock content %}
 

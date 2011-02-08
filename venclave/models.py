@@ -481,7 +481,7 @@ class ContentNode(models.Model):
 
     #------------------------------ Other Stuff ------------------------------#
 
-    size = models.IntegerField(default=0, editable=False)
+    size = models.BigIntegerField(default=0, editable=False)
 
     class Meta:
         get_latest_by = 'created'

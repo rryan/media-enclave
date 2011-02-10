@@ -411,3 +411,10 @@ def update_list(request):
             raise ValueError("op must be 'slider', 'or', or 'and'")
     result = browse_and_update_vals(nodes, query_string)
     return HttpResponse(json.dumps(result))
+
+
+@login_required
+def detail(request, id):
+    node = get_object_or_404(ContentNode, pk=id)
+    return render_to_response('venclave/detail.html', request,
+                              {'node': node})

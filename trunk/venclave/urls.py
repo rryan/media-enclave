@@ -41,20 +41,12 @@ urlpatterns = patterns(
         'menclave.venclave.views.exhibit_history',
         name='venclave-exhibit-history'),
 
-    url(r'^upload/$',
-        'menclave.venclave.views.upload',
-        name='venclave-upload'),
-
-    url(r'^detail/(\d+)$',
-        'menclave.venclave.views.detail',
+    url(r'^detail/(?P<id>\d+)/$',
+        'menclave.venclave.browse.detail',
         name='venclave-detail'),
 
     url(r'^update_list/$',
         'menclave.venclave.views.update_list'),
-
-    url(r'^load_pane/',
-        'menclave.venclave.views.get_pane',
-        name="venclave-pane"),
 
     url(r'logout/',
         'django.contrib.auth.views.logout_then_login',

@@ -10,12 +10,17 @@ def remove_accents(s):
     try:
         #from unidecode import unidecode
         #return unidecode(s)
-        nkfd_form = unicodedata.normalize('NFKD', unicode(s))
+        if not isinstance(s, unicode):
+            s = s.decode('utf-8')  # Oh god, why are we guessing here?
+        assert isinstance(s, unicode)
+        nkfd_form = unicodedata.normalize('NFKD', s)
         only_ascii = nkfd_form.encode('ASCII', 'ignore')
     except Exception, e:
         logging.error("Couldn't strip accents from '%s'" % s)
         traceback.print_exc(e)
-    return only_ascii
+        return s
+    else:
+        return only_ascii
 
 def make_search_term(term):
     punctuation = [',', '.', '!', ':', '/', '?']

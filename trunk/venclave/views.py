@@ -104,39 +104,12 @@ def words_to_query(query_string):
     return full_query
 
 
-def browse_and_update_vals(nodes, query_string):
-    """Compute values common to browse and update_list.
-
-    Returns a dict containing objects useful for browse and update_list.
-    """
-    nodes = nodes.select_related('metadata__imdb')
-    video_list = create_video_list(nodes)
-    video_count = ContentNode.objects.all().count()
-    results_count = nodes.count()
-    return {
-        'videolist': video_list,
-        'banner_msg': banner_msg(video_count, results_count, query_string),
-    }
-
-
 @login_required
-def browse(request):
-    # Process search query
-    form = request.GET
-    query_string = form.get('q', '')
-    full_query = words_to_query(query_string)
-    nodes = ContentNode.objects.filter(full_query)
-    facet_attributes = ContentNode.attributes
-    result = browse_and_update_vals(nodes, query_string)
-    result.update({'attributes': facet_attributes,
-                   'search_query': query_string})
-    return render_to_response('venclave/browse.html', request, result,
-                              context_instance=RequestContext(request))
-
 def exhibit(request):
     result = {'settings': settings}
     return render_to_response('venclave/exhibit.html', request, result,
                               context_instance=RequestContext(request))
+
 
 def exhibit_history(request):
     return HttpResponse('<html><body></body></html>')
@@ -172,6 +145,9 @@ def _grouped_dict(through_model, key_model, child_model, order_by=None):
 
 # TODO(rnk): Move the json mimetype stuff back up out of aenclave so we can
 # reuse it for this request.
+#from menclave.profiling import profile
+#@profile('exhibit.prof')
+@login_required
 def exhibit_content(request):
     content_nodes = ContentNode.with_metadata(
         ).filter(kind__in=[KIND_MOVIE, KIND_SERIES])
@@ -220,15 +196,18 @@ def exhibit_content(request):
                 seasons.append({'type': 'Season',
                                 'label': str(child.id),
                                 'title': child.title,
-                                'link': '<a href="%s">%s</a>' % ('/foolio', child.title),
+                                'link': '<a href="%s">%s</a>' % ('/foolio',
+                                                                 child.title),
                                 'href': '/tvseasons/%d' % child.id})
             items.extend(seasons)
 
-            item['Seasons'] = [str(child.id) for child in node.children.all() if child.kind == KIND_SEASON]
+            item['Seasons'] = [str(child.id) for child in node.children.all()
+                               if child.kind == KIND_SEASON]
             # item['Seasons'] = [{'type': 'Season',
             #                     'label': child.title,
             #                     'href': '/tvseasons'}
-            #                    for child in node.children.all() if child.kind == KIND_SEASON]
+            #                    for child in node.children.all()
+            #                    if child.kind == KIND_SEASON]
 
         item['DL'] = node.downloads
 
@@ -432,104 +411,3 @@ def update_list(request):
             raise ValueError("op must be 'slider', 'or', or 'and'")
     result = browse_and_update_vals(nodes, query_string)
     return HttpResponse(json.dumps(result))
-
-
-def create_video_list(nodes):
-    """Return the HTML table of the video list.
-
-    We do not use Django templates here because they are *extremely* slow when
-    rendered over and over again in a loop.  This optimization may become
-    irrelevant when we enable paging, but for now it's a big help.
-    """
-    html_parts = [LIST_HEADER]
-    for node in nodes:
-        imdb = node.metadata and node.metadata.imdb
-        html_parts.append(LIST_ITEM_TEMPLATE % {
-            'id': node.id,
-            'icon': reverse("venclave-images",
-                            args=["%s_icon.png" % node.kind]),
-            'kind': node.kind,
-            'title': node.title,
-            'length': imdb and venclave_tags.mins_to_hours(imdb.length) or '-',
-            'year': imdb and imdb.release_year or '-',
-            'rating': imdb and venclave_tags.make_stars(imdb.rating) or '-',
-        })
-    html_parts.append(LIST_FOOTER)
-    return ''.join(html_parts)
-
-
-LIST_HEADER = """\
-<table id="video-list" cellspacing="0" cellpadding="0">
-  <thead>
-    <tr>
-      <th class="item-icon"></th>
-      <th class="item-arrow"></th>
-      <th class="item-title">title</th>
-      <th class="item-length">length</th>
-      <th class="item-release">year</th>
-      <th class="item-rating">rating</th>
-    </tr>
-  </thead>
-  <tbody id="list-body" class="list-body">
-"""
-
-
-LIST_FOOTER = """\
-  </tbody>
-</table>
-"""
-
-
-LIST_ITEM_TEMPLATE = """\
-<tr id1="%(id)s">
-  <td class="item-icon">
-    <img src="%(icon)s" alt="%(kind)s"/>
-  </td>
-  <td class="item-arrow">
-  </td>
-  <td class="item-title">
-    <a href="#" class="leaf"
-      onclick="return venclave.videolist.title_onclick(this)">%(title)s</a>
-  </td>
-  <td class="item-length">
-    %(length)s
-  </td>
-  <td class="item-release">
-    %(year)s
-  </td>
-  <td class="item-rating">
-    %(rating)s
-  </td>
-</tr>
-"""
-
-
-def banner_msg(video_count, results_count, search_string):
-    msg = ''
-    if video_count != results_count:
-        msg += '%s results in ' % results_count
-    msg += '%s videos' % video_count
-    if search_string:
-        msg += ' for "%s"' % cgi.escape(search_string)
-    return msg
-
-
-@login_required
-def get_pane(request):
-    id = request.GET['id']
-    node = ContentNode.objects.get(pk=id)
-    t = select_template(['venclave/panes/%s_pane.html' % node.kind,
-                         'venclave/panes/default.html'])
-    return HttpResponse(t.render(Context({'node': node})))
-
-
-@login_required
-def upload(request):
-    return render_to_response('venclave/upload.html', request,
-                              context_instance=RequestContext(request))
-
-
-def detail(request, id):
-    node = get_object_or_404(ContentNode, pk=id)
-    return render_to_response('venclave/detail.html', request,
-                              {'node': node})

@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import url, patterns, include
+from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.conf import settings

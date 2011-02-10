@@ -368,8 +368,6 @@ class ContentNode(models.Model):
     video files.
     """
 
-    owner = models.ForeignKey('auth.User')
-
     attributes = (TypeFacet, GenreFacet, RatingFacet, YearFacet, DirectorFacet)
     attrs_by_name = dict((f.name, f) for f in attributes)
 
@@ -512,3 +510,18 @@ class ContentNode(models.Model):
             'metadata__metacritic',
             'metadata__nyt_review',
             )
+
+
+class ContentRequest(models.Model):
+
+    """A user request for some content."""
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey('auth.User', related_name='contentrequests_made')
+    votes = models.IntegerField(default=0, editable=False)
+    # We need this to ensure users can't vote twice.
+    voters = models.ManyToManyField('auth.User',
+                                    related_name='contentrequests_voted')
+    added = models.DateTimeField(auto_now_add=True, editable=False)
+    satisfied = models.BooleanField(default=False)
+    satisfied_on = models.DateTimeField(blank=True, null=True)

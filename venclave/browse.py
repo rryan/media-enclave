@@ -6,6 +6,7 @@ import urllib
 import re
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
 from menclave.venclave import models
@@ -54,6 +55,10 @@ def movie_detail(request, title):
 
 
 @login_required
+def detail(request, id):
+    node = get_object_or_404(models.ContentNode, pk=id)
+    return generic_detail(request, node)
+
+
 def generic_detail(request, node):
-    return render_to_response("venclave/detail.html", request,
-                              {'node': node})
+    return render_to_response("venclave/detail.html", request, {'node': node})

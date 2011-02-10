@@ -25,8 +25,13 @@ from django.utils.translation import ugettext_lazy as _  # For the auth form.
 
 from menclave.venclave.html import render_to_response
 from menclave.venclave.models import (ContentNode, KIND_MOVIE, KIND_SERIES,
-                                      KIND_SEASON, Role, IMDBMetadata)
+                                      KIND_SEASON, Role, IMDBMetadata,
+                                      ContentRequest)
 from menclave.venclave.templatetags import venclave_tags
+
+
+def json_response(json_obj, indent=None):
+    return HttpResponse(json.dumps(json_obj, indent=indent))
 
 
 class VenclaveUserCreationForm(auth_forms.UserCreationForm):
@@ -364,7 +369,7 @@ def exhibit_content(request):
               'items': items }
 
     indent = None if not settings.DEBUG else 2
-    return HttpResponse(json.dumps(result, indent=indent))
+    return json_response(result, indent=indent)
 
 
 @login_required
@@ -410,11 +415,35 @@ def update_list(request):
         else:
             raise ValueError("op must be 'slider', 'or', or 'and'")
     result = browse_and_update_vals(nodes, query_string)
-    return HttpResponse(json.dumps(result))
+    return json_response(result)
 
 
 @login_required
-def detail(request, id):
-    node = get_object_or_404(ContentNode, pk=id)
-    return render_to_response('venclave/detail.html', request,
-                              {'node': node})
+def upvote(request):
+    upvote_id = int(request.GET['upvote'])
+    content_request = get_object_or_404(ContentRequest, id=upvote_id)
+    if request.user == content_request.user:
+        return json_response(
+                {'error': "You can't upvote your own request."})
+    if request.user in content_request.voters.all():
+        return json_response(
+                {'error': "You can't upvote the same request twice."})
+
+    content_request.voters.add(request.user)
+    content_request.votes += 1
+    content_request.save()
+    return json_response({'success': 1, 'id': upvote_id})
+
+
+@login_required
+def request(request):
+    if request.POST.get('make_request', '') == 'true':
+        content_request = ContentRequest(name=request.POST['name'],
+                                         user=request.user, votes=1)
+        content_request.save()
+
+    q = ContentRequest.objects.filter(satisfied=False)
+    q = q.select_related('user')
+    q = q.order_by('-votes', '-added')
+    return render_to_response("venclave/request.html", request,
+                              {'active_requests': q})

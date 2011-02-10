@@ -50,7 +50,7 @@ def other(request):
 @login_required
 def movie_detail(request, title):
     node = get_object_or_404(models.ContentNode, title=title,
-                              kind=models.KIND_MOVIE)
+                             kind=models.KIND_MOVIE)
     return generic_detail(request, node)
 
 

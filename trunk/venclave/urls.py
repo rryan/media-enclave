@@ -45,6 +45,14 @@ urlpatterns = patterns(
         'menclave.venclave.browse.detail',
         name='venclave-detail'),
 
+    url(r'request/upvote/',
+        'menclave.venclave.views.upvote',
+        name='venclave-upvote'),
+
+    url(r'request/',
+        'menclave.venclave.views.request',
+        name='venclave-request'),
+
     url(r'^update_list/$',
         'menclave.venclave.views.update_list'),
 

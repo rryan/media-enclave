@@ -1,0 +1,66 @@
+{% extends "venclave/base.html" %}
+{% load venclave_tags %}
+{% load bundler_tags %}
+
+{% block styles %}
+  {{ block.super }}
+  {% css "venclave-styles" "detail.css" %}
+  {% css "venclave-styles" "exhibit.css" %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% defer %}
+    <script type="text/javascript">
+      function upvote(id) {
+        jQuery.get("{% url venclave-upvote %}", {'upvote': id},
+          upvote_done, 'json');
+      }
+
+      function upvote_done(data, textStatus, jqXHR) {
+        if (data.error) {
+          // TODO(rnk): Make an unobtrusive dialog box for these messages, like
+          // a span or div somewhere on the page.
+          alert(data.error);
+        } else if (data.success) {
+          var votes = jQuery('#votes_' + data.id);
+          votes.text((parseInt(votes.text(), 10) + 1));
+        }
+      }
+    </script>
+  {% enddefer %}
+{% endblock %}
+
+{% block content %}
+
+  <form method="post" action="{% url venclave-request %}">
+    Name of movie or other media: <input type="text" name="name"/>
+    <input type="submit" value="Go"/>
+    <input type="hidden" name="make_request" value="true"/>
+  </form>
+
+  <table id="active_requests" width="75%">
+    <tr>
+      <th>Votes</th>
+      <th>Name</th>
+      <th>User</th>
+      <th>Date</th>
+    </tr>
+
+    {% for content_request in active_requests %}
+      <tr>
+        <td>
+          <a href="#" onclick="upvote({{content_request.id}})">+</a>
+          <span id="votes_{{content_request.id}}">
+            {{content_request.votes}}
+          </span>
+        </td>
+        <td>{{ content_request.name }}</td>
+        <td>{{ content_request.user.username }}</td>
+        <td>{{ content_request.added|timesince }} ago</td>
+      </tr>
+    {% endfor %}
+
+  </table>
+
+{% endblock content %}

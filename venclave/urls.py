@@ -10,7 +10,7 @@ urlpatterns = patterns(
         name='venclave-home'),
 
     url(r'^browse/$',
-        'menclave.venclave.browse.main',
+        'menclave.venclave.browse.browse',
         name='venclave-browse'),
 
     url(r'^browse/movies/$',

@@ -10,7 +10,7 @@ import common
 
 def lookup_metacritic_metadata(content):
     metadata = {}
-    name = content.simple_name().encode('utf-8')
+    name = content.simple_name()
     title, year = common.detect_title_year(name)
 
     url_kind_map = { models.KIND_MOVIE: 'http://www.metacritic.com/search/movie/%s/results',
@@ -22,7 +22,8 @@ def lookup_metacritic_metadata(content):
 
     # Remove special characters that the regular metacritic search seems to
     # remove anyway.
-    title_stripped = re.sub('[!@#$%^&*();.,?]', '', title).strip() #title.replace('-','').replace(':','').replace('(','').replace(')','')
+    title_utf8 = title.encode('utf-8')
+    title_stripped = re.sub('[!@#$%^&*();.,?]', '', title_utf8).strip() #title.replace('-','').replace(':','').replace('(','').replace(')','')
     title_stripped = re.sub('[:\-\s]', '+', title_stripped)
     #title_stripped = title_stripped.replace(' ', '+')
 
@@ -55,10 +56,9 @@ def lookup_metacritic_metadata(content):
 
         if not common.title_match(title, mc_title):
             try:
-                logging.warning(u"Skipping MC title '%s' because it didn't match '%s'" % (mc_title, title))
+                logging.warning(u"Skipping MC title '%s' because it didn't "
+                                "match '%s'" % (mc_title, title))
             except Exception, e:
-                import pdb
-                pdb.set_trace()
                 traceback.print_exc(e)
             continue
 

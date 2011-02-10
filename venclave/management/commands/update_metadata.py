@@ -62,23 +62,25 @@ class Command(BaseCommand):
                                               force_mc=options['force_mc'],
                                               force_nyt=options['force_nyt'])
 
-        # for node in movies:
-        #     logging.info("Updating metadata for '%s'" % node)
-        #     metadata.update_metadata(node,
-        #                              force=options['force'],
-        #                              force_imdb=options['force_imdb'],
-        #                              force_rt=options['force_rt'],
-        #                              force_mc=options['force_mc'],
-        #                              force_nyt=options['force_nyt'])
-
         # Clean up any un-referenced metadata nodes.
         if options['clean']:
             logging.info("Deleting unreferenced metadata records...")
             def delete_ids_not_in_set(model_cls, ids):
-                q = models.ContentMetadata.objects.exclude(id__in=metadata_ids)
-                logging.info("Deleting %d %s models.", q.count(),
+                # This clever SQL doesn't work with large datasets and SQLite.
+                # It doesn't like long lists of ids in its queries.
+                #q = model_cls.objects.exclude(id__in=metadata_ids)
+                #logging.info("Deleting %d %s models.", q.count(),
+                             #model_cls.__name__)
+                #q.delete()
+
+                ids = set(ids)
+                to_delete = [model for model in model_cls.objects.all()
+                             if model.id not in ids]
+                logging.info("Deleting %d %s models.", len(to_delete),
                              model_cls.__name__)
-                q.delete()
+                for model in to_delete:
+                    model.delete()
+
 
             live_nodes = models.ContentNode.objects.all()
 

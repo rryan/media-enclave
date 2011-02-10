@@ -6,6 +6,7 @@ import copy
 import traceback
 
 from BeautifulSoup import BeautifulSoup as B
+import Image
 
 from django.conf import settings
 from menclave.venclave import models
@@ -18,6 +19,21 @@ def imdb_cleanup_markup(page):
     page = page.replace('rate""', 'rate"').replace('"src', '" src')
     page = re.sub('<noscript>.*?</noscript>', '', page, re.M)
     return page
+
+
+def is_valid_image(image_file):
+    if not os.path.exists(image_file):
+        return False
+    try:
+        img = Image.open(image_file)
+        img.verify()
+    except Exception, e:
+        logging.info("Bad image file: %r", image_file)
+        traceback.print_exc(e)
+        return False
+    else:
+        return True
+
 
 # IMDB TODO
 # - Parse AKA's in search results
@@ -404,26 +420,33 @@ def update_imdb_metadata(node, force=False, erase=False):
         # imdb_tagline
 
         if 'imdb_cover_uri' in fetched:
+            cover_uri = fetched['imdb_cover_uri']
+            cover_width = fetched['imdb_cover_width']
+            _, ext = os.path.splitext(cover_uri)
+            saved_name = "%s_%s%s" %  (imdb_id, cover_width, ext)
+
+            storage_path = os.path.join(imdb.thumb_image.field.upload_to, saved_name)
+            storage_abs_path = os.path.join(settings.MEDIA_ROOT, storage_path)
+
             try:
-                cover_uri = fetched['imdb_cover_uri']
-                cover_width = fetched['imdb_cover_width']
-                _, ext = os.path.splitext(cover_uri)
-                saved_name = "%s_%s%s" %  (imdb_id, cover_width, ext)
-
-                storage_path = os.path.join(imdb.thumb_image.field.upload_to, saved_name)
-                storage_abs_path = os.path.join(settings.MEDIA_ROOT, storage_path)
-
-                if os.path.exists(storage_path):
+                if is_valid_image(storage_abs_path):
                     logging.info("IMDb thumb image already exists.")
-                    pass
-
-                saved_name, message = urllib.urlretrieve(cover_uri, storage_abs_path)
-                content_length = message.dict['content-length']
-                if content_length > 0:
-                    # Store the source URI used
-                    imdb.thumb_uri = cover_uri
                     imdb.thumb_image = storage_path
-                    # thumb_width and thumb_height are filled automatically
+                    # Force Django to read the image width and height.
+                    # Sometimes it tries to be lazy about reading this data,
+                    # which can cause PIL-related exceptions during template
+                    # rendering.
+                    if imdb.thumb_width == 0 or imdb.thumb_height == 0:
+                        raise ValueError("Invalid image width and height")
+                else:
+                    saved_name, _ = urllib.urlretrieve(cover_uri, storage_abs_path)
+                    assert (os.path.realpath(saved_name) ==
+                            os.path.realpath(storage_abs_path))
+                    if is_valid_image(saved_name):
+                        # Store the source URI used
+                        imdb.thumb_uri = cover_uri
+                        imdb.thumb_image = storage_path
+                        # thumb_width and thumb_height are filled automatically
             except Exception, e:
                 logging.error("Couldn't lookup IMDb cover from given URI: %s" %
                               fetched['imdb_cover_uri'])

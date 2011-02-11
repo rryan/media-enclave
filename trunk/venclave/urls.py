@@ -25,6 +25,18 @@ urlpatterns = patterns(
         'menclave.venclave.browse.tv',
         name='venclave-browse-tv'),
 
+    url(r'^browse/tv/(?P<series>[^/]+)/$',
+        'menclave.venclave.browse.series',
+        name='venclave-browse-series'),
+
+    url(r'^browse/tv/(?P<series>[^/]+)/(?P<season>[^/]+)/$',
+        'menclave.venclave.browse.season',
+        name='venclave-browse-season'),
+
+    url(r'^browse/tv/(?P<series>[^/]+)/(?P<season>[^/]+)/(?P<episode>[^/]+)/$',
+        'menclave.venclave.browse.episode_detail',
+        name='venclave-episode-detail'),
+
     url(r'^browse/other/$',
         'menclave.venclave.browse.other',
         name='venclave-browse-other'),
@@ -45,13 +57,13 @@ urlpatterns = patterns(
         'menclave.venclave.browse.detail',
         name='venclave-detail'),
 
-    url(r'request/upvote/',
-        'menclave.venclave.views.upvote',
-        name='venclave-upvote'),
-
-    url(r'request/',
+    url(r'request/$',
         'menclave.venclave.views.request',
         name='venclave-request'),
+
+    url(r'request/upvote/$',
+        'menclave.venclave.views.upvote',
+        name='venclave-upvote'),
 
     url(r'^update_list/$',
         'menclave.venclave.views.update_list'),

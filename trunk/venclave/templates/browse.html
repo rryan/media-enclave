@@ -29,15 +29,18 @@
     </tr>
   </table>
 
-  {# TODO(rnk): Tables of recent additions would be nice. #}
   <h2 class="table_title">Recent movies</h2>
   {% with recent_movies as nodes %}
-    {% include "venclave/movie_table.html" %}
+    {% with "mo" as kind %}
+      {% include "venclave/node_table.html" %}
+    {% endwith %}
   {% endwith %}
 
   <h2 class="table_title">Recent TV</h2>
   {% with recent_tv as nodes %}
-    {% include "venclave/node_table.html" %}
+    {% with "tv" as kind %}
+      {% include "venclave/node_table.html" %}
+    {% endwith %}
   {% endwith %}
 
 {% endblock %}

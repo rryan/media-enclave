@@ -105,12 +105,27 @@ def ex_braces(content):
 
 @register.filter
 def content_url(node):
-    url_names = {
-            models.KIND_MOVIE: 'venclave-movie-detail',
-            # TODO(rnk): Add more detail urls.
-            }
-    url_name = url_names.get(node.kind)
-    if url_name:
-        return reverse(url_name, args=[node.title])
+    if node.kind == models.KIND_MOVIE:
+        return reverse('venclave-movie-detail', args=[node.title])
+    elif node.kind == models.KIND_SERIES:
+        return reverse('venclave-browse-series', args=[node.title])
+    elif node.kind == models.KIND_SEASON:
+        return reverse('venclave-browse-season',
+                       args=[node.parent.title, node.title])
+    elif node.kind == models.KIND_TV:
+        return reverse('venclave-episode-detail',
+                       args=[node.parent.parent.title, node.parent.title,
+                             node.title])
     else:
         return reverse('venclave-detail', args=[node.id])
+
+
+@register.filter
+def title_column_name(kind):
+    column_names = {
+            models.KIND_MOVIE: 'Title',
+            models.KIND_SERIES: 'Series',
+            models.KIND_SEASON: 'Season',
+            models.KIND_TV: 'Episode',
+            }
+    return column_names.get(kind, 'Title')

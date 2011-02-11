@@ -5,6 +5,12 @@ body {
     margin: 0;
 }
 
+hr {
+    background-color: #f7941d;
+    height: 2px;
+    border: none;
+}
+
 #container {
     width: 1000px;
     margin-right: auto;
@@ -78,4 +84,41 @@ a#title {
     color: #f7941d;
     font-family: Monaco, "Andale Mono", verdana, sans-serif;
     font-size: 48pt;
+}
+
+h2.table_title {
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    padding-bottom: 3px;
+    border-bottom: 3px solid #f7941d;
+    display: block;
+    font-size: 12pt;
+    font-weight: 550;
+}
+
+/* Content requests. */
+
+.content-requests {
+    width: 100%;
+}
+
+#error-box {
+    display: none;
+    position: fixed;
+    bottom: -100px;
+    left: 300px;
+    height: 30px;
+    background: #ffb751;
+    padding: 5px;
+    border: 5px #ffb751;
+    border-radius: 5px;
+}
+
+td.vote-cell {
+    /* Numbers should be right justified. */
+    text-align: right;
+    padding-right: 10px;
+    font-weight: bold;
+    font-family: Monaco, "Andale Mono", verdana, sans-serif;
 }

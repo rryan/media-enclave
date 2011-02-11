@@ -3,7 +3,8 @@
 <table id="video-list">
   <tr>
     <th>Title</th>
-    <th class="length-col">Length</th>
+    {% block extra_th %}
+    {% endblock %}
     <th class="size-col">Size</th>
     {# TODO(rnk): Should make these headers sortable. #}
     {# TODO(rnk): Icons might be nice here. #}
@@ -19,9 +20,8 @@
           <tr>
             <td class="item-title">
               <a href="{{ node|content_url }}">{{ node.title }}</a></td>
-            <td class="item-length">
-              {% if imdb.length %}{{imdb.length}} min{% else %}-{% endif %}
-            </td>
+            {% block extra_td %}
+            {% endblock %}
             <td class="item-size">{{node.size|filesizeformat}}</td>
             <td class="item-rating">
               {% if imdb %}

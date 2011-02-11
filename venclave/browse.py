@@ -26,7 +26,7 @@ def browse(request):
 @login_required
 def movies(request):
     q = models.ContentNode.with_metadata().filter(kind=models.KIND_MOVIE)
-    return render_to_response("venclave/simple.html", request,
+    return render_to_response("venclave/simple_movies.html", request,
                               {'nodes': q})
 
 

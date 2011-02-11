@@ -1,0 +1,11 @@
+{% extends "venclave/node_table.html" %}
+
+{% block extra_th %}
+  <th class="length-col">Length</th>
+{% endblock %}
+
+{% block extra_td %}
+  <td class="item-length">
+    {% if imdb.length %}{{imdb.length}} min{% else %}-{% endif %}
+  </td>
+{% endblock %}

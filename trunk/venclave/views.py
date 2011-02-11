@@ -1,6 +1,7 @@
 # venclave/views.py
 
 import cgi
+import datetime
 import itertools
 import logging
 import re
@@ -14,7 +15,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import forms as auth_forms
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -435,15 +436,34 @@ def upvote(request):
     return json_response({'success': 1, 'id': upvote_id})
 
 
+@user_passes_test(lambda u: u.is_staff)
+def satisfied(request):
+    id = int(request.GET['id'])
+    satisfied = bool(request.GET['satisfied'])
+    content_request = get_object_or_404(ContentRequest, id=id)
+    content_request.satisfied
+    return json_response({'success': 1, 'id': upvote_id})
+
+
 @login_required
 def request(request):
+    # POST requests are probably the best way to handle these kinds of
+    # requests.  We always want to end up at the same page after processing the
+    # request, and using POST will usually prevent the user from refreshing.
     if request.POST.get('make_request', '') == 'true':
         content_request = ContentRequest(name=request.POST['name'],
                                          user=request.user, votes=1)
         content_request.save()
+    if request.POST.get('mark_satisfied', '') == 'true':
+        id = int(request.POST['id'])
+        content_request = get_object_or_404(ContentRequest, id=id)
+        content_request.satisfied = bool(request.POST['satisfied'] == 'true')
+        content_request.satisfied_on = datetime.datetime.now()
+        content_request.save()
 
-    q = ContentRequest.objects.filter(satisfied=False)
-    q = q.select_related('user')
-    q = q.order_by('-votes', '-added')
+    q = ContentRequest.objects.select_related('user')
+    active = q.filter(satisfied=False).order_by('-votes', '-added')
+    satisfied = q.filter(satisfied=True).order_by('-satisfied_on')
     return render_to_response("venclave/request.html", request,
-                              {'active_requests': q})
+                              {'active_requests': active,
+                               'satisfied_requests': satisfied})

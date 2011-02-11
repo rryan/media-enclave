@@ -15,6 +15,7 @@ def get_bundles(_MENCLAVE_ROOT):
              'base.js',
              'filter.js',
              'video-list.js',
+             'request.js',
          )},
 
         {'type': 'css',
@@ -37,5 +38,6 @@ def get_bundles(_MENCLAVE_ROOT):
          "files": (
              'star_yellow_full.png',
              'star_yellow_half.png',
+             'arrow_blue_up.png',
          )},
     )

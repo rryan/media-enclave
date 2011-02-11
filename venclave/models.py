@@ -504,7 +504,12 @@ class ContentNode(models.Model):
         instead of using ContentNode.objects, use ContentNode.with_metadata(),
         and things should just work.
         """
-        return cls.objects.select_related(
+        return cls.objects.select_related(*cls.metadata_attrs)
+
+    # If you need to use select_related for additional related fields, you
+    # cannot chain it with with_metadata() because each call overrides the
+    # last.  Instead you can add *metadata_attrs to you select_related call.
+    metadata_attrs = (
             'metadata__imdb',
             'metadata__rotten_tomatoes',
             'metadata__metacritic',

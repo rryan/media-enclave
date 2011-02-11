@@ -2,9 +2,11 @@
 
 <table id="video-list">
   <tr>
-    <th>Title</th>
-    {% block extra_th %}
-    {% endblock %}
+    <th>{{ kind|title_column_name }}</th>
+    {# TODO(rnk): Hardcoding these content kinds is crappy. #}
+    {% ifequal kind "mo" %}
+      <th class="length-col">Length</th>
+    {% endifequal %}
     <th class="size-col">Size</th>
     {# TODO(rnk): Should make these headers sortable. #}
     {# TODO(rnk): Icons might be nice here. #}
@@ -20,8 +22,13 @@
           <tr>
             <td class="item-title">
               <a href="{{ node|content_url }}">{{ node.title }}</a></td>
-            {% block extra_td %}
-            {% endblock %}
+
+            {% ifequal kind "mo" %}
+              <td class="item-length">
+                {% if imdb.length %}{{imdb.length}} min{% else %}-{% endif %}
+              </td>
+            {% endifequal %}
+
             <td class="item-size">{{node.size|filesizeformat}}</td>
             <td class="item-rating">
               {% if imdb %}

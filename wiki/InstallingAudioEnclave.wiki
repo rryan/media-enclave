@@ -63,9 +63,11 @@ Alternatively, if you're on OS X, you can install [http://pypi.python.org/pypi/p
 
 If you don't have python-daemon installed, you can run the server directly:
 
+{{{
 MENCLAVE_DIR="/path/to/menclave"
 export PYTHONPATH="$PYTHONPATH:$MENCLAVE_DIR/../"
 python aenclave/gst_player/gst_server.py
+}}}
 
 ==Testing==
 

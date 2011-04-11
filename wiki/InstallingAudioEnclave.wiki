@@ -61,6 +61,12 @@ your distro.
 
 Alternatively, if you're on OS X, you can install [http://pypi.python.org/pypi/python-daemon/ python-daemon] via `easy_install python-daemon` and run `aenclave/gst_player/ae_player_daemon.py` to start the player in the background.
 
+If you don't have python-daemon installed, you can run the server directly:
+
+MENCLAVE_DIR="/path/to/menclave"
+export PYTHONPATH="$PYTHONPATH:$MENCLAVE_DIR/../"
+python aenclave/gst_player/gst_server.py
+
 ==Testing==
 
 To test that everything worked, click 'Upload', upload a song, and queue it by
